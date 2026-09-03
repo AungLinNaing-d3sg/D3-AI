@@ -44,7 +44,7 @@ export function Header() {
         </nav>
 
         <div className="hidden md:block">
-          <LinkButton href="#contact" variant="primary" className="px-5 py-2.5 text-xs">
+          <LinkButton href="#cta" variant="primary" className="px-5 py-2.5 text-xs">
             Contact Us
           </LinkButton>
         </div>
@@ -85,7 +85,7 @@ export function Header() {
                 {item.label}
               </a>
             ))}
-            <LinkButton href="#contact" variant="primary" className="mt-3 w-full">
+            <LinkButton href="#cta" variant="primary" className="mt-3 w-full">
               Contact Us
             </LinkButton>
           </nav>

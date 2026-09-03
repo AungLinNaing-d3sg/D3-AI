@@ -60,3 +60,85 @@ export interface BrandPillar {
   value: string;
   description: string;
 }
+
+/**
+ * The 8 chapters of the scroll-driven journey (see src/app/page.tsx and
+ * lib/motion/journeyState.ts). Order matters — it is both document order and
+ * camera/timeline order.
+ */
+export const STAGE_IDS = [
+  "intro",
+  "typography",
+  "neural",
+  "universe",
+  "product",
+  "game",
+  "future",
+  "cta",
+] as const;
+
+export type StageId = (typeof STAGE_IDS)[number];
+
+/** A single "camera flight" waypoint. `fov` in degrees. */
+export interface CameraKeyframe {
+  x: number;
+  y: number;
+  z: number;
+  lookX: number;
+  lookY: number;
+  lookZ: number;
+  fov: number;
+}
+
+/** A lighting waypoint — colour temperature + intensities the rig lerps
+ * between as the journey moves from stage to stage. */
+export interface LightKeyframe {
+  ambient: number;
+  key: number;
+  rim: number;
+  colorHex: string;
+}
+
+/** One labelled concept node in the Neural Network stage (chapter 03). */
+export interface ConceptNode {
+  id: string;
+  label: string;
+  /** Unit-sphere-ish position, scaled by the scene at render time. */
+  position: [number, number, number];
+}
+
+/** A short, real, sourced statistic surfaced as particle-formed text in the
+ * Data Universe stage (chapter 04). */
+export interface UniverseStat {
+  token: string;
+  label: string;
+  description: string;
+}
+
+/** A floating product panel in the AI Product Experience stage (05),
+ * sourced 1:1 from src/data/services.ts. */
+export interface ProductPanel {
+  slug: string;
+  eyebrow: string;
+  title: string;
+  summary: string;
+  bullets: string[];
+}
+
+/** "TRAIN YOUR AI" mini-game (chapter 06) item classification. */
+export type GameItemKind = "data" | "knowledge" | "experience" | "noise" | "error" | "bias";
+
+export interface GameItemDefinition {
+  kind: GameItemKind;
+  label: string;
+  /** Positive items raise the trained model's accuracy, negative items
+   * lower it. */
+  polarity: "positive" | "negative";
+}
+
+/** A forward-looking vision pillar for the Cinematic AI Future stage (07),
+ * reframed from the real capability pillars in src/data/capabilities.ts. */
+export interface VisionPillar {
+  title: string;
+  description: string;
+}

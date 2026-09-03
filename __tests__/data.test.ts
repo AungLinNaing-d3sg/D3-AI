@@ -3,7 +3,19 @@ import { capabilities } from "@/data/capabilities";
 import { focusAreas } from "@/data/focusAreas";
 import { techNodes } from "@/data/technology";
 import { teamMembers } from "@/data/team";
-import { sceneKeyframes } from "@/lib/motion/sceneState";
+import { brandPillars } from "@/data/pillars";
+import {
+  typographyWords,
+  typographyWordRanges,
+  primaryConceptNodes,
+  secondaryConceptNodes,
+  universeStats,
+  universeStatRanges,
+  productPanels,
+  gameItemDefinitions,
+  visionPillars,
+} from "@/data/journey";
+import { STAGE_IDS } from "@/types";
 
 describe("content data integrity", () => {
   it("has exactly the three real service pillars, each with bullets", () => {
@@ -39,8 +51,60 @@ describe("content data integrity", () => {
     });
   });
 
-  it("provides one 3D scene keyframe per homepage section (hero..cta)", () => {
-    // hero, about, services, solutions, projects, technology, company, cta
-    expect(sceneKeyframes).toHaveLength(8);
+  it("defines exactly the 8 scrollytelling chapters in journey order", () => {
+    expect(STAGE_IDS).toEqual([
+      "intro",
+      "typography",
+      "neural",
+      "universe",
+      "product",
+      "game",
+      "future",
+      "cta",
+    ]);
+  });
+
+  it("gives the typography chapter contiguous, gapless word ranges covering 0..1", () => {
+    expect(typographyWordRanges).toHaveLength(typographyWords.length);
+    expect(typographyWordRanges[0]?.start).toBe(0);
+    expect(typographyWordRanges[typographyWordRanges.length - 1]?.end).toBe(1);
+    typographyWordRanges.forEach((range, index) => {
+      const next = typographyWordRanges[index + 1];
+      if (next) expect(range.end).toBe(next.start);
+    });
+  });
+
+  it("builds the neural network from the 5 brief-specified concepts plus the real technology ecosystem", () => {
+    expect(primaryConceptNodes.map((node) => node.label)).toEqual([
+      "THINK",
+      "LEARN",
+      "UNDERSTAND",
+      "PREDICT",
+      "CREATE",
+    ]);
+    expect(secondaryConceptNodes).toHaveLength(techNodes.length);
+  });
+
+  it("sources the data universe statistics from the real brand pillars, not invented numbers", () => {
+    expect(universeStats).toHaveLength(brandPillars.length);
+    expect(universeStatRanges).toHaveLength(brandPillars.length);
+    universeStats.forEach((stat) => {
+      expect(stat.token.length).toBeGreaterThan(0);
+    });
+  });
+
+  it("maps the product experience panels 1:1 onto the real service pillars", () => {
+    expect(productPanels).toHaveLength(services.length);
+  });
+
+  it("defines exactly the brief's TRAIN YOUR AI vocabulary (3 positive, 3 negative)", () => {
+    const positive = gameItemDefinitions.filter((item) => item.polarity === "positive");
+    const negative = gameItemDefinitions.filter((item) => item.polarity === "negative");
+    expect(positive.map((item) => item.label)).toEqual(["DATA", "KNOWLEDGE", "EXPERIENCE"]);
+    expect(negative.map((item) => item.label)).toEqual(["NOISE", "ERROR", "BIAS"]);
+  });
+
+  it("reframes the real capability pillars as the cinematic future's vision statements", () => {
+    expect(visionPillars).toHaveLength(capabilities.length);
   });
 });
