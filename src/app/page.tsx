@@ -1,21 +1,26 @@
 import { SceneCanvas } from "@/components/three/SceneCanvas";
 import { ScrollChoreographer } from "@/components/motion/ScrollChoreographer";
-import { HeroSection } from "@/components/sections/HeroSection";
-import { AboutSection } from "@/components/sections/AboutSection";
-import { ServicesSection } from "@/components/sections/ServicesSection";
-import { SolutionsSection } from "@/components/sections/SolutionsSection";
-import { ProjectsSection } from "@/components/sections/ProjectsSection";
-import { TechnologySection } from "@/components/sections/TechnologySection";
-import { TeamSection } from "@/components/sections/TeamSection";
+import { IntroSection } from "@/components/sections/IntroSection";
+import { TypographySection } from "@/components/sections/TypographySection";
+import { NeuralSection } from "@/components/sections/NeuralSection";
+import { UniverseSection } from "@/components/sections/UniverseSection";
+import { ProductSection } from "@/components/sections/ProductSection";
+import { GameSection } from "@/components/sections/GameSection";
+import { FutureSection } from "@/components/sections/FutureSection";
 import { CtaSection } from "@/components/sections/CtaSection";
 
 /**
- * Homepage — an 8-chapter scroll-driven experience. `<SceneCanvas>` (the 3D
- * half) and `<ScrollChoreographer>` (the invisible GSAP/ScrollTrigger
- * controller) are siblings of the real HTML sections, not wrappers around
- * them, per the "separate 3D scenes from normal UI" requirement; they
- * communicate only through the shared `sceneState` singleton and the
- * `[data-scene-section]` DOM attribute.
+ * Homepage — one continuous, 8-chapter cinematic scrollytelling journey
+ * through a single AI universe (cinematic intro → 3D typography → neural
+ * network → data universe → AI product experience → "train your AI"
+ * mini-game → cinematic AI future → final CTA).
+ *
+ * `<SceneCanvas>` (the shared 3D half) and `<ScrollChoreographer>` (the
+ * invisible GSAP/ScrollTrigger controller) are siblings of the real HTML
+ * chapters, not wrappers around them, per the "separate 3D scenes from
+ * normal UI" requirement; they communicate only through the shared
+ * `journeyState` singleton (src/lib/motion/journeyState.ts) and the
+ * `[data-stage]` DOM attribute each chapter's `<Section>` renders.
  */
 export default function Home() {
   return (
@@ -23,13 +28,13 @@ export default function Home() {
       <SceneCanvas />
       <ScrollChoreographer />
       <div id="experience-wrapper">
-        <HeroSection />
-        <AboutSection />
-        <ServicesSection />
-        <SolutionsSection />
-        <ProjectsSection />
-        <TechnologySection />
-        <TeamSection />
+        <IntroSection />
+        <TypographySection />
+        <NeuralSection />
+        <UniverseSection />
+        <ProductSection />
+        <GameSection />
+        <FutureSection />
         <CtaSection />
       </div>
     </>

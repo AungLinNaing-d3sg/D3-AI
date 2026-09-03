@@ -1,26 +1,29 @@
 import type { ReactNode } from "react";
+import type { StageId } from "@/types";
 
 interface SectionProps {
-  id: string;
+  stageId: StageId;
   ariaLabelledBy?: string;
   className?: string;
   children: ReactNode;
 }
 
 /**
- * Shared section shell. `data-scene-section` marks this element as one of
- * the ordered "chapters" the 3D scroll timeline reads from
+ * Shared chapter shell. `data-stage` marks this element as one of the 8
+ * ordered chapters the scroll-journey timeline reads from
  * (`ScrollChoreographer` queries these in document order — see
- * lib/motion/scrollTimeline.ts) — every homepage section must use this
- * wrapper (or replicate the attribute) to stay part of the story.
+ * lib/motion/scrollTimeline.ts) — every homepage chapter must use this
+ * wrapper (or replicate the attribute/id pair) to stay part of the story.
+ * `id` is always set to `stageId` so in-page nav anchors (src/data/nav.ts)
+ * and this element line up automatically.
  */
-export function Section({ id, ariaLabelledBy, className = "", children }: SectionProps) {
+export function Section({ stageId, ariaLabelledBy, className = "", children }: SectionProps) {
   return (
     <section
-      id={id}
-      data-scene-section
+      id={stageId}
+      data-stage={stageId}
       aria-labelledby={ariaLabelledBy}
-      className={`relative z-10 py-24 sm:py-32 ${className}`.trim()}
+      className={`relative z-10 ${className}`.trim()}
     >
       {children}
     </section>

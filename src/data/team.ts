@@ -1,6 +1,13 @@
 import type { TeamMember } from "@/types";
 
-/** Sourced from the existing "About Us" page copy (see /docs/AboutUs.png). */
+/**
+ * Sourced from the existing "About Us" page copy (see /docs/AboutUs.png).
+ * The 8-chapter scrollytelling homepage (src/app/page.tsx) doesn't include a
+ * dedicated team chapter — CEO contact details still surface via
+ * `siteConfig.contactPerson` in the Footer — so this is currently unused by
+ * any component. Kept as real, sourced content data (not deleted) so it's
+ * ready to back a future dedicated "About"/"Team" page without re-sourcing.
+ */
 export const teamMembers: TeamMember[] = [
   {
     name: "Maximillium Yip",
