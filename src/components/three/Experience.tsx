@@ -3,6 +3,7 @@
 import { Canvas } from "@react-three/fiber";
 import { Lighting } from "@/components/three/Lighting";
 import { CoreObject } from "@/components/three/CoreObject";
+import { IdentityConstellation } from "@/components/three/IdentityConstellation";
 import { ParticleField } from "@/components/three/ParticleField";
 import { NodeNetwork } from "@/components/three/NodeNetwork";
 import { CameraRig } from "@/components/three/CameraRig";
@@ -33,6 +34,7 @@ export function Experience({ quality, enableParallax }: ExperienceProps) {
       <fog attach="fog" args={["#05070d", 6, 16]} />
       <Lighting />
       <CoreObject />
+      <IdentityConstellation />
       <ParticleField count={particleCount} />
       <NodeNetwork />
       <CameraRig enableParallax={enableParallax} />

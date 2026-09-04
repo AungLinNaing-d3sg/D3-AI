@@ -39,7 +39,7 @@ export function SceneCanvas() {
   }, [enableScene]);
 
   return (
-    <div className="fixed inset-0 z-0" aria-hidden="true">
+    <div className="fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
       {enableScene ? (
         <Experience quality={quality} enableParallax={!isCompact && !prefersReducedMotion} />
       ) : (
