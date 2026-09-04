@@ -19,7 +19,7 @@ const wordDescriptions: Record<string, string> = {
 };
 
 /**
- * Chapter 02 — 3D AI Typography. The real visual is the particle-formed
+ * Chapter 03 — 3D AI Typography. The real visual is the particle-formed
  * word in the shared 3D canvas (three/scenes/TypographyScene.tsx); this
  * layer supplies the chapter label, a live caption for whichever word is
  * currently forming (kept in sync via `journeyState.progress.typography`,
@@ -49,7 +49,7 @@ export function TypographySection() {
       <div className="sticky top-0 flex h-[100svh] flex-col justify-between py-24 sm:py-28">
         <Container>
           <Reveal as="p" className="text-xs font-semibold uppercase tracking-[0.32em] text-brand-400">
-            02 — Built from three real disciplines
+            03 — Built from three real disciplines
           </Reveal>
         </Container>
 

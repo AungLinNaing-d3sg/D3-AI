@@ -4,6 +4,7 @@ import { Canvas } from "@react-three/fiber";
 import { Lighting } from "@/components/three/Lighting";
 import { CameraRig } from "@/components/three/CameraRig";
 import { IntroScene } from "@/components/three/scenes/IntroScene";
+import { AboutScene } from "@/components/three/scenes/AboutScene";
 import { TypographyScene } from "@/components/three/scenes/TypographyScene";
 import { NeuralScene } from "@/components/three/scenes/NeuralScene";
 import { UniverseScene } from "@/components/three/scenes/UniverseScene";
@@ -18,18 +19,18 @@ interface ExperienceProps {
 }
 
 /**
- * The full R3F scene tree — one continuous `<Canvas>` shared by all 8
+ * The full R3F scene tree — one continuous `<Canvas>` shared by all 9
  * chapters. Deliberately contains no interactive UI/forms (the "3D scene"
  * half of "combine traditional HTML/UI with interactive 3D scenes"); all
  * real content, navigation, and controls live in `components/sections`.
  *
  * Each chapter below is its own scene component with its own visual
- * language (typography particles, neural graph, particle universe, floating
- * product UI, cinematic monoliths, minimal CTA glow) — deliberately *not*
- * one object re-skinned 8 times. All 7 always mount so their crossfade
- * (`journeyState.weight`) can overlap smoothly at chapter boundaries; each
- * scene is responsible for going idle (skipping expensive per-frame work)
- * once its own weight reaches zero.
+ * language (identity emblem, typography particles, neural graph, particle
+ * universe, floating product UI, cinematic monoliths, minimal CTA glow) —
+ * deliberately *not* one object re-skinned 9 times. All 9 always mount so
+ * their crossfade (`journeyState.weight`) can overlap smoothly at chapter
+ * boundaries; each scene is responsible for going idle (skipping expensive
+ * per-frame work) once its own weight reaches zero.
  */
 export function Experience({ quality, enableParallax }: ExperienceProps) {
   const dpr: [number, number] = quality === "high" ? [1, 2] : [1, 1.25];
@@ -46,6 +47,7 @@ export function Experience({ quality, enableParallax }: ExperienceProps) {
       <Lighting />
 
       <IntroScene quality={quality} />
+      <AboutScene quality={quality} />
       <TypographyScene quality={quality} />
       <NeuralScene quality={quality} />
       <UniverseScene quality={quality} />

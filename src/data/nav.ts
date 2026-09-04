@@ -7,6 +7,7 @@ import type { NavItem } from "@/types";
  * `src/types/index.ts` `STAGE_IDS`).
  */
 export const primaryNav: NavItem[] = [
+  { href: "#about", label: "About Us" },
   { href: "#typography", label: "Our Approach" },
   { href: "#neural", label: "How We Think" },
   { href: "#universe", label: "By the Numbers" },

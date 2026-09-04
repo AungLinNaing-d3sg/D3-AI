@@ -6,7 +6,7 @@ import { ServiceIcon } from "@/components/ui/ServiceIcon";
 import { services } from "@/data/services";
 
 /**
- * Chapter 05 — AI Product Experience. The floating 3D dashboards live in the
+ * Chapter 06 — AI Product Experience. The floating 3D dashboards live in the
  * shared canvas (three/scenes/ProductScene.tsx, decorative/aria-hidden); the
  * real, accessible product content — the three actual service pillars from
  * src/data/services.ts — flows normally beneath the pinned intro so it's
@@ -19,7 +19,7 @@ export function ProductSection() {
         <Container>
           <SectionHeading
             headingId="product-heading"
-            eyebrow="05 — Step inside the product"
+            eyebrow="06 — Step inside the product"
             title="One platform, three disciplines"
             description="Data, Dynamics, and Digital capabilities come together as a single working environment — previewed behind this section as floating, interactive panels."
           />

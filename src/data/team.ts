@@ -2,11 +2,12 @@ import type { TeamMember } from "@/types";
 
 /**
  * Sourced from the existing "About Us" page copy (see /docs/AboutUs.png).
- * The 8-chapter scrollytelling homepage (src/app/page.tsx) doesn't include a
- * dedicated team chapter — CEO contact details still surface via
- * `siteConfig.contactPerson` in the Footer — so this is currently unused by
- * any component. Kept as real, sourced content data (not deleted) so it's
- * ready to back a future dedicated "About"/"Team" page without re-sourcing.
+ * Rendered by chapter 02 — About Us / Who we are (see
+ * components/sections/AboutSection.tsx for the accessible team roster and
+ * components/three/scenes/AboutScene.tsx for the orbiting 3D identity
+ * nodes derived from it via src/data/journey.ts's `aboutTeamNodes`).
+ * `siteConfig.contactPerson` in the Footer still separately surfaces the
+ * CEO's direct contact details.
  */
 export const teamMembers: TeamMember[] = [
   {

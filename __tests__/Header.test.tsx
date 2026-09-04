@@ -11,6 +11,13 @@ describe("Header", () => {
     expect(screen.getAllByRole("link", { name: /how we think/i }).length).toBeGreaterThan(0);
   });
 
+  it("links the About Us nav item to the about-us chapter anchor", () => {
+    render(<Header />);
+    const aboutLinks = screen.getAllByRole("link", { name: /about us/i });
+    expect(aboutLinks.length).toBeGreaterThan(0);
+    expect(aboutLinks.every((link) => link.getAttribute("href") === "#about")).toBe(true);
+  });
+
   it("links the primary Contact Us action to the final CTA chapter anchor", () => {
     render(<Header />);
     const contactLinks = screen.getAllByRole("link", { name: /contact us/i });

@@ -80,6 +80,27 @@ html {
   color-scheme: dark;
 }
 
+/*
+ * Belt-and-suspenders guard against horizontal scrollbars: the fixed,
+ * full-viewport 3D canvas (components/three/SceneCanvas.tsx) and its
+ * scroll-driven camera/particles/`Html`-projected labels are all clipped to
+ * their own `overflow: hidden` container (see @react-three/fiber's Canvas
+ * wrapper), but any *other* future oversized/absolutely-positioned or
+ * transformed element sitting even a fraction of a pixel past the right
+ * edge would otherwise make the whole page horizontally scrollable at some
+ * breakpoint. `overflow-x: hidden` on both the root and body clips that
+ * without affecting vertical scrolling (native scroll — see
+ * components/motion/SmoothScrollProvider.tsx, which uses the default
+ * `window`/`document.documentElement` wrapper, not a custom scroll div) or
+ * `position: sticky` chapter panels (components/ui/Section.tsx), which
+ * still stick relative to the viewport.
+ */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

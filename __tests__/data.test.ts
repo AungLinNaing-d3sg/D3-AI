@@ -5,6 +5,9 @@ import { techNodes } from "@/data/technology";
 import { teamMembers } from "@/data/team";
 import { brandPillars } from "@/data/pillars";
 import {
+  aboutTeamNodes,
+  aboutTeamRanges,
+  aboutPartnerNote,
   typographyWords,
   typographyWordRanges,
   primaryConceptNodes,
@@ -51,9 +54,10 @@ describe("content data integrity", () => {
     });
   });
 
-  it("defines exactly the 8 scrollytelling chapters in journey order", () => {
+  it("defines exactly the 9 scrollytelling chapters in journey order", () => {
     expect(STAGE_IDS).toEqual([
       "intro",
+      "about",
       "typography",
       "neural",
       "universe",
@@ -62,6 +66,18 @@ describe("content data integrity", () => {
       "future",
       "cta",
     ]);
+  });
+
+  it("orbits the about-us identity emblem with one node per real team member, in even, gapless ranges", () => {
+    expect(aboutTeamNodes).toHaveLength(teamMembers.length);
+    expect(aboutTeamRanges).toHaveLength(teamMembers.length);
+    expect(aboutTeamRanges[0]?.start).toBe(0);
+    expect(aboutTeamRanges[aboutTeamRanges.length - 1]?.end).toBe(1);
+    aboutTeamRanges.forEach((range, index) => {
+      const next = aboutTeamRanges[index + 1];
+      if (next) expect(range.end).toBe(next.start);
+    });
+    expect(aboutPartnerNote.length).toBeGreaterThan(0);
   });
 
   it("gives the typography chapter contiguous, gapless word ranges covering 0..1", () => {

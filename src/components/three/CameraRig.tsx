@@ -17,7 +17,7 @@ const desiredPosition = new Vector3();
 /**
  * Damped camera follow-rig: every frame it eases the real camera towards the
  * scroll-driven target in `journeyState.camera` (the single continuous
- * flight path across all 8 chapters — see lib/motion/scrollTimeline.ts),
+ * flight path across all 9 chapters — see lib/motion/scrollTimeline.ts),
  * which gives the scrub a smooth, weighted, "premium" trailing feel rather
  * than snapping 1:1 to scroll position. Adds a small pointer-parallax offset
  * on devices with a fine pointer, smoothed independently of the scroll path

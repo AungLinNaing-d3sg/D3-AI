@@ -15,7 +15,7 @@ interface FutureSceneProps {
 const MONOLITH_COUNT = 5;
 
 /**
- * Chapter 07 — Cinematic AI Future. A calmer, more atmospheric register than
+ * Chapter 08 — Cinematic AI Future. A calmer, more atmospheric register than
  * every scene before it: slow-drifting emissive monoliths, soft depth fog,
  * and fine dust, evoking the company's AI vision without a generic sci-fi
  * template (no starfields-and-lasers — just light, scale, and stillness).

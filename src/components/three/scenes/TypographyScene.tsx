@@ -14,7 +14,7 @@ interface TypographySceneProps {
 }
 
 /**
- * Chapter 02 — 3D AI Typography. Huge "physical" words built from thousands
+ * Chapter 03 — 3D AI Typography. Huge "physical" words built from thousands
  * of individual particles rather than flat HTML or a font-geometry asset
  * (see lib/three/textSampler.ts). As the chapter scrolls, particles morph
  * word → scatter → next word in sequence (D3-SG → DATA → DYNAMICS → DIGITAL

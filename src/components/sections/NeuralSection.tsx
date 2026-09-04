@@ -5,7 +5,7 @@ import { Reveal } from "@/components/motion/Reveal";
 import { primaryConceptNodes, secondaryConceptNodes } from "@/data/journey";
 
 /**
- * Chapter 03 — AI Neural Network. The live, camera-traversed graph lives in
+ * Chapter 04 — AI Neural Network. The live, camera-traversed graph lives in
  * the shared 3D canvas (three/scenes/NeuralScene.tsx); this layer supplies
  * the chapter heading and a fully accessible, always-visible list of every
  * node label the graph renders (5 core AI concepts + the real technology
@@ -19,7 +19,7 @@ export function NeuralSection() {
         <Container className="flex flex-col gap-10">
           <SectionHeading
             headingId="neural-heading"
-            eyebrow="03 — How we think"
+            eyebrow="04 — How we think"
             title="A network built on real capability"
             description="Every idea we ship moves through the same five-step thought process — visualised behind this section as a live, camera-traversed graph."
           />

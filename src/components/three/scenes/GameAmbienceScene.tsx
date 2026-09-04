@@ -12,7 +12,7 @@ interface GameAmbienceSceneProps {
 }
 
 /**
- * Chapter 06 backdrop — "TRAIN YOUR AI" is a real DOM/canvas-2D interactive
+ * Chapter 07 backdrop — "TRAIN YOUR AI" is a real DOM/canvas-2D interactive
  * mini-game (see components/game/TrainYourAI.tsx), kept deliberately simple
  * and dependency-free for responsiveness. This scene only supplies a soft,
  * slow amber particle drift behind it so the fixed 3D canvas stays alive

@@ -32,7 +32,7 @@ function nearestPrimaryIndex(position: readonly [number, number, number]): numbe
 }
 
 /**
- * Chapter 03 — AI Neural Network. The typography particles (chapter 02)
+ * Chapter 04 — AI Neural Network. The typography particles (chapter 03)
  * dissolve into a live graph: 5 primary AI-concept nodes (THINK, LEARN,
  * UNDERSTAND, PREDICT, CREATE — labelled via drei `<Html>`) plus the real
  * technology ecosystem (src/data/technology.ts) as secondary nodes, joined

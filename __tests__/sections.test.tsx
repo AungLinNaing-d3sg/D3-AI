@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { IntroSection } from "@/components/sections/IntroSection";
+import { AboutSection } from "@/components/sections/AboutSection";
 import { TypographySection } from "@/components/sections/TypographySection";
 import { NeuralSection } from "@/components/sections/NeuralSection";
 import { UniverseSection } from "@/components/sections/UniverseSection";
@@ -8,13 +9,38 @@ import { GameSection } from "@/components/sections/GameSection";
 import { FutureSection } from "@/components/sections/FutureSection";
 import { CtaSection } from "@/components/sections/CtaSection";
 import { siteConfig } from "@/data/site";
-import { primaryConceptNodes, universeStats } from "@/data/journey";
+import { primaryConceptNodes, universeStats, aboutPartnerNote } from "@/data/journey";
+import { teamMembers } from "@/data/team";
 
 describe("homepage chapters", () => {
   it("renders the intro hero headline and tagline as the page's h1", () => {
     render(<IntroSection />);
     expect(screen.getByRole("heading", { level: 1, name: siteConfig.tagline })).toBeInTheDocument();
     expect(document.getElementById("intro")).toHaveAttribute("data-stage", "intro");
+  });
+
+  it("renders the about-us chapter with the real, sourced leadership team", () => {
+    render(<AboutSection />);
+    expect(document.getElementById("about")).toHaveAttribute("data-stage", "about");
+    expect(screen.getByRole("heading", { level: 2, name: "Who we are" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: /meet the team/i })).toBeInTheDocument();
+    expect(screen.getByText(aboutPartnerNote)).toBeInTheDocument();
+    teamMembers.forEach((member) => {
+      expect(screen.getByText(member.name)).toBeInTheDocument();
+      expect(screen.getByText(member.role)).toBeInTheDocument();
+      member.bio.forEach((line) => {
+        expect(screen.getByText(line)).toBeInTheDocument();
+      });
+    });
+  });
+
+  it("renders exactly one team roster card per real team member, each starting inactive", () => {
+    render(<AboutSection />);
+    const cards = screen.getAllByText(/chief/i).map((el) => el.closest("li"));
+    expect(cards).toHaveLength(teamMembers.length);
+    cards.forEach((card) => {
+      expect(card).toHaveAttribute("data-active", "false");
+    });
   });
 
   it("renders the typography chapter's word list accessibly, independent of the 3D particle formation", () => {

@@ -6,7 +6,7 @@ import { visionPillars } from "@/data/journey";
 import { siteConfig } from "@/data/site";
 
 /**
- * Chapter 07 — Cinematic AI Future. The mini-game hands off into a calmer,
+ * Chapter 08 — Cinematic AI Future. The mini-game hands off into a calmer,
  * atmospheric 3D vista (three/scenes/FutureScene.tsx); this layer carries
  * the company's own forward-looking narration, grounded in the real
  * delivery capabilities (src/data/capabilities.ts) rather than invented
@@ -19,7 +19,7 @@ export function FutureSection() {
         <Container className="flex flex-col gap-10">
           <SectionHeading
             headingId="future-heading"
-            eyebrow="07 — Our vision"
+            eyebrow="08 — Our vision"
             title={siteConfig.tagline}
             description="Not a distant promise — the same three disciplines you just walked through, carried forward."
           />

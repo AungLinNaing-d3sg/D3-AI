@@ -1,6 +1,7 @@
 import { SceneCanvas } from "@/components/three/SceneCanvas";
 import { ScrollChoreographer } from "@/components/motion/ScrollChoreographer";
 import { IntroSection } from "@/components/sections/IntroSection";
+import { AboutSection } from "@/components/sections/AboutSection";
 import { TypographySection } from "@/components/sections/TypographySection";
 import { NeuralSection } from "@/components/sections/NeuralSection";
 import { UniverseSection } from "@/components/sections/UniverseSection";
@@ -10,9 +11,9 @@ import { FutureSection } from "@/components/sections/FutureSection";
 import { CtaSection } from "@/components/sections/CtaSection";
 
 /**
- * Homepage — one continuous, 8-chapter cinematic scrollytelling journey
- * through a single AI universe (cinematic intro → 3D typography → neural
- * network → data universe → AI product experience → "train your AI"
+ * Homepage — one continuous, 9-chapter cinematic scrollytelling journey
+ * through a single AI universe (cinematic intro → about us → 3D typography →
+ * neural network → data universe → AI product experience → "train your AI"
  * mini-game → cinematic AI future → final CTA).
  *
  * `<SceneCanvas>` (the shared 3D half) and `<ScrollChoreographer>` (the
@@ -29,6 +30,7 @@ export default function Home() {
       <ScrollChoreographer />
       <div id="experience-wrapper">
         <IntroSection />
+        <AboutSection />
         <TypographySection />
         <NeuralSection />
         <UniverseSection />

@@ -14,7 +14,7 @@ interface ProductSceneProps {
 }
 
 /**
- * Chapter 05 — AI Product Experience. The data universe particles thin into
+ * Chapter 06 — AI Product Experience. The data universe particles thin into
  * ambient dust and three floating, glass-panel product dashboards — one per
  * real service pillar (src/data/services.ts via data/journey.ts) — move
  * toward the camera, rotate into view, and hand off to the next in turn.
@@ -86,7 +86,7 @@ export function ProductScene({ quality }: ProductSceneProps) {
           }}
         >
           <Html transform occlude={false} distanceFactor={5.2} className="pointer-events-none select-none">
-            <div className="w-[22rem] rounded-3xl border border-white/15 bg-ink-900/75 p-7 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.8)] backdrop-blur-xl">
+            <div className="w-[min(22rem,86vw)] rounded-3xl border border-white/15 bg-ink-900/75 p-7 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.8)] backdrop-blur-xl">
               <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-brand-400">
                 {panel.eyebrow}
               </p>

@@ -3,9 +3,44 @@ import { services } from "@/data/services";
 import { capabilities } from "@/data/capabilities";
 import { brandPillars } from "@/data/pillars";
 import { techNodes } from "@/data/technology";
+import { teamMembers } from "@/data/team";
 
 /**
- * Chapter 02 — 3D AI Typography. The word sequence particles form/explode/
+ * Chapter 02 — About Us / Who we are. The leadership team (src/data/team.ts,
+ * sourced from the existing About Us page copy — see /docs/AboutUs.png) is
+ * rendered as orbiting "identity nodes" around a central emblem in the 3D
+ * scene (three/scenes/AboutScene.tsx); positions are evenly distributed
+ * around the emblem rather than hand-placed, same approach as the neural
+ * network's secondary nodes below.
+ */
+export const aboutTeamNodes: ConceptNode[] = teamMembers.map((member, index) => {
+  const angle = (index / teamMembers.length) * Math.PI * 2;
+  const radius = 2.1;
+  return {
+    id: member.initials,
+    label: member.initials,
+    position: [Math.cos(angle) * radius, Math.sin(angle * 1.4) * 0.5, Math.sin(angle) * radius * 0.6],
+  };
+});
+
+/** Even scroll-progress ranges for each team member above, shared by the 3D
+ * orbiting-node highlight and the DOM team-card highlight so both read from
+ * the same single source of truth — same pattern as `universeStatRanges`. */
+export const aboutTeamRanges = teamMembers.map((member, index) => ({
+  member,
+  start: index / teamMembers.length,
+  end: (index + 1) / teamMembers.length,
+}));
+
+/** Short, sourced continuation of the "Who we are" narrative — the one
+ * sentence from the existing About Us page copy (/docs/AboutUs.png) not yet
+ * carried elsewhere: working alongside delivery partners to cover the full
+ * breadth of a client's IT transformation. */
+export const aboutPartnerNote =
+  "Working alongside partners who offer complementary or value-added services, so we can serve your organisation's varied IT transformation needs.";
+
+/**
+ * Chapter 03 — 3D AI Typography. The word sequence particles form/explode/
  * reform through, grounded in the company's own name and three real
  * service pillars (src/data/services.ts) rather than generic buzzwords,
  * ending on "AI" as the bridge into the Neural Network chapter.
@@ -22,7 +57,7 @@ export const typographyWordRanges = typographyWords.map((word, index) => ({
 }));
 
 /**
- * Chapter 03 — Neural Network. Five primary concept nodes (verbatim from the
+ * Chapter 04 — Neural Network. Five primary concept nodes (verbatim from the
  * brief) form the core of the graph; the real technology ecosystem
  * (src/data/technology.ts) supplies the secondary, smaller labelled nodes so
  * the network visualises actual capabilities, not filler.
@@ -50,7 +85,7 @@ export const secondaryConceptNodes: ConceptNode[] = techNodes.map((node, index) 
 });
 
 /**
- * Chapter 04 — Data Universe. Real, modest proof points
+ * Chapter 05 — Data Universe. Real, modest proof points
  * (src/data/pillars.ts, sourced from the existing company copy) rendered as
  * particle-formed short tokens rather than invented statistics.
  */
@@ -69,7 +104,7 @@ export const universeStatRanges = universeStats.map((stat, index) => ({
 }));
 
 /**
- * Chapter 05 — AI Product Experience. The three real service pillars,
+ * Chapter 06 — AI Product Experience. The three real service pillars,
  * reframed as floating product panels (src/data/services.ts is the source
  * of truth; no capabilities are invented here).
  */
@@ -82,7 +117,7 @@ export const productPanels: ProductPanel[] = services.map((service) => ({
 }));
 
 /**
- * Chapter 06 — "TRAIN YOUR AI" mini-game. Item vocabulary is exactly the
+ * Chapter 07 — "TRAIN YOUR AI" mini-game. Item vocabulary is exactly the
  * brief's specified game concept (DATA/KNOWLEDGE/EXPERIENCE to collect,
  * NOISE/ERROR/BIAS to avoid) — this is deliberately game mechanics, not a
  * company fact, so it does not need /docs sourcing.
@@ -97,7 +132,7 @@ export const gameItemDefinitions: GameItemDefinition[] = [
 ];
 
 /**
- * Chapter 07 — Cinematic AI Future. The three delivery capabilities
+ * Chapter 08 — Cinematic AI Future. The three delivery capabilities
  * (src/data/capabilities.ts) reframed as forward-looking vision pillars —
  * same real facts, future-facing narration.
  */

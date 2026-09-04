@@ -14,7 +14,7 @@ interface UniverseSceneProps {
 }
 
 /**
- * Chapter 04 — Data Universe. The neural network dissolves into a much
+ * Chapter 05 — Data Universe. The neural network dissolves into a much
  * larger, denser particle field the camera travels through; along the way
  * the field periodically gathers into the company's real, modest proof
  * points (src/data/pillars.ts) rendered as particle-formed statistics

@@ -5,27 +5,29 @@ import { ensureGsapRegistered, ScrollTrigger } from "@/lib/motion/gsap";
 
 /**
  * The single continuous camera flight path through the whole experience —
- * one keyframe *between* every stage (9 waypoints for 8 stages), authored to
- * read as one cinematic move rather than 8 independent shots: push in from a
- * wide establishing shot, weave past the typography and network, pull back
- * to reveal the data universe, glide into the product UI, settle for the
- * mini-game, pull back for the cinematic future vista, then rest centred for
- * the final CTA.
+ * one keyframe *between* every stage (10 waypoints for 9 stages), authored to
+ * read as one cinematic move rather than 9 independent shots: push in from a
+ * wide establishing shot, settle for the About Us identity emblem, weave past
+ * the typography and network, pull back to reveal the data universe, glide
+ * into the product UI, settle for the mini-game, pull back for the cinematic
+ * future vista, then rest centred for the final CTA.
  */
 const cameraKeyframes: CameraKeyframe[] = [
   { x: 0, y: 0.5, z: 9.5, lookX: 0, lookY: 0, lookZ: 0, fov: 42 }, // 0 — intro start
-  { x: 0, y: 0.15, z: 6, lookX: 0, lookY: 0, lookZ: 0, fov: 45 }, // 1 — intro end / typography start
-  { x: 0.5, y: 0.05, z: 4, lookX: 0.1, lookY: 0, lookZ: 0, fov: 50 }, // 2 — typography end / neural start
-  { x: -1.1, y: 0.35, z: 2.6, lookX: 0.25, lookY: 0, lookZ: -1.2, fov: 56 }, // 3 — neural end / universe start
-  { x: 0, y: 0, z: 5.4, lookX: 0, lookY: 0, lookZ: 0, fov: 46 }, // 4 — universe end / product start
-  { x: 0, y: 0.25, z: 4.2, lookX: 0, lookY: 0, lookZ: 0, fov: 42 }, // 5 — product end / game start
-  { x: 0, y: 0.4, z: 6.8, lookX: 0, lookY: 0, lookZ: -1, fov: 40 }, // 6 — game end / future start
-  { x: 0, y: 0.15, z: 5.6, lookX: 0, lookY: 0, lookZ: 0, fov: 38 }, // 7 — future end / cta start
-  { x: 0, y: 0, z: 5, lookX: 0, lookY: 0, lookZ: 0, fov: 36 }, // 8 — cta end
+  { x: 0, y: 0.15, z: 6, lookX: 0, lookY: 0, lookZ: 0, fov: 45 }, // 1 — intro end / about start
+  { x: -0.4, y: 0.1, z: 4.6, lookX: 0.08, lookY: 0.02, lookZ: -0.4, fov: 46 }, // 2 — about end / typography start
+  { x: 0.5, y: 0.05, z: 4, lookX: 0.1, lookY: 0, lookZ: 0, fov: 50 }, // 3 — typography end / neural start
+  { x: -1.1, y: 0.35, z: 2.6, lookX: 0.25, lookY: 0, lookZ: -1.2, fov: 56 }, // 4 — neural end / universe start
+  { x: 0, y: 0, z: 5.4, lookX: 0, lookY: 0, lookZ: 0, fov: 46 }, // 5 — universe end / product start
+  { x: 0, y: 0.25, z: 4.2, lookX: 0, lookY: 0, lookZ: 0, fov: 42 }, // 6 — product end / game start
+  { x: 0, y: 0.4, z: 6.8, lookX: 0, lookY: 0, lookZ: -1, fov: 40 }, // 7 — game end / future start
+  { x: 0, y: 0.15, z: 5.6, lookX: 0, lookY: 0, lookZ: 0, fov: 38 }, // 8 — future end / cta start
+  { x: 0, y: 0, z: 5, lookX: 0, lookY: 0, lookZ: 0, fov: 36 }, // 9 — cta end
 ];
 
 const lightKeyframes: LightKeyframe[] = [
   { ambient: 0.55, key: 1.2, rim: 0.6, colorHex: "#4a7ba6" }, // intro
+  { ambient: 0.5, key: 1.25, rim: 0.55, colorHex: "#e8b673" }, // about — warm, premium identity light
   { ambient: 0.5, key: 1.35, rim: 0.55, colorHex: "#fd6a50" },
   { ambient: 0.45, key: 1.4, rim: 0.6, colorHex: "#22d3ee" },
   { ambient: 0.4, key: 1.5, rim: 0.7, colorHex: "#6366f1" },

@@ -9,7 +9,7 @@ import type { JourneyState } from "@/lib/motion/journeyState";
 import { universeStatRanges } from "@/data/journey";
 
 /**
- * Chapter 04 — Data Universe. The camera travels through a large particle
+ * Chapter 05 — Data Universe. The camera travels through a large particle
  * field in the shared 3D canvas (three/scenes/UniverseScene.tsx) that
  * periodically gathers into these same, real proof points
  * (src/data/pillars.ts). The cards below are always fully visible/
@@ -37,7 +37,7 @@ export function UniverseSection() {
         <Container className="flex flex-col gap-10">
           <SectionHeading
             headingId="universe-heading"
-            eyebrow="04 — By the numbers"
+            eyebrow="05 — By the numbers"
             title="A universe built from real data"
             description="Thousands of data points, briefly gathering into the facts that actually describe D3-SG."
           />

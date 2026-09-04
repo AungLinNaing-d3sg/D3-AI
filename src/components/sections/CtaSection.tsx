@@ -5,7 +5,7 @@ import { Section } from "@/components/ui/Section";
 import { siteConfig } from "@/data/site";
 
 /**
- * Chapter 08 — Final CTA. Deliberately the most minimal chapter on the
+ * Chapter 09 — Final CTA. Deliberately the most minimal chapter on the
  * page: a single centred message and two direct contact actions, mirroring
  * the 3D scene settling to one calm glow (see three/scenes/CtaScene.tsx).
  */
@@ -14,7 +14,7 @@ export function CtaSection() {
     <Section stageId="cta" ariaLabelledBy="cta-heading" className="flex min-h-[100svh] items-center py-24 sm:py-32">
       <Container className="flex flex-col items-center gap-8 text-center">
         <Reveal as="p" className="text-xs font-semibold uppercase tracking-[0.32em] text-brand-400">
-          08 — Let&rsquo;s talk
+          09 — Let&rsquo;s talk
         </Reveal>
 
         <Reveal
