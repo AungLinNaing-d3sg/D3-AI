@@ -14,7 +14,7 @@ import { AiPlayground } from "@/components/game/AiPlayground";
 export function GameSection() {
   return (
     <Section stageId="game" ariaLabelledBy="game-heading" className="min-h-[150vh]">
-      <div className="sticky top-0 flex max-h-[100svh] min-h-[100svh] flex-col items-center justify-center gap-8 overflow-y-auto py-14 sm:py-16">
+      <div className="sticky top-0 flex h-[100svh] flex-col items-center justify-center gap-8 py-14 sm:py-16">
         <Container className="flex flex-col items-center gap-8">
           <SectionHeading
             headingId="game-heading"
