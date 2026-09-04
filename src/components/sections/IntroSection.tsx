@@ -20,14 +20,21 @@ export function IntroSection() {
 
   const onFrame = useCallback((state: JourneyState) => {
     const local = state.progress.intro;
+    // The hero copy must dissolve in lockstep with the 3D scene's own
+    // crossfade weight (three/scenes/IntroScene.tsx reads the same
+    // `weight.intro` — see lib/motion/scrollTimeline.ts `crossfadeWeight`)
+    // rather than a disconnected local-progress formula, otherwise the text
+    // and the starfield/nebula visual fall out of sync and the copy can
+    // vanish while the 3D scene is still fully visible (or vice versa).
+    const weight = state.weight.intro;
     const content = contentRef.current;
     const cue = cueRef.current;
     if (content) {
-      content.style.opacity = String(Math.max(1 - local * 1.7, 0));
+      content.style.opacity = String(weight);
       content.style.transform = `translate3d(0, ${local * -48}px, 0)`;
     }
     if (cue) {
-      cue.style.opacity = String(Math.max(1 - local * 4, 0));
+      cue.style.opacity = String(Math.max(weight - local * 4, 0));
     }
   }, []);
 

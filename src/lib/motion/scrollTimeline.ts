@@ -79,12 +79,31 @@ export function initJourneyTimeline(
 
   ensureGsapRegistered();
 
-  const bounds: StageBounds[] = stageEls.map(({ id, el }) => ({
-    id,
-    top: el.offsetTop - wrapperEl.offsetTop,
-    height: Math.max(el.offsetHeight, 1),
-  }));
-  const total = Math.max(wrapperEl.offsetHeight, 1);
+  const bounds: StageBounds[] = stageEls.map(({ id }) => ({ id, top: 0, height: 1 }));
+  let total = 1;
+
+  /**
+   * Re-measures every stage's document-flow top/height (and the wrapper's
+   * total height) from the live DOM. Run once up front and again on every
+   * `ScrollTrigger.refresh()` (wired to `onRefresh` below, and triggered by
+   * `ScrollChoreographer` once web fonts finish loading — see its
+   * `document.fonts.ready` effect) so a font-swap-driven reflow of
+   * content-sized chapters (team rosters, bullet lists, etc.) never leaves
+   * this closed-over `bounds`/`total` stale. Without this, every stage after
+   * the one whose height changed drifts further out of sync with the user's
+   * actual scroll position — the further down the page, the worse the drift.
+   */
+  function measure() {
+    stageEls.forEach(({ el }, index) => {
+      const bound = bounds[index];
+      if (!bound) return;
+      bound.top = el.offsetTop - wrapperEl.offsetTop;
+      bound.height = Math.max(el.offsetHeight, 1);
+    });
+    total = Math.max(wrapperEl.offsetHeight, 1);
+  }
+
+  measure();
 
   const trigger = ScrollTrigger.create({
     trigger: wrapperEl,
@@ -92,6 +111,7 @@ export function initJourneyTimeline(
     end: "bottom bottom",
     scrub: 0.6,
     invalidateOnRefresh: true,
+    onRefresh: measure,
     onUpdate(self) {
       const scrollY = self.progress * total;
       journeyState.globalProgress = self.progress;
