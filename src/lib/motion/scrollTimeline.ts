@@ -61,6 +61,7 @@ export function initSceneScrollTimeline(
     tl.to(sceneState.core.color, { ...to.core.color, duration, ease: "none" }, cursor);
     tl.to(sceneState.particles, { ...to.particles, duration, ease: "none" }, cursor);
     tl.to(sceneState.nodes, { ...to.nodes, duration, ease: "none" }, cursor);
+    tl.to(sceneState.identity, { ...to.identity, duration, ease: "none" }, cursor);
     tl.to(sceneState.light, { ...to.light, duration, ease: "none" }, cursor);
     tl.to(sceneState, { vignette: to.vignette, duration, ease: "none" }, cursor);
 

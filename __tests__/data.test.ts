@@ -43,4 +43,14 @@ describe("content data integrity", () => {
     // hero, about, services, solutions, projects, technology, company, cta
     expect(sceneKeyframes).toHaveLength(8);
   });
+
+  it("gives the identity constellation its one dedicated peak during the About chapter", () => {
+    const opacities = sceneKeyframes.map((keyframe) => keyframe.identity.opacity);
+    opacities.forEach((opacity) => {
+      expect(opacity).toBeGreaterThanOrEqual(0);
+      expect(opacity).toBeLessThanOrEqual(1);
+    });
+    // index 1 === the About chapter (see sceneKeyframes in lib/motion/sceneState.ts).
+    expect(opacities[1]).toBe(Math.max(...opacities));
+  });
 });

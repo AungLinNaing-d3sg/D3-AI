@@ -30,9 +30,9 @@ export function ProjectsSection() {
               <Reveal
                 key={area.slug}
                 delay={index * 0.06}
-                className="relative grid gap-6 py-14 sm:grid-cols-[1fr_auto] sm:items-center"
+                className="relative grid gap-6 py-14 lg:grid-cols-[1fr_auto] lg:items-center"
               >
-                <div className="flex flex-col gap-4">
+                <div className="flex min-w-0 flex-col gap-4">
                   <span className="text-xs font-semibold uppercase tracking-[0.28em] text-brand-400">
                     {String(index + 1).padStart(2, "0")} / {String(focusAreas.length).padStart(2, "0")}
                   </span>
@@ -44,7 +44,7 @@ export function ProjectsSection() {
                   </p>
                 </div>
 
-                <ul className="flex flex-col gap-2 sm:min-w-[16rem]">
+                <ul className="flex flex-col gap-2 lg:min-w-[16rem]">
                   {area.outcomes.map((outcome) => (
                     <li
                       key={outcome}

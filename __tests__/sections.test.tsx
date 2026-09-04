@@ -34,6 +34,15 @@ describe("homepage sections", () => {
     expect(screen.getByRole("heading", { level: 2, name: pattern })).toBeInTheDocument();
   });
 
+  it("lists the three solution pillars (Data, Dynamics, Digital) as the About chapter's identity list", () => {
+    render(<AboutSection />);
+    const list = screen.getByRole("list", { name: /three solution pillars/i });
+    expect(list).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: "Data" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: "Dynamics" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: "Digital" })).toBeInTheDocument();
+  });
+
   it("renders the final CTA with direct email and phone actions", () => {
     render(<CtaSection />);
     expect(screen.getByRole("link", { name: /email us/i })).toHaveAttribute(

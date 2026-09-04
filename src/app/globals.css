@@ -78,12 +78,20 @@
 
 html {
   color-scheme: dark;
+  /* Belt-and-braces guard against horizontal scrollbars: the scroll-driven
+   * 3D canvas, absolutely-positioned decorative elements, and GSAP/Lenis
+   * transforms should never extend past the viewport, but this keeps any
+   * sub-pixel rounding or third-party layout quirk from ever producing a
+   * visible horizontal scrollbar. `position: fixed` descendants (the
+   * SceneCanvas) are unaffected since neither element has a transform. */
+  overflow-x: hidden;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans-body), ui-sans-serif, system-ui, sans-serif;
+  overflow-x: hidden;
 }
 
 /* Respect users who have asked for reduced motion at the OS level. */
