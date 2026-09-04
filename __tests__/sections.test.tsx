@@ -9,7 +9,7 @@ import { GameSection } from "@/components/sections/GameSection";
 import { FutureSection } from "@/components/sections/FutureSection";
 import { CtaSection } from "@/components/sections/CtaSection";
 import { siteConfig } from "@/data/site";
-import { primaryConceptNodes, universeStats, aboutPartnerNote } from "@/data/journey";
+import { primaryConceptNodes, universeStats, aboutPartnerNote, playgroundGames } from "@/data/journey";
 import { teamMembers } from "@/data/team";
 
 describe("homepage chapters", () => {
@@ -72,11 +72,13 @@ describe("homepage chapters", () => {
     expect(screen.getAllByRole("article")).toHaveLength(3);
   });
 
-  it("renders the mini-game chapter with a clear Play/Skip choice", () => {
+  it("renders the AI Playground chapter with all 4 cohesive game entry points", () => {
     render(<GameSection />);
     expect(document.getElementById("game")).toHaveAttribute("data-stage", "game");
-    expect(screen.getByRole("button", { name: /^play$/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /^skip$/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: /the ai playground/i })).toBeInTheDocument();
+    playgroundGames.forEach((game) => {
+      expect(screen.getByRole("button", { name: new RegExp(`play ${game.title}`, "i") })).toBeInTheDocument();
+    });
   });
 
   it("renders the cinematic future chapter's vision statement", () => {

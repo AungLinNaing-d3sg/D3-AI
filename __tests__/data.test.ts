@@ -16,6 +16,7 @@ import {
   universeStatRanges,
   productPanels,
   gameItemDefinitions,
+  playgroundGames,
   visionPillars,
 } from "@/data/journey";
 import { STAGE_IDS } from "@/types";
@@ -122,5 +123,17 @@ describe("content data integrity", () => {
 
   it("reframes the real capability pillars as the cinematic future's vision statements", () => {
     expect(visionPillars).toHaveLength(capabilities.length);
+  });
+
+  it("defines exactly the 4 cohesive AI Playground experiences, each uniquely identified and accented", () => {
+    expect(playgroundGames.map((game) => game.id)).toEqual(["train", "signal-hunt", "neural-path", "data-sort"]);
+    expect(playgroundGames.map((game) => game.index)).toEqual([1, 2, 3, 4]);
+    const accents = new Set(playgroundGames.map((game) => game.accentHex));
+    expect(accents.size).toBe(playgroundGames.length);
+    playgroundGames.forEach((game) => {
+      expect(game.title.length).toBeGreaterThan(0);
+      expect(game.tagline.length).toBeGreaterThan(0);
+      expect(game.description.length).toBeGreaterThan(0);
+    });
   });
 });

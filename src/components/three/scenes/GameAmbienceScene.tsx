@@ -2,21 +2,28 @@
 
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import type { BufferAttribute, Group } from "three";
+import { Color, type BufferAttribute, type Group } from "three";
 import { ParticleSystem, type ParticleSystemHandle } from "@/components/three/primitives/ParticleSystem";
 import { journeyState } from "@/lib/motion/journeyState";
+import { playgroundState } from "@/lib/motion/playgroundState";
 import { damp } from "@/lib/motion/mathUtils";
 
 interface GameAmbienceSceneProps {
   quality: "high" | "low";
 }
 
+const targetColor = new Color();
+
 /**
- * Chapter 07 backdrop — "TRAIN YOUR AI" is a real DOM/canvas-2D interactive
- * mini-game (see components/game/TrainYourAI.tsx), kept deliberately simple
- * and dependency-free for responsiveness. This scene only supplies a soft,
- * slow amber particle drift behind it so the fixed 3D canvas stays alive
- * and the journey doesn't visually flatten out while the game is in view.
+ * Chapter 07 backdrop — the real "AI Playground" (see
+ * components/game/AiPlayground.tsx) is DOM-driven, with each of its 4 games
+ * owning its own small, self-contained R3F canvas for the actual
+ * interaction. This shared, fixed-canvas scene only supplies a soft, slow
+ * particle drift behind the whole chapter so the background stays alive and
+ * the journey doesn't visually flatten out while the playground is in view —
+ * its colour eases toward whichever game is currently focused
+ * (`lib/motion/playgroundState.ts`), so the backdrop always reads as part of
+ * the same story instead of a fixed, disconnected amber wash.
  */
 export function GameAmbienceScene({ quality }: GameAmbienceSceneProps) {
   const groupRef = useRef<Group>(null);
@@ -48,7 +55,11 @@ export function GameAmbienceScene({ quality }: GameAmbienceSceneProps) {
     }
 
     const material = handle.current?.material;
-    if (material) material.opacity = damp(material.opacity, 0.3 * weight, 4, delta);
+    if (material) {
+      material.opacity = damp(material.opacity, 0.3 * weight, 4, delta);
+      targetColor.set(playgroundState.accentHex);
+      material.color.lerp(targetColor, 1 - Math.exp(-2 * delta));
+    }
     if (handle.current?.points) {
       handle.current.points.position.y = Math.sin(state.clock.elapsedTime * 0.15) * 0.2;
     }

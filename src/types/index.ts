@@ -129,7 +129,7 @@ export interface ProductPanel {
   bullets: string[];
 }
 
-/** "TRAIN YOUR AI" mini-game (chapter 06) item classification. */
+/** "TRAIN YOUR AI" mini-game (chapter 07) item classification. */
 export type GameItemKind = "data" | "knowledge" | "experience" | "noise" | "error" | "bias";
 
 export interface GameItemDefinition {
@@ -138,6 +138,25 @@ export interface GameItemDefinition {
   /** Positive items raise the trained model's accuracy, negative items
    * lower it. */
   polarity: "positive" | "negative";
+}
+
+/**
+ * Chapter 07 — "THE AI PLAYGROUND". Four cohesive interactive experiences
+ * (Train Your AI + 3 new 3D mini-games) presented as one menu rather than
+ * unrelated games bolted together — see src/components/game/AiPlayground.tsx.
+ */
+export type PlaygroundGameId = "train" | "signal-hunt" | "neural-path" | "data-sort";
+
+export interface PlaygroundGameDefinition {
+  id: PlaygroundGameId;
+  /** 1-based display order shown on the game's own selector card. */
+  index: number;
+  title: string;
+  tagline: string;
+  description: string;
+  /** Drives both this game's own 3D accent glow and the shared ambience
+   * particle field behind the whole chapter (see lib/motion/playgroundState.ts). */
+  accentHex: string;
 }
 
 /** A forward-looking vision pillar for the Cinematic AI Future stage (07),

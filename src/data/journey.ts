@@ -1,4 +1,11 @@
-import type { ConceptNode, GameItemDefinition, ProductPanel, UniverseStat, VisionPillar } from "@/types";
+import type {
+  ConceptNode,
+  GameItemDefinition,
+  PlaygroundGameDefinition,
+  ProductPanel,
+  UniverseStat,
+  VisionPillar,
+} from "@/types";
 import { services } from "@/data/services";
 import { capabilities } from "@/data/capabilities";
 import { brandPillars } from "@/data/pillars";
@@ -129,6 +136,54 @@ export const gameItemDefinitions: GameItemDefinition[] = [
   { kind: "noise", label: "NOISE", polarity: "negative" },
   { kind: "error", label: "ERROR", polarity: "negative" },
   { kind: "bias", label: "BIAS", polarity: "negative" },
+];
+
+/**
+ * Chapter 07 — "THE AI PLAYGROUND". Four cohesive interactive experiences —
+ * the existing "Train Your AI" catcher plus three new 3D mini-games — framed
+ * as one continuous playground rather than unrelated games. Deliberately
+ * game mechanics/vocabulary, not company facts, so no /docs sourcing is
+ * needed; each `accentHex` also drives that game's own hologram glow and the
+ * shared ambience particle field behind the whole chapter (see
+ * three/scenes/GameAmbienceScene.tsx + lib/motion/playgroundState.ts).
+ */
+export const playgroundGames: PlaygroundGameDefinition[] = [
+  {
+    id: "train",
+    index: 1,
+    title: "Train Your AI",
+    tagline: "Catch signal, dodge noise.",
+    description:
+      "Steer a live AI agent through a falling data stream — collect DATA, KNOWLEDGE, and EXPERIENCE, and dodge NOISE, ERROR, and BIAS before the clock runs out.",
+    accentHex: "#f14a30",
+  },
+  {
+    id: "signal-hunt",
+    index: 2,
+    title: "AI Signal Hunt",
+    tagline: "Find the true signal in the noise.",
+    description:
+      "A field of transmissions just came online. Tag every genuine AI signal racing toward the core and leave the noise/error transmissions untouched.",
+    accentHex: "#22d3ee",
+  },
+  {
+    id: "neural-path",
+    index: 3,
+    title: "Neural Path",
+    tagline: "Route the network to full activation.",
+    description:
+      "Choose the strongest connection at every junction of a live neural network and build one unbroken, intelligent path from input to decision.",
+    accentHex: "#a78bfa",
+  },
+  {
+    id: "data-sort",
+    index: 4,
+    title: "Data Sort",
+    tagline: "Classify the data universe.",
+    description:
+      "Objects drift through the pipeline. Route DATA, KNOWLEDGE, and SIGNAL into Process, and reject NOISE and ERROR into Discard.",
+    accentHex: "#fbbf24",
+  },
 ];
 
 /**
