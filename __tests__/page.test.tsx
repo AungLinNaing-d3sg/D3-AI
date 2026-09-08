@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import Home from "@/app/page";
 import { siteConfig } from "@/data/site";
+import { STAGE_IDS } from "@/types";
 
 // The 3D canvas and scroll choreographer are exercised by their own unit
 // tests / the (mocked) @react-three/fiber + @react-three/drei modules; here
@@ -13,28 +14,19 @@ jest.mock("@/components/motion/ScrollChoreographer", () => ({
 }));
 
 describe("Home page", () => {
-  it("renders the decorative scene canvas alongside all 8 story chapters", () => {
+  it("renders the decorative scene canvas alongside all 8 journey chapters", () => {
     render(<Home />);
 
     expect(screen.getByTestId("mock-scene-canvas")).toBeInTheDocument();
 
-    const sectionIds = [
-      "hero",
-      "about",
-      "services",
-      "solutions",
-      "projects",
-      "technology",
-      "company",
-      "contact",
-    ];
-
-    sectionIds.forEach((id) => {
-      expect(document.getElementById(id)).toBeInTheDocument();
+    STAGE_IDS.forEach((id) => {
+      const el = document.getElementById(id);
+      expect(el).toBeInTheDocument();
+      expect(el).toHaveAttribute("data-stage", id);
     });
   });
 
-  it("renders the hero tagline as the page's single top-level heading", () => {
+  it("renders the intro tagline as the page's single top-level heading", () => {
     render(<Home />);
     expect(screen.getByRole("heading", { level: 1, name: siteConfig.tagline })).toBeInTheDocument();
   });

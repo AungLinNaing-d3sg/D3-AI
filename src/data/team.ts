@@ -1,6 +1,14 @@
 import type { TeamMember } from "@/types";
 
-/** Sourced from the existing "About Us" page copy (see /docs/AboutUs.png). */
+/**
+ * Sourced from the existing "About Us" page copy (see /docs/AboutUs.png).
+ * Rendered by chapter 02 — About Us / Who we are (see
+ * components/sections/AboutSection.tsx for the accessible team roster and
+ * components/three/scenes/AboutScene.tsx for the orbiting 3D identity
+ * nodes derived from it via src/data/journey.ts's `aboutTeamNodes`).
+ * `siteConfig.contactPerson` in the Footer still separately surfaces the
+ * CEO's direct contact details.
+ */
 export const teamMembers: TeamMember[] = [
   {
     name: "Maximillium Yip",

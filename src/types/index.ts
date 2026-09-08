@@ -60,3 +60,108 @@ export interface BrandPillar {
   value: string;
   description: string;
 }
+
+/**
+ * The 9 chapters of the scroll-driven journey (see src/app/page.tsx and
+ * lib/motion/journeyState.ts). Order matters — it is both document order and
+ * camera/timeline order. "about" (chapter 02 — Who we are) sits right after
+ * the cinematic intro and before the more technical Data/Dynamics/Digital
+ * chapters, mirroring the existing site's Home → About Us → Our Services
+ * navigation order (see /docs/AboutUs.png).
+ */
+export const STAGE_IDS = [
+  "intro",
+  "about",
+  "typography",
+  "neural",
+  "universe",
+  "product",
+  "game",
+  "future",
+  "cta",
+] as const;
+
+export type StageId = (typeof STAGE_IDS)[number];
+
+/** A single "camera flight" waypoint. `fov` in degrees. */
+export interface CameraKeyframe {
+  x: number;
+  y: number;
+  z: number;
+  lookX: number;
+  lookY: number;
+  lookZ: number;
+  fov: number;
+}
+
+/** A lighting waypoint — colour temperature + intensities the rig lerps
+ * between as the journey moves from stage to stage. */
+export interface LightKeyframe {
+  ambient: number;
+  key: number;
+  rim: number;
+  colorHex: string;
+}
+
+/** One labelled concept node in the Neural Network stage (chapter 03). */
+export interface ConceptNode {
+  id: string;
+  label: string;
+  /** Unit-sphere-ish position, scaled by the scene at render time. */
+  position: [number, number, number];
+}
+
+/** A short, real, sourced statistic surfaced as particle-formed text in the
+ * Data Universe stage (chapter 04). */
+export interface UniverseStat {
+  token: string;
+  label: string;
+  description: string;
+}
+
+/** A floating product panel in the AI Product Experience stage (05),
+ * sourced 1:1 from src/data/services.ts. */
+export interface ProductPanel {
+  slug: string;
+  eyebrow: string;
+  title: string;
+  summary: string;
+  bullets: string[];
+}
+
+/** "TRAIN YOUR AI" mini-game (chapter 07) item classification. */
+export type GameItemKind = "data" | "knowledge" | "experience" | "noise" | "error" | "bias";
+
+export interface GameItemDefinition {
+  kind: GameItemKind;
+  label: string;
+  /** Positive items raise the trained model's accuracy, negative items
+   * lower it. */
+  polarity: "positive" | "negative";
+}
+
+/**
+ * Chapter 07 — "THE AI PLAYGROUND". Four cohesive interactive experiences
+ * (Train Your AI + 3 new 3D mini-games) presented as one menu rather than
+ * unrelated games bolted together — see src/components/game/AiPlayground.tsx.
+ */
+export type PlaygroundGameId = "train" | "signal-hunt" | "neural-path" | "data-sort";
+
+export interface PlaygroundGameDefinition {
+  id: PlaygroundGameId;
+  /** 1-based display order shown on the game's own selector card. */
+  index: number;
+  title: string;
+  tagline: string;
+  description: string;
+  /** Drives both this game's own 3D accent glow and the shared ambience
+   * particle field behind the whole chapter (see lib/motion/playgroundState.ts). */
+  accentHex: string;
+}
+
+/** A forward-looking vision pillar for the Cinematic AI Future stage (07),
+ * reframed from the real capability pillars in src/data/capabilities.ts. */
+export interface VisionPillar {
+  title: string;
+  description: string;
+}

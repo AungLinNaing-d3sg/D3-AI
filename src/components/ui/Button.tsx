@@ -36,7 +36,7 @@ function isInPageOrProtocolHref(href: string) {
 }
 
 /**
- * Anchor-flavoured CTA. In-page anchors (`#contact`) and `mailto:`/`tel:`
+ * Anchor-flavoured CTA. In-page anchors (`#cta`) and `mailto:`/`tel:`
  * links render as a plain `<a>` (no client-side route transition needed);
  * everything else goes through `next/link`.
  */

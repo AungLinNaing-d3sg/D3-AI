@@ -1,37 +1,90 @@
 import { render, screen } from "@testing-library/react";
-import { HeroSection } from "@/components/sections/HeroSection";
+import { IntroSection } from "@/components/sections/IntroSection";
 import { AboutSection } from "@/components/sections/AboutSection";
-import { ServicesSection } from "@/components/sections/ServicesSection";
-import { SolutionsSection } from "@/components/sections/SolutionsSection";
-import { ProjectsSection } from "@/components/sections/ProjectsSection";
-import { TechnologySection } from "@/components/sections/TechnologySection";
-import { TeamSection } from "@/components/sections/TeamSection";
+import { TypographySection } from "@/components/sections/TypographySection";
+import { NeuralSection } from "@/components/sections/NeuralSection";
+import { UniverseSection } from "@/components/sections/UniverseSection";
+import { ProductSection } from "@/components/sections/ProductSection";
+import { GameSection } from "@/components/sections/GameSection";
+import { FutureSection } from "@/components/sections/FutureSection";
 import { CtaSection } from "@/components/sections/CtaSection";
 import { siteConfig } from "@/data/site";
+import { primaryConceptNodes, universeStats, aboutPartnerNote, playgroundGames } from "@/data/journey";
+import { teamMembers } from "@/data/team";
 
-describe("homepage sections", () => {
-  it("renders the hero headline, tagline, and both primary CTAs", () => {
-    render(<HeroSection />);
+describe("homepage chapters", () => {
+  it("renders the intro hero headline and tagline as the page's h1", () => {
+    render(<IntroSection />);
     expect(screen.getByRole("heading", { level: 1, name: siteConfig.tagline })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /explore our services/i })).toHaveAttribute(
-      "href",
-      "#services"
-    );
-    expect(screen.getByRole("link", { name: /contact us/i })).toHaveAttribute("href", "#contact");
+    expect(document.getElementById("intro")).toHaveAttribute("data-stage", "intro");
   });
 
-  it.each([
-    ["about", AboutSection, /who we are/i],
-    ["services", ServicesSection, /our services/i],
-    ["solutions", SolutionsSection, /capabilities/i],
-    ["projects", ProjectsSection, /focus areas/i],
-    ["technology", TechnologySection, /microsoft technologies/i],
-    ["company", TeamSection, /team behind the technology/i],
-  ] as const)("section #%s exposes an accessible level-2 heading matching %s", (id, Component, pattern) => {
-    render(<Component />);
-    const section = document.getElementById(id);
-    expect(section).toBeInTheDocument();
-    expect(screen.getByRole("heading", { level: 2, name: pattern })).toBeInTheDocument();
+  it("renders the about-us chapter with the real, sourced leadership team", () => {
+    render(<AboutSection />);
+    expect(document.getElementById("about")).toHaveAttribute("data-stage", "about");
+    expect(screen.getByRole("heading", { level: 2, name: "Who we are" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: /meet the team/i })).toBeInTheDocument();
+    expect(screen.getByText(aboutPartnerNote)).toBeInTheDocument();
+    teamMembers.forEach((member) => {
+      expect(screen.getByText(member.name)).toBeInTheDocument();
+      expect(screen.getByText(member.role)).toBeInTheDocument();
+      member.bio.forEach((line) => {
+        expect(screen.getByText(line)).toBeInTheDocument();
+      });
+    });
+  });
+
+  it("renders exactly one team roster card per real team member, each starting inactive", () => {
+    render(<AboutSection />);
+    const cards = screen.getAllByText(/chief/i).map((el) => el.closest("li"));
+    expect(cards).toHaveLength(teamMembers.length);
+    cards.forEach((card) => {
+      expect(card).toHaveAttribute("data-active", "false");
+    });
+  });
+
+  it("renders the typography chapter's word list accessibly, independent of the 3D particle formation", () => {
+    render(<TypographySection />);
+    expect(document.getElementById("typography")).toHaveAttribute("data-stage", "typography");
+    expect(screen.getByRole("heading", { level: 2, name: "D3-SG" })).toBeInTheDocument();
+    expect(screen.getByText("AI", { selector: "p" })).toBeInTheDocument();
+  });
+
+  it("renders the neural network chapter with every concept and technology node label", () => {
+    render(<NeuralSection />);
+    expect(document.getElementById("neural")).toHaveAttribute("data-stage", "neural");
+    primaryConceptNodes.forEach((node) => {
+      expect(screen.getByText(node.label)).toBeInTheDocument();
+    });
+  });
+
+  it("renders the data universe chapter's real, sourced statistics", () => {
+    render(<UniverseSection />);
+    expect(document.getElementById("universe")).toHaveAttribute("data-stage", "universe");
+    universeStats.forEach((stat) => {
+      expect(screen.getByText(stat.token)).toBeInTheDocument();
+    });
+  });
+
+  it("renders the product experience chapter's three real service panels", () => {
+    render(<ProductSection />);
+    expect(document.getElementById("product")).toHaveAttribute("data-stage", "product");
+    expect(screen.getAllByRole("article")).toHaveLength(3);
+  });
+
+  it("renders the AI Playground chapter with all 4 cohesive game entry points", () => {
+    render(<GameSection />);
+    expect(document.getElementById("game")).toHaveAttribute("data-stage", "game");
+    expect(screen.getByRole("heading", { level: 2, name: /the ai playground/i })).toBeInTheDocument();
+    playgroundGames.forEach((game) => {
+      expect(screen.getByRole("button", { name: new RegExp(`play ${game.title}`, "i") })).toBeInTheDocument();
+    });
+  });
+
+  it("renders the cinematic future chapter's vision statement", () => {
+    render(<FutureSection />);
+    expect(document.getElementById("future")).toHaveAttribute("data-stage", "future");
+    expect(screen.getByRole("heading", { level: 2, name: siteConfig.tagline })).toBeInTheDocument();
   });
 
   it("lists the three solution pillars (Data, Dynamics, Digital) as the About chapter's identity list", () => {
@@ -45,15 +98,13 @@ describe("homepage sections", () => {
 
   it("renders the final CTA with direct email and phone actions", () => {
     render(<CtaSection />);
+    expect(document.getElementById("cta")).toHaveAttribute("data-stage", "cta");
     expect(screen.getByRole("link", { name: /email us/i })).toHaveAttribute(
       "href",
       `mailto:${siteConfig.email}`
     );
     expect(
       screen.getByRole("link", { name: (accessibleName) => accessibleName.includes(siteConfig.phone) })
-    ).toHaveAttribute(
-      "href",
-      `tel:${siteConfig.phoneHref}`
-    );
+    ).toHaveAttribute("href", `tel:${siteConfig.phoneHref}`);
   });
 });

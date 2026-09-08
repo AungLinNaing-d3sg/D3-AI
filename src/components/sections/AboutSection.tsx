@@ -1,74 +1,97 @@
+"use client";
+
+import { useCallback, useRef } from "react";
 import { Section } from "@/components/ui/Section";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { ServiceIcon } from "@/components/ui/ServiceIcon";
 import { Reveal } from "@/components/motion/Reveal";
-import { brandPillars } from "@/data/pillars";
+import { useJourneyFrame } from "@/hooks/useJourneyFrame";
+import type { JourneyState } from "@/lib/motion/journeyState";
+import { aboutTeamRanges, aboutPartnerNote } from "@/data/journey";
 import { services } from "@/data/services";
-
-/** Short, human name for a service pillar, derived from its existing full
- * title (e.g. "Data — Analytics, Machine Learning & AI" → "Data") so this
- * section reuses the real service data instead of duplicating labels. */
-function pillarName(title: string): string {
-  return title.split(" — ")[0] ?? title;
-}
+import { siteConfig } from "@/data/site";
 
 /**
- * Chapter 1 — "Our Story": who D3-SG is, grounded in the existing "Who we
- * are" copy (see /docs/AboutUs.png), told as part of the scroll-driven
- * experience rather than a standard corporate text-and-image layout. The
- * three orbiting rings rendered behind this section (see
- * components/three/IdentityConstellation, driven by
- * `sceneState.identity.opacity`) visualise the same Data / Dynamics /
- * Digital identity echoed by the pillar list below, so the 3D scene and the
- * copy tell one continuous story instead of sitting side by side.
+ * Chapter 02 — About Us / Who we are. The real visual is the faceted
+ * "identity emblem" and orbiting leadership team in the shared 3D canvas
+ * (three/scenes/AboutScene.tsx); this layer supplies the actual "Who we are"
+ * narrative (siteConfig.description + the one remaining sourced sentence
+ * from /docs/AboutUs.png, `aboutPartnerNote`) and a fully accessible,
+ * always-visible team roster (src/data/team.ts) — the active card is kept in
+ * sync with whichever orbiting node the 3D scene is currently highlighting,
+ * same pattern as the Data Universe chapter's stat cards.
  */
 export function AboutSection() {
-  return (
-    <Section id="about" ariaLabelledBy="about-heading">
-      <Container className="flex flex-col gap-16">
-        <SectionHeading
-          headingId="about-heading"
-          eyebrow="Our story"
-          title="Who we are"
-          description="D3-SG is a Singapore-based IT solutions provider that focuses on three solution areas — Data, Dynamics, and Digital — working alongside partners who offer complementary or value-added services to serve your organisation's varied IT transformation needs."
-        />
+  const cardRefs = useRef<Array<HTMLLIElement | null>>([]);
 
-        <ul
-          className="grid grid-cols-1 gap-6 sm:grid-cols-3"
-          aria-label="Our three solution pillars, visualised as orbiting rings in the scene"
-        >
-          {services.map((service, index) => (
-            <li key={service.slug}>
-              <Reveal
-                delay={index * 0.08}
-                className="flex h-full flex-col gap-4 rounded-3xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-sm transition-colors duration-300 hover:border-brand-400/40 sm:p-8"
+  const onFrame = useCallback((state: JourneyState) => {
+    const local = state.progress.about;
+    aboutTeamRanges.forEach((range, index) => {
+      const card = cardRefs.current[index];
+      if (!card) return;
+      const isActive = local >= range.start && local < range.end;
+      card.dataset.active = isActive ? "true" : "false";
+    });
+  }, []);
+
+  useJourneyFrame(onFrame);
+
+  return (
+    <Section stageId="about" ariaLabelledBy="about-heading" className="min-h-[240vh]">
+      <div className="sticky top-0 flex h-[100svh] flex-col justify-center gap-10 py-24 sm:py-28">
+        <Container className="flex flex-col gap-10">
+          <SectionHeading
+            headingId="about-heading"
+            eyebrow="02 — Who we are"
+            title="Who we are"
+            description={siteConfig.description}
+          />
+
+          <Reveal as="p" delay={0.12} className="max-w-2xl text-balance text-sm leading-relaxed text-ink-300 sm:text-base">
+            {aboutPartnerNote}
+          </Reveal>
+
+          <Reveal as="div" delay={0.16} className="flex flex-wrap gap-3">
+            {services.map((service) => (
+              <span
+                key={service.slug}
+                className="rounded-full border border-brand-400/40 bg-brand-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-brand-300"
               >
-                <span className="flex h-12 w-12 flex-none items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-brand-400">
-                  <ServiceIcon name={service.icon} />
-                </span>
-                <h3 className="font-display text-lg font-semibold text-ink-50">
-                  {pillarName(service.title)}
-                </h3>
-                <p className="text-sm leading-relaxed text-ink-300">{service.summary}</p>
-              </Reveal>
+                {service.icon.toUpperCase()}
+              </span>
+            ))}
+          </Reveal>
+        </Container>
+      </div>
+
+      {/* Always-visible, non-decorative team roster — see
+          three/scenes/AboutScene.tsx for why the orbiting 3D nodes can't
+          carry the full bios directly. */}
+      <Container className="relative z-10 flex flex-col gap-8 pb-24">
+        <h3 className="font-display text-2xl font-semibold text-ink-50 sm:text-3xl">Meet the team</h3>
+        <ul className="grid gap-6 sm:grid-cols-2">
+          {aboutTeamRanges.map(({ member }, index) => (
+            <li
+              key={member.name}
+              ref={(node) => {
+                cardRefs.current[index] = node;
+              }}
+              data-active="false"
+              className="group rounded-3xl border border-white/10 bg-white/[0.03] p-7 transition-colors duration-300 data-[active=true]:border-brand-400/50 data-[active=true]:bg-brand-500/10"
+            >
+              <p className="font-display text-lg font-semibold text-ink-50">{member.name}</p>
+              <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-brand-400">{member.role}</p>
+              <ul className="mt-4 flex flex-col gap-2 border-t border-white/10 pt-4">
+                {member.bio.map((line) => (
+                  <li key={line} className="flex items-start gap-2 text-xs leading-relaxed text-ink-300">
+                    <span className="mt-1 h-1 w-1 flex-none rounded-full bg-brand-400" aria-hidden="true" />
+                    {line}
+                  </li>
+                ))}
+              </ul>
             </li>
           ))}
         </ul>
-
-        <div className="grid grid-cols-2 gap-6 border-t border-white/10 pt-10 sm:grid-cols-4">
-          {brandPillars.map((pillar, index) => (
-            <Reveal key={pillar.label} delay={index * 0.05} className="flex flex-col gap-1">
-              <span className="font-display text-2xl font-semibold text-brand-400 sm:text-3xl">
-                {pillar.value}
-              </span>
-              <span className="text-xs font-semibold uppercase tracking-wide text-ink-200">
-                {pillar.label}
-              </span>
-              <span className="text-sm leading-relaxed text-ink-400">{pillar.description}</span>
-            </Reveal>
-          ))}
-        </div>
       </Container>
     </Section>
   );
