@@ -2,12 +2,14 @@ import { Container } from "@/components/ui/Container";
 import { LinkButton } from "@/components/ui/Button";
 import { Reveal } from "@/components/motion/Reveal";
 import { Section } from "@/components/ui/Section";
+import { ContactForm } from "@/components/sections/ContactForm";
 import { siteConfig } from "@/data/site";
 
 /**
- * Chapter 09 — Final CTA. Deliberately the most minimal chapter on the
- * page: a single centred message and two direct contact actions, mirroring
- * the 3D scene settling to one calm glow (see three/scenes/CtaScene.tsx).
+ * Chapter 09 — Final CTA. A centred message, two direct contact actions,
+ * and a "Send us a message" form (field set matches the legacy D3-SG
+ * Contact Us page — see `/docs/ContactUs.png`), mirroring the 3D scene
+ * settling to one calm glow (see three/scenes/CtaScene.tsx).
  */
 export function CtaSection() {
   return (
@@ -43,7 +45,22 @@ export function CtaSection() {
           </LinkButton>
         </Reveal>
 
-        <Reveal delay={0.24} className="text-xs text-ink-500">
+        <Reveal
+          as="h3"
+          delay={0.22}
+          id="contact-form-heading"
+          className="mt-4 text-lg font-semibold text-ink-100"
+        >
+          Or send us a message
+        </Reveal>
+
+        <Reveal delay={0.26} className="flex w-full justify-center" y={20}>
+          <div className="w-full max-w-xl rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur sm:p-8">
+            <ContactForm />
+          </div>
+        </Reveal>
+
+        <Reveal delay={0.32} className="text-xs text-ink-500">
           {siteConfig.legalName} (UEN: {siteConfig.uen}) · {siteConfig.addressLines.join(", ")}
         </Reveal>
       </Container>
