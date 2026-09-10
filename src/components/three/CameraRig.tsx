@@ -7,7 +7,10 @@ import { journeyState } from "@/lib/motion/journeyState";
 import { damp } from "@/lib/motion/mathUtils";
 
 interface CameraRigProps {
-  /** Disabled on touch/compact devices and when reduced motion is on. */
+  /** Disabled on coarse/touch-pointer devices (see `useDeviceCapability`'s
+   * `hasCoarsePointer` — mouse-parallax should never be relied on for
+   * important interaction, and touch devices rarely fire `pointermove`) and
+   * when reduced motion is on. */
   enableParallax: boolean;
 }
 

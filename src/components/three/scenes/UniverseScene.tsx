@@ -16,9 +16,10 @@ import { clamp, damp, lerp, smoothstep } from "@/lib/motion/mathUtils";
 import { clusterPoints, galaxyPoints, sampleTextPoints } from "@/lib/three/textSampler";
 import { universeStatRanges, universeStations } from "@/data/journey";
 import type { UniverseStation, UniverseStationVariant } from "@/types";
+import { SCENE_TIER_CONFIG, tieredParticleCount, type SceneQuality } from "@/lib/three/deviceTiers";
 
 interface UniverseSceneProps {
-  quality: "high" | "low";
+  quality: SceneQuality;
 }
 
 type Vec3 = [number, number, number];
@@ -26,7 +27,7 @@ type Edge = [number, number];
 
 interface StationLayout {
   /** Small, hand-authored node anchor points, local to the station's own
-   * group (see `STATION_WORLD_POSITIONS`) — never randomised, so every
+   * group (see `buildStationWorldPositions`) — never randomised, so every
    * reload reads the same intentional shape. */
   nodes: Vec3[];
   /** Node index pairs joined by a connecting line. */
@@ -38,10 +39,12 @@ interface StationLayout {
   travellers: boolean;
 }
 
-/** Z-depth spacing between consecutive stations — this, not any change to
- * the shared global camera, is what the "camera dolly" (see the `useFrame`
- * below) actually travels through. */
-const STATION_SPACING = 4.6;
+/** Base (desktop) Z-depth spacing between consecutive stations — this, not
+ * any change to the shared global camera, is what the "camera dolly" (see
+ * the `useFrame` below) actually travels through. Scaled down per device
+ * tier by `depthScale` (see `src/lib/three/deviceTiers.ts`) so tablet/mobile
+ * get a shorter, cheaper dolly instead of the full cinematic depth. */
+const BASE_STATION_SPACING = 4.6;
 
 /** Small x/y offsets per station index so the dolly path reads as a gentle
  * cinematic weave rather than a dead-straight line. */
@@ -172,13 +175,18 @@ const BACKGROUND_WORD_LAYOUT: [number, number][] = [
   [1.6, 0.65],
 ];
 
-/** World position each station's group sits at — every per-station visual
- * (particle field, nodes, edges) is a child of this, so it only needs
- * small, local-scale coordinates (see `STATION_LAYOUTS`). */
-const STATION_WORLD_POSITIONS: Vec3[] = universeStations.map((_, index) => {
-  const offset: [number, number] = STATION_XY_OFFSETS[index] ?? [0, 0];
-  return [offset[0], offset[1], -index * STATION_SPACING];
-});
+/** Builds the world position each station's group sits at — every
+ * per-station visual (particle field, nodes, edges) is a child of this, so
+ * it only needs small, local-scale coordinates (see `STATION_LAYOUTS`).
+ * `stationSpacing` is the device-tiered value (see `BASE_STATION_SPACING`),
+ * not the fixed desktop constant, so the dolly travels a shorter Z distance
+ * on tablet/mobile. */
+function buildStationWorldPositions(stationSpacing: number): Vec3[] {
+  return universeStations.map((_, index) => {
+    const offset: [number, number] = STATION_XY_OFFSETS[index] ?? [0, 0];
+    return [offset[0], offset[1], -index * stationSpacing];
+  });
+}
 
 /** Mirrors the page-level chapter crossfade envelope in
  * lib/motion/scrollTimeline.ts (not exported there — it's intentionally
@@ -229,8 +237,14 @@ export function UniverseScene({ quality }: UniverseSceneProps) {
   const backgroundHandleRefs = useRef<Array<ParticleSystemHandle | null>>([]);
   const backgroundInitialized = useRef<boolean[]>(BACKGROUND_WORDS.map(() => false));
 
-  const perStationCount = quality === "high" ? 900 : 320;
-  const backgroundCount = quality === "high" ? 220 : 80;
+  const perStationCount = tieredParticleCount(900, quality);
+  const backgroundCount = tieredParticleCount(220, quality);
+  const tierConfig = SCENE_TIER_CONFIG[quality];
+  const stationSpacing = BASE_STATION_SPACING * tierConfig.depthScale;
+  const stationWorldPositions = useMemo(
+    () => buildStationWorldPositions(stationSpacing),
+    [stationSpacing]
+  );
 
   const edgeSegments = useMemo(
     () =>
@@ -295,8 +309,8 @@ export function UniverseScene({ quality }: UniverseSceneProps) {
     const baseIndex = Math.min(Math.floor(continuous), stationCount - 1);
     const nextIndex = Math.min(baseIndex + 1, stationCount - 1);
     const dollyT = smoothstep(0, 1, continuous - baseIndex);
-    const fromPos: Vec3 = STATION_WORLD_POSITIONS[baseIndex] ?? [0, 0, 0];
-    const toPos: Vec3 = STATION_WORLD_POSITIONS[nextIndex] ?? fromPos;
+    const fromPos: Vec3 = stationWorldPositions[baseIndex] ?? [0, 0, 0];
+    const toPos: Vec3 = stationWorldPositions[nextIndex] ?? fromPos;
 
     if (dolly) {
       const targetX = -lerp(fromPos[0], toPos[0], dollyT);
@@ -436,7 +450,7 @@ export function UniverseScene({ quality }: UniverseSceneProps) {
   });
 
   return (
-    <group ref={dollyRef}>
+    <group ref={dollyRef} scale={tierConfig.objectScale}>
       {BACKGROUND_WORDS.map((word, i) => {
         const layout: [number, number] = BACKGROUND_WORD_LAYOUT[i] ?? [0, 0];
         return (
@@ -463,7 +477,7 @@ export function UniverseScene({ quality }: UniverseSceneProps) {
 
       {universeStations.map((station, index) => {
         const layout = STATION_LAYOUTS[station.variant];
-        const position: Vec3 = STATION_WORLD_POSITIONS[index] ?? [0, 0, -index * STATION_SPACING];
+        const position: Vec3 = stationWorldPositions[index] ?? [0, 0, -index * stationSpacing];
 
         return (
           <group

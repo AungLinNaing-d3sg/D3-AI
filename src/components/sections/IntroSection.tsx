@@ -41,8 +41,17 @@ export function IntroSection() {
   useJourneyFrame(onFrame);
 
   return (
-    <Section stageId="intro" ariaLabelledBy="intro-heading" className="min-h-[170vh]">
-      <div className="sticky top-0 flex h-[100svh] items-center">
+    <Section
+      stageId="intro"
+      ariaLabelledBy="intro-heading"
+      className="min-h-[85vh] md:min-h-[100vh] lg:min-h-[120vh]"
+    >
+      {/* Pinned/scrubbed only from tablet up (`md:sticky`) — on mobile this
+          flows normally with the page so scrolling never feels like a
+          full-screen hold, per the "mobile scroll experience" requirement;
+          the decorative 3D scene (fixed, full-viewport — see SceneCanvas)
+          keeps animating behind it either way. */}
+      <div className="relative flex h-auto items-center py-20 md:sticky md:top-0 md:h-[100svh] md:py-0">
         <Container>
           <div ref={contentRef} className="flex max-w-3xl flex-col gap-6">
             <Reveal as="p" className="type-eyebrow text-brand-400">

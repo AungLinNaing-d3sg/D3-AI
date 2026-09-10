@@ -8,12 +8,17 @@ import { ParticleSystem, type ParticleSystemHandle } from "@/components/three/pr
 import { journeyState } from "@/lib/motion/journeyState";
 import { damp, smoothstep } from "@/lib/motion/mathUtils";
 import { primaryConceptNodes, secondaryConceptNodes } from "@/data/journey";
+import { SCENE_TIER_CONFIG, tieredParticleCount, type SceneQuality } from "@/lib/three/deviceTiers";
 
 interface NeuralSceneProps {
-  quality: "high" | "low";
+  quality: SceneQuality;
 }
 
-const SCENE_SCALE = 1.7;
+/** Base (desktop) world-space scale for every node/spoke position below,
+ * multiplied by the device tier's `objectScale` (see
+ * `src/lib/three/deviceTiers.ts`) so the whole graph — not just the canvas —
+ * shrinks on tablet/mobile instead of merely being viewed from further away. */
+const BASE_SCENE_SCALE = 1.7;
 
 function nearestPrimaryIndex(position: readonly [number, number, number]): number {
   let best = 0;
@@ -50,7 +55,8 @@ export function NeuralScene({ quality }: NeuralSceneProps) {
   const ringMaterialRefs = useRef<LineBasicMaterial[]>([]);
   const tilt = useRef({ x: 0, y: 0 });
 
-  const dustCount = quality === "high" ? 900 : 350;
+  const dustCount = tieredParticleCount(900, quality);
+  const sceneScale = BASE_SCENE_SCALE * SCENE_TIER_CONFIG[quality].objectScale;
 
   const spokes = useMemo(
     () =>
@@ -66,15 +72,15 @@ export function NeuralScene({ quality }: NeuralSceneProps) {
       spokes.map(({ node, primaryIndex }) => {
         const from = primaryConceptNodes[primaryIndex]?.position ?? [0, 0, 0];
         return new Float32Array([
-          from[0] * SCENE_SCALE,
-          from[1] * SCENE_SCALE,
-          from[2] * SCENE_SCALE,
-          node.position[0] * SCENE_SCALE,
-          node.position[1] * SCENE_SCALE,
-          node.position[2] * SCENE_SCALE,
+          from[0] * sceneScale,
+          from[1] * sceneScale,
+          from[2] * sceneScale,
+          node.position[0] * sceneScale,
+          node.position[1] * sceneScale,
+          node.position[2] * sceneScale,
         ]);
       }),
-    [spokes]
+    [spokes, sceneScale]
   );
 
   const ringPositions = useMemo(
@@ -83,15 +89,15 @@ export function NeuralScene({ quality }: NeuralSceneProps) {
         const next = primaryConceptNodes[(index + 1) % primaryConceptNodes.length];
         if (!next) return new Float32Array(6);
         return new Float32Array([
-          node.position[0] * SCENE_SCALE,
-          node.position[1] * SCENE_SCALE,
-          node.position[2] * SCENE_SCALE,
-          next.position[0] * SCENE_SCALE,
-          next.position[1] * SCENE_SCALE,
-          next.position[2] * SCENE_SCALE,
+          node.position[0] * sceneScale,
+          node.position[1] * sceneScale,
+          node.position[2] * sceneScale,
+          next.position[0] * sceneScale,
+          next.position[1] * sceneScale,
+          next.position[2] * sceneScale,
         ]);
       }),
-    []
+    [sceneScale]
   );
 
   useFrame((state, delta) => {
@@ -116,9 +122,9 @@ export function NeuralScene({ quality }: NeuralSceneProps) {
           const radius = 1 + Math.random() * 3.4;
           const theta = Math.random() * Math.PI * 2;
           const phi = Math.acos(2 * Math.random() - 1);
-          positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta) * SCENE_SCALE;
-          positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta) * SCENE_SCALE * 0.6;
-          positions[i * 3 + 2] = radius * Math.cos(phi) * SCENE_SCALE;
+          positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta) * sceneScale;
+          positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta) * sceneScale * 0.6;
+          positions[i * 3 + 2] = radius * Math.cos(phi) * sceneScale;
         }
         const attribute = dustHandle.current?.points?.geometry.attributes.position as
           | BufferAttribute
@@ -167,7 +173,7 @@ export function NeuralScene({ quality }: NeuralSceneProps) {
       {primaryConceptNodes.map((node, index) => (
         <mesh
           key={node.id}
-          position={[node.position[0] * SCENE_SCALE, node.position[1] * SCENE_SCALE, node.position[2] * SCENE_SCALE]}
+          position={[node.position[0] * sceneScale, node.position[1] * sceneScale, node.position[2] * sceneScale]}
           ref={(mesh) => {
             if (mesh) primaryMeshRefs.current[index] = mesh;
           }}
@@ -193,7 +199,7 @@ export function NeuralScene({ quality }: NeuralSceneProps) {
       {secondaryConceptNodes.map((node, index) => (
         <mesh
           key={node.id}
-          position={[node.position[0] * SCENE_SCALE, node.position[1] * SCENE_SCALE, node.position[2] * SCENE_SCALE]}
+          position={[node.position[0] * sceneScale, node.position[1] * sceneScale, node.position[2] * sceneScale]}
           ref={(mesh) => {
             if (mesh) secondaryMeshRefs.current[index] = mesh;
           }}

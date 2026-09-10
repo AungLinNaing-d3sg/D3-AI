@@ -14,8 +14,14 @@ import { siteConfig } from "@/data/site";
  */
 export function FutureSection() {
   return (
-    <Section stageId="future" ariaLabelledBy="future-heading" className="min-h-[260vh]">
-      <div className="sticky top-0 flex h-[100svh] flex-col justify-center gap-14 py-24 sm:py-28">
+    <Section
+      stageId="future"
+      ariaLabelledBy="future-heading"
+      className="min-h-[85vh] md:min-h-[100vh] lg:min-h-[120vh]"
+    >
+      {/* Pinned only from tablet up — see IntroSection for why mobile flows
+          normally instead of holding a full-screen pin. */}
+      <div className="relative flex h-auto flex-col justify-center gap-10 py-12 md:sticky md:top-0 md:h-[100svh] md:gap-14 md:py-24 lg:py-28">
         <Container className="flex flex-col gap-10">
           <SectionHeading
             headingId="future-heading"

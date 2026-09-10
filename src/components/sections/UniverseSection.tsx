@@ -46,8 +46,20 @@ export function UniverseSection() {
   useJourneyFrame(onFrame);
 
   return (
-    <Section stageId="universe" ariaLabelledBy="universe-heading" className="min-h-[300vh]">
-      <div className="sticky top-0 flex h-[100svh] flex-col justify-center gap-12 py-24 sm:py-28">
+    <Section
+      stageId="universe"
+      ariaLabelledBy="universe-heading"
+      className="min-h-[100vh] md:min-h-[120vh] lg:min-h-[140vh]"
+    >
+      {/* Pinned only from tablet up — on mobile the 4 real statistic cards
+          are the primary, always-fully-visible layer and simply flow with
+          the page (never squeezed/clipped inside a fixed-height pin), with
+          the smaller, decorative 3D data universe (see UniverseScene.tsx,
+          scaled down via objectScale) animating behind them the whole time —
+          see the "By the numbers" mobile requirement. A little more runway
+          than the single-beat chapters since 4 stations cycle through here
+          (see universeStatRanges). */}
+      <div className="relative flex h-auto flex-col justify-center gap-8 py-12 md:sticky md:top-0 md:h-[100svh] md:gap-10 md:py-24 lg:gap-12 lg:py-28">
         <Container className="flex flex-col gap-10">
           <SectionHeading
             headingId="universe-heading"

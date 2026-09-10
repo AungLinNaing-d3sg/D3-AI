@@ -21,12 +21,12 @@ const Experience = dynamic(() => import("@/components/three/Experience"), {
  * a static gradient, per the "reduced-motion support" requirement.
  */
 export function SceneCanvas() {
-  const { enableScene, quality, prefersReducedMotion, isCompact } = useDeviceCapability();
+  const { enableScene, quality, prefersReducedMotion, hasCoarsePointer } = useDeviceCapability();
 
   return (
     <div className="fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
       {enableScene ? (
-        <Experience quality={quality} enableParallax={!isCompact && !prefersReducedMotion} />
+        <Experience quality={quality} enableParallax={!hasCoarsePointer && !prefersReducedMotion} />
       ) : (
         <div className="h-full w-full bg-[radial-gradient(circle_at_50%_20%,_#1a2233_0%,_#05070d_70%)]" />
       )}

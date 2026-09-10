@@ -2,9 +2,11 @@
 
 import { useEffect } from "react";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+import { useDeviceCapability } from "@/hooks/useDeviceCapability";
 import { initJourneyTimeline } from "@/lib/motion/scrollTimeline";
 import { initPointerTracking } from "@/lib/motion/pointer";
 import { ensureGsapRegistered, ScrollTrigger } from "@/lib/motion/gsap";
+import { SCENE_TIER_CONFIG } from "@/lib/three/deviceTiers";
 import { STAGE_IDS, type StageId } from "@/types";
 
 /**
@@ -17,6 +19,8 @@ import { STAGE_IDS, type StageId } from "@/types";
  */
 export function ScrollChoreographer() {
   const prefersReducedMotion = usePrefersReducedMotion();
+  const { quality } = useDeviceCapability();
+  const depthScale = SCENE_TIER_CONFIG[quality].depthScale;
 
   useEffect(() => {
     const stopPointerTracking = initPointerTracking();
@@ -65,7 +69,7 @@ export function ScrollChoreographer() {
       }).filter((entry): entry is { id: StageId; el: HTMLElement } => entry !== null);
 
       if (stageEls.length === STAGE_IDS.length) {
-        cleanup = initJourneyTimeline(stageEls, wrapper);
+        cleanup = initJourneyTimeline(stageEls, wrapper, depthScale);
       }
     });
 
@@ -73,7 +77,11 @@ export function ScrollChoreographer() {
       cancelAnimationFrame(raf);
       cleanup?.();
     };
-  }, [prefersReducedMotion]);
+    // Re-initialises if the device tier's camera depth changes (e.g. a
+    // desktop→tablet resize crossing a breakpoint) so the camera flight
+    // always matches the current tier's cinematic depth budget — see
+    // `src/lib/three/deviceTiers.ts`.
+  }, [prefersReducedMotion, depthScale]);
 
   return null;
 }

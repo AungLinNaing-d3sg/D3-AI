@@ -14,8 +14,14 @@ import { services } from "@/data/services";
  */
 export function ProductSection() {
   return (
-    <Section stageId="product" ariaLabelledBy="product-heading" className="min-h-[260vh]">
-      <div className="sticky top-0 flex h-[100svh] items-center py-24 sm:py-28">
+    <Section
+      stageId="product"
+      ariaLabelledBy="product-heading"
+      className="min-h-[85vh] md:min-h-[100vh] lg:min-h-[120vh]"
+    >
+      {/* Pinned only from tablet up — see IntroSection for why mobile flows
+          normally instead of holding a full-screen pin. */}
+      <div className="relative flex h-auto items-center py-12 md:sticky md:top-0 md:h-[100svh] md:py-24 lg:py-28">
         <Container>
           <SectionHeading
             headingId="product-heading"

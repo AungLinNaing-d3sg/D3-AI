@@ -7,9 +7,10 @@ import type { BufferAttribute, Group, Mesh } from "three";
 import { ParticleSystem, type ParticleSystemHandle } from "@/components/three/primitives/ParticleSystem";
 import { journeyState } from "@/lib/motion/journeyState";
 import { damp } from "@/lib/motion/mathUtils";
+import { SCENE_TIER_CONFIG, tieredParticleCount, type SceneQuality } from "@/lib/three/deviceTiers";
 
 interface CtaSceneProps {
-  quality: "high" | "low";
+  quality: SceneQuality;
 }
 
 /**
@@ -23,7 +24,8 @@ export function CtaScene({ quality }: CtaSceneProps) {
   const coreRef = useRef<Mesh>(null);
   const sparkleHandle = useRef<ParticleSystemHandle>(null);
   const initialized = useRef(false);
-  const count = quality === "high" ? 500 : 200;
+  const count = tieredParticleCount(500, quality);
+  const objectScale = SCENE_TIER_CONFIG[quality].objectScale;
 
   useFrame((state, delta) => {
     const weight = journeyState.weight.cta;
@@ -61,7 +63,7 @@ export function CtaScene({ quality }: CtaSceneProps) {
   });
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} scale={objectScale}>
       <mesh ref={coreRef}>
         <icosahedronGeometry args={[0.9, 8]} />
         <MeshDistortMaterial

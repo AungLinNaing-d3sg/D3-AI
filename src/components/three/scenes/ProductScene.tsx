@@ -8,9 +8,10 @@ import { ParticleSystem, type ParticleSystemHandle } from "@/components/three/pr
 import { journeyState } from "@/lib/motion/journeyState";
 import { clamp, damp, smoothstep } from "@/lib/motion/mathUtils";
 import { productPanels } from "@/data/journey";
+import { SCENE_TIER_CONFIG, tieredParticleCount, type SceneQuality } from "@/lib/three/deviceTiers";
 
 interface ProductSceneProps {
-  quality: "high" | "low";
+  quality: SceneQuality;
 }
 
 const PANEL_COUNT = productPanels.length;
@@ -285,7 +286,8 @@ export function ProductScene({ quality }: ProductSceneProps) {
   const dustInitialized = useRef(false);
   const panelGroupRefs = useRef<Group[]>([]);
   const activityRef = useRef<Float32Array>(new Float32Array(PANEL_COUNT));
-  const dustCount = quality === "high" ? 700 : 260;
+  const dustCount = tieredParticleCount(700, quality);
+  const objectScale = SCENE_TIER_CONFIG[quality].objectScale;
 
   const devicePanels = useMemo(
     () =>
@@ -347,7 +349,7 @@ export function ProductScene({ quality }: ProductSceneProps) {
   });
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} scale={objectScale}>
       <ParticleSystem ref={dustHandle} count={dustCount} size={0.03} color="#f4f6fb" opacity={0} />
 
       <AiCore />

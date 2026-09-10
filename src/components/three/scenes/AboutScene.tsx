@@ -8,9 +8,10 @@ import { ParticleSystem, type ParticleSystemHandle } from "@/components/three/pr
 import { journeyState } from "@/lib/motion/journeyState";
 import { damp } from "@/lib/motion/mathUtils";
 import { aboutTeamNodes, aboutTeamRanges } from "@/data/journey";
+import { SCENE_TIER_CONFIG, tieredParticleCount, type SceneQuality } from "@/lib/three/deviceTiers";
 
 interface AboutSceneProps {
-  quality: "high" | "low";
+  quality: SceneQuality;
 }
 
 /** A short, still skyline silhouette — evokes the company's Singapore base
@@ -40,7 +41,8 @@ export function AboutScene({ quality }: AboutSceneProps) {
   const skylineRefs = useRef<Mesh[]>([]);
   const motesHandle = useRef<ParticleSystemHandle>(null);
   const motesInitialized = useRef(false);
-  const moteCount = quality === "high" ? 420 : 160;
+  const moteCount = tieredParticleCount(420, quality);
+  const objectScale = SCENE_TIER_CONFIG[quality].objectScale;
 
   const skylineLayout = useMemo(
     () =>
@@ -142,7 +144,7 @@ export function AboutScene({ quality }: AboutSceneProps) {
   });
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} scale={objectScale}>
       <ParticleSystem ref={motesHandle} count={moteCount} size={0.022} color="#ffd9a0" opacity={0} />
 
       {skylineLayout.map((layout, index) => (

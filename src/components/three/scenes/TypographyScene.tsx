@@ -8,9 +8,10 @@ import { journeyState } from "@/lib/motion/journeyState";
 import { clamp, damp, lerp, smoothstep } from "@/lib/motion/mathUtils";
 import { sampleTextPoints, scatterPoints } from "@/lib/three/textSampler";
 import { typographyWords } from "@/data/journey";
+import { SCENE_TIER_CONFIG, tieredParticleCount, type SceneQuality } from "@/lib/three/deviceTiers";
 
 interface TypographySceneProps {
-  quality: "high" | "low";
+  quality: SceneQuality;
 }
 
 /**
@@ -24,7 +25,8 @@ interface TypographySceneProps {
 export function TypographyScene({ quality }: TypographySceneProps) {
   const groupRef = useRef<Group>(null);
   const handle = useRef<ParticleSystemHandle>(null);
-  const count = quality === "high" ? 3600 : 1400;
+  const count = tieredParticleCount(3600, quality);
+  const objectScale = SCENE_TIER_CONFIG[quality].objectScale;
 
   const keyframes = useMemo(() => {
     if (typeof document === "undefined") return [];
@@ -90,7 +92,7 @@ export function TypographyScene({ quality }: TypographySceneProps) {
   });
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} scale={objectScale}>
       <ParticleSystem
         ref={handle}
         count={count}

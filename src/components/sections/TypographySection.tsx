@@ -45,8 +45,16 @@ export function TypographySection() {
   useJourneyFrame(onFrame);
 
   return (
-    <Section stageId="typography" ariaLabelledBy="typography-heading" className="min-h-[440vh]">
-      <div className="sticky top-0 flex h-[100svh] flex-col justify-between py-24 sm:py-28">
+    <Section
+      stageId="typography"
+      ariaLabelledBy="typography-heading"
+      className="min-h-[100vh] md:min-h-[120vh] lg:min-h-[140vh]"
+    >
+      {/* Pinned only from tablet up — see IntroSection for why mobile flows
+          normally instead of holding a full-screen pin. A little more
+          runway than the single-beat chapters since 5 words cycle through
+          here (see typographyWordRanges). */}
+      <div className="relative flex h-auto flex-col justify-between gap-10 py-12 md:sticky md:top-0 md:h-[100svh] md:py-24 lg:py-28">
         <Container>
           <Reveal as="p" className="type-eyebrow text-brand-400">
             03 — Built from three real disciplines

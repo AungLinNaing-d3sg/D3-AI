@@ -6,9 +6,10 @@ import type { BufferAttribute, Group, Mesh, MeshBasicMaterial } from "three";
 import { ParticleSystem, type ParticleSystemHandle } from "@/components/three/primitives/ParticleSystem";
 import { journeyState } from "@/lib/motion/journeyState";
 import { damp } from "@/lib/motion/mathUtils";
+import { SCENE_TIER_CONFIG, tieredParticleCount, type SceneQuality } from "@/lib/three/deviceTiers";
 
 interface IntroSceneProps {
-  quality: "high" | "low";
+  quality: SceneQuality;
 }
 
 const NEBULA_COLORS = ["#4a7ba6", "#f14a30", "#22d3ee"];
@@ -27,7 +28,8 @@ export function IntroScene({ quality }: IntroSceneProps) {
   const starsHandle = useRef<ParticleSystemHandle>(null);
   const nebulaRefs = useRef<Mesh[]>([]);
   const initialized = useRef(false);
-  const count = quality === "high" ? 2200 : 800;
+  const count = tieredParticleCount(2200, quality);
+  const objectScale = SCENE_TIER_CONFIG[quality].objectScale;
 
   useFrame((state, delta) => {
     const weight = journeyState.weight.intro;
@@ -73,7 +75,7 @@ export function IntroScene({ quality }: IntroSceneProps) {
   });
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} scale={objectScale}>
       <ParticleSystem
         ref={starsHandle}
         count={count}

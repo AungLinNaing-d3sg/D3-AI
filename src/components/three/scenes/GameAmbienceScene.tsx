@@ -7,9 +7,10 @@ import { ParticleSystem, type ParticleSystemHandle } from "@/components/three/pr
 import { journeyState } from "@/lib/motion/journeyState";
 import { playgroundState } from "@/lib/motion/playgroundState";
 import { damp } from "@/lib/motion/mathUtils";
+import { SCENE_TIER_CONFIG, tieredParticleCount, type SceneQuality } from "@/lib/three/deviceTiers";
 
 interface GameAmbienceSceneProps {
-  quality: "high" | "low";
+  quality: SceneQuality;
 }
 
 const targetColor = new Color();
@@ -29,7 +30,8 @@ export function GameAmbienceScene({ quality }: GameAmbienceSceneProps) {
   const groupRef = useRef<Group>(null);
   const handle = useRef<ParticleSystemHandle>(null);
   const initialized = useRef(false);
-  const count = quality === "high" ? 600 : 220;
+  const count = tieredParticleCount(600, quality);
+  const objectScale = SCENE_TIER_CONFIG[quality].objectScale;
 
   useFrame((state, delta) => {
     const weight = journeyState.weight.game;
@@ -66,7 +68,7 @@ export function GameAmbienceScene({ quality }: GameAmbienceSceneProps) {
   });
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} scale={objectScale}>
       <ParticleSystem ref={handle} count={count} size={0.025} color="#fcd34d" opacity={0} />
     </group>
   );

@@ -7,9 +7,10 @@ import { FogExp2 } from "three";
 import { ParticleSystem, type ParticleSystemHandle } from "@/components/three/primitives/ParticleSystem";
 import { journeyState } from "@/lib/motion/journeyState";
 import { damp } from "@/lib/motion/mathUtils";
+import { SCENE_TIER_CONFIG, tieredParticleCount, type SceneQuality } from "@/lib/three/deviceTiers";
 
 interface FutureSceneProps {
-  quality: "high" | "low";
+  quality: SceneQuality;
 }
 
 const MONOLITH_COUNT = 5;
@@ -26,7 +27,8 @@ export function FutureScene({ quality }: FutureSceneProps) {
   const dustInitialized = useRef(false);
   const monolithRefs = useRef<Mesh[]>([]);
   const scene = useThree((state) => state.scene);
-  const dustCount = quality === "high" ? 900 : 320;
+  const dustCount = tieredParticleCount(900, quality);
+  const objectScale = SCENE_TIER_CONFIG[quality].objectScale;
 
   const fog = useMemo(() => new FogExp2("#05070d", 0), []);
 
@@ -93,7 +95,7 @@ export function FutureScene({ quality }: FutureSceneProps) {
   });
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} scale={objectScale}>
       <ParticleSystem ref={dustHandle} count={dustCount} size={0.018} color="#c7cfe0" opacity={0} />
 
       {monolithLayout.map((layout, index) => (
