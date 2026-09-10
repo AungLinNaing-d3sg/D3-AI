@@ -57,6 +57,7 @@
 
   --font-sans: var(--font-sans-body);
   --font-display: var(--font-sans-display);
+  --font-mono: var(--font-mono-technical);
 
   --animate-float: float 8s ease-in-out infinite;
   --animate-float-slow: float 14s ease-in-out infinite;
@@ -202,3 +203,82 @@ body {
  * <noscript><style> override in src/app/layout.tsx forces visibility back on
  * when JS is disabled, so the page still reads correctly.
  */
+
+/*
+ * ---------------------------------------------------------------------
+ * Typography system
+ * ---------------------------------------------------------------------
+ * Shared, reusable type styles for the premium/technical AI-company voice
+ * used across hero titles, section headings, statistics, body copy, labels,
+ * and navigation (see src/app/layout.tsx for the three underlying faces:
+ * Sora for display, Inter for body/UI, JetBrains Mono for short technical
+ * accents). Centralised here — rather than each component re-typing its own
+ * ad-hoc size/tracking/leading combination — so every chapter reads as one
+ * consistent system. Fluid `clamp()` sizing keeps large display type
+ * comfortable from small phones up to wide desktop viewports without extra
+ * breakpoint-specific overrides. Colour is deliberately left to each
+ * consumer (`text-ink-50`, `text-brand-400`, etc.) so these stay reusable
+ * across the dark D3SG background regardless of accent.
+ */
+
+.type-eyebrow {
+  font-family: var(--font-mono-technical), ui-monospace, monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+.type-display-hero {
+  font-family: var(--font-sans-display), sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.02;
+  text-wrap: balance;
+  font-size: clamp(2.75rem, 2rem + 4.2vw, 6.5rem);
+}
+
+.type-display-section {
+  font-family: var(--font-sans-display), sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.08;
+  text-wrap: balance;
+  font-size: clamp(1.9rem, 1.5rem + 2vw, 3.25rem);
+}
+
+.type-display-stat {
+  font-family: var(--font-mono-technical), var(--font-sans-display), sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.9rem, 1.5rem + 1.6vw, 2.75rem);
+}
+
+.type-body-lead {
+  font-family: var(--font-sans-body), sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+  text-wrap: balance;
+  font-size: clamp(1rem, 0.94rem + 0.3vw, 1.15rem);
+}
+
+.type-nav-link {
+  font-family: var(--font-sans-body), sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/*
+ * Performance hint for elements that animate transform/opacity every scroll
+ * tick (GSAP `Reveal` targets, 3D-adjacent HTML overlays) — promotes them to
+ * their own compositor layer up front instead of on first animation frame,
+ * avoiding a visible pop/repaint the instant a scroll-triggered animation
+ * starts.
+ */
+.gpu-layer {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}

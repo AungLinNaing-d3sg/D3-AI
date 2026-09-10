@@ -26,19 +26,20 @@ export function SectionHeading({
 
   return (
     <div className={`flex max-w-3xl flex-col gap-4 ${alignment} ${className}`.trim()}>
-      <Reveal as="p" className="text-xs font-semibold uppercase tracking-[0.28em] text-brand-400">
+      <Reveal as="p" className="type-eyebrow text-brand-400">
         {eyebrow}
       </Reveal>
       <Reveal
         as="h2"
         delay={0.05}
         id={headingId}
-        className="text-balance font-display text-3xl font-semibold tracking-tight text-ink-50 sm:text-4xl lg:text-5xl"
+        variant="words"
+        className="type-display-section text-ink-50"
       >
         {title}
       </Reveal>
       {description ? (
-        <Reveal as="p" delay={0.1} className="text-balance text-base leading-relaxed text-ink-300 sm:text-lg">
+        <Reveal as="p" delay={0.1} variant="blur" className="type-body-lead text-ink-300">
           {description}
         </Reveal>
       ) : null}

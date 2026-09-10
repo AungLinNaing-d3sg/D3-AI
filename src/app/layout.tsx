@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Sora } from "next/font/google";
+import { Inter, JetBrains_Mono, Sora } from "next/font/google";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { SmoothScrollProvider } from "@/components/motion/SmoothScrollProvider";
@@ -14,6 +14,21 @@ const bodyFont = Inter({
 
 const displayFont = Sora({
   variable: "--font-sans-display",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+/**
+ * Technical/numeric accent face — used sparingly for eyebrow labels,
+ * statistic figures, and other short, technical typographic moments (see
+ * globals.css `.type-eyebrow` / `.type-display-stat`) to give the type
+ * system an AI/technology register alongside the two display/body faces
+ * above, rather than introducing a whole third voice. Self-hosted by
+ * `next/font` at build time (no runtime network request), so it stays
+ * compatible with the strict `font-src 'self' data:` CSP in next.config.ts.
+ */
+const monoFont = JetBrains_Mono({
+  variable: "--font-mono-technical",
   subsets: ["latin"],
   display: "swap",
 });
@@ -69,7 +84,7 @@ const organizationJsonLd = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${bodyFont.variable} ${displayFont.variable} h-full`}>
+    <html lang="en" className={`${bodyFont.variable} ${displayFont.variable} ${monoFont.variable} h-full`}>
       <head>
         {/* Progressive-enhancement fallback for the scroll-reveal animations
             in components/motion/Reveal.tsx — see globals.css `.motion-reveal`. */}

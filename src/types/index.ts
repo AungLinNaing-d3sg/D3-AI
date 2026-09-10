@@ -119,6 +119,30 @@ export interface UniverseStat {
   description: string;
 }
 
+/**
+ * The distinct 3D visual treatment ("station") each real statistic gets in
+ * the Data Universe stage (chapter 04, "05" in the section's own UI numbering
+ * — see `UniverseSection`'s eyebrow copy) — see
+ * three/scenes/UniverseScene.tsx. Every variant communicates a different
+ * concept rather than reusing one generic particle field four times:
+ * - `location` — Singapore: particles gather into a small geographic/data
+ *   hub cluster.
+ * - `timeline` — 20+ years: a receding dimensional timeline of depth
+ *   markers behind large 3D "20+" typography.
+ * - `network` — Microsoft: a structured cube of technology nodes/blocks,
+ *   evoking a connected platform.
+ * - `impact` — Real-world: an irregular graph of project nodes with
+ *   particles travelling between them.
+ */
+export type UniverseStationVariant = "location" | "timeline" | "network" | "impact";
+
+/** One statistic paired with its 3D visual treatment — see
+ * `UniverseStationVariant` above. */
+export interface UniverseStation {
+  stat: UniverseStat;
+  variant: UniverseStationVariant;
+}
+
 /** A floating product panel in the AI Product Experience stage (05),
  * sourced 1:1 from src/data/services.ts. */
 export interface ProductPanel {

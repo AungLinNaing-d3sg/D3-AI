@@ -36,7 +36,7 @@ export function Header() {
             <a
               key={item.href}
               href={item.href}
-              className="rounded-sm text-sm font-medium text-ink-200 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950"
+              className="type-nav-link rounded-sm text-sm text-ink-200 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950"
             >
               {item.label}
             </a>
@@ -80,7 +80,7 @@ export function Header() {
                 key={item.href}
                 href={item.href}
                 onClick={() => setIsMenuOpen(false)}
-                className="rounded-lg px-3 py-2.5 text-sm font-medium text-ink-200 transition-colors hover:bg-white/5 hover:text-white"
+                className="type-nav-link rounded-lg px-3 py-2.5 text-sm text-ink-200 transition-colors hover:bg-white/5 hover:text-white"
               >
                 {item.label}
               </a>

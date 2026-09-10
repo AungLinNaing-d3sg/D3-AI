@@ -4,6 +4,8 @@ import type {
   PlaygroundGameDefinition,
   ProductPanel,
   UniverseStat,
+  UniverseStation,
+  UniverseStationVariant,
   VisionPillar,
 } from "@/types";
 import { services } from "@/data/services";
@@ -108,6 +110,25 @@ export const universeStatRanges = universeStats.map((stat, index) => ({
   stat,
   start: index / universeStats.length,
   end: (index + 1) / universeStats.length,
+}));
+
+/** Fixed, hand-authored order matching `brandPillars`/`universeStats`
+ * (Singapore, 20+ years, Microsoft, Real-world) — see
+ * `UniverseStationVariant` in src/types/index.ts for what each treatment
+ * communicates. Order matters and is not re-derived from content, since the
+ * *meaning* of each variant is tied to which real statistic it is. */
+const universeStationVariants: UniverseStationVariant[] = ["location", "timeline", "network", "impact"];
+
+/**
+ * Chapter 05 — Data Universe "stations". Pairs each real, sourced statistic
+ * with the distinct 3D visual treatment the camera dollies to as the user
+ * scrolls (see three/scenes/UniverseScene.tsx) — the redesigned data
+ * universe gives each stat its own composition instead of one particle field
+ * recoloured four times.
+ */
+export const universeStations: UniverseStation[] = universeStats.map((stat, index) => ({
+  stat,
+  variant: universeStationVariants[index] ?? "impact",
 }));
 
 /**

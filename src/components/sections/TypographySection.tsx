@@ -48,20 +48,17 @@ export function TypographySection() {
     <Section stageId="typography" ariaLabelledBy="typography-heading" className="min-h-[440vh]">
       <div className="sticky top-0 flex h-[100svh] flex-col justify-between py-24 sm:py-28">
         <Container>
-          <Reveal as="p" className="text-xs font-semibold uppercase tracking-[0.32em] text-brand-400">
+          <Reveal as="p" className="type-eyebrow text-brand-400">
             03 — Built from three real disciplines
           </Reveal>
         </Container>
 
         <Container>
           <div className="max-w-2xl">
-            <h2
-              id="typography-heading"
-              className="font-display text-4xl font-semibold tracking-tight text-ink-50 sm:text-5xl"
-            >
+            <h2 id="typography-heading" className="type-display-section text-ink-50">
               <span ref={captionWordRef}>D3-SG</span>
             </h2>
-            <p ref={captionDescRef} className="mt-4 max-w-lg text-balance text-base leading-relaxed text-ink-300">
+            <p ref={captionDescRef} className="mt-4 max-w-lg type-body-lead text-ink-300">
               {siteConfig.description}
             </p>
           </div>

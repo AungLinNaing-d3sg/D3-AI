@@ -45,7 +45,7 @@ export function IntroSection() {
       <div className="sticky top-0 flex h-[100svh] items-center">
         <Container>
           <div ref={contentRef} className="flex max-w-3xl flex-col gap-6">
-            <Reveal as="p" className="text-xs font-semibold uppercase tracking-[0.32em] text-brand-400">
+            <Reveal as="p" className="type-eyebrow text-brand-400">
               {siteConfig.name} · Singapore
             </Reveal>
 
@@ -53,16 +53,13 @@ export function IntroSection() {
               as="h1"
               delay={0.05}
               id="intro-heading"
-              className="text-balance font-display text-5xl font-semibold leading-[1.02] tracking-tight text-ink-50 sm:text-7xl lg:text-8xl"
+              variant="chars"
+              className="type-display-hero text-ink-50"
             >
               {siteConfig.tagline}
             </Reveal>
 
-            <Reveal
-              as="p"
-              delay={0.18}
-              className="max-w-xl text-balance text-base leading-relaxed text-ink-300 sm:text-lg"
-            >
+            <Reveal as="p" delay={0.22} variant="blur" className="max-w-xl type-body-lead text-ink-300">
               {siteConfig.description}
             </Reveal>
           </div>

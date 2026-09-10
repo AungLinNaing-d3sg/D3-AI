@@ -15,24 +15,15 @@ export function CtaSection() {
   return (
     <Section stageId="cta" ariaLabelledBy="cta-heading" className="flex min-h-[100svh] items-center py-24 sm:py-32">
       <Container className="flex flex-col items-center gap-8 text-center">
-        <Reveal as="p" className="text-xs font-semibold uppercase tracking-[0.32em] text-brand-400">
+        <Reveal as="p" className="type-eyebrow text-brand-400">
           09 — Let&rsquo;s talk
         </Reveal>
 
-        <Reveal
-          as="h2"
-          delay={0.05}
-          id="cta-heading"
-          className="text-balance font-display text-4xl font-semibold tracking-tight text-ink-50 sm:text-6xl lg:text-7xl"
-        >
+        <Reveal as="h2" delay={0.05} id="cta-heading" variant="chars" className="type-display-hero text-ink-50">
           Build the future with AI.
         </Reveal>
 
-        <Reveal
-          as="p"
-          delay={0.1}
-          className="max-w-lg text-balance text-base leading-relaxed text-ink-300 sm:text-lg"
-        >
+        <Reveal as="p" delay={0.14} variant="blur" className="max-w-lg type-body-lead text-ink-300">
           {siteConfig.description}
         </Reveal>
 

@@ -101,6 +101,42 @@ export function scatterPoints(count: number, radius = 6): Float32Array {
   return positions;
 }
 
+/**
+ * Scatters `count` particles in a soft halo around a small set of anchor
+ * points (rather than uniformly through space) — the "particles gather into
+ * a structured cluster" phase every Data Universe station (chapter 05)
+ * passes through on the way to its crisp node/line structure (see
+ * three/scenes/UniverseScene.tsx), giving each station's distinct
+ * cluster/timeline/network/graph shape an atmospheric, organic feel instead
+ * of reading as flat wireframe geometry. Anchors are the station's own
+ * hand-authored node layout, so results stay meaningfully positioned rather
+ * than random.
+ */
+export function clusterPoints(
+  anchors: readonly (readonly [number, number, number])[],
+  count: number,
+  spread = 0.5
+): Float32Array {
+  const positions = new Float32Array(count * 3);
+  const anchorCount = anchors.length;
+  if (anchorCount === 0 || count <= 0) return positions;
+
+  for (let i = 0; i < count; i += 1) {
+    const anchor = anchors[i % anchorCount] ?? anchors[0];
+    const ax = anchor?.[0] ?? 0;
+    const ay = anchor?.[1] ?? 0;
+    const az = anchor?.[2] ?? 0;
+    const r = spread * Math.random();
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    positions[i * 3] = ax + r * Math.sin(phi) * Math.cos(theta);
+    positions[i * 3 + 1] = ay + r * Math.sin(phi) * Math.sin(theta);
+    positions[i * 3 + 2] = az + r * Math.cos(phi) * 0.6;
+  }
+
+  return positions;
+}
+
 /** Generates a large-scale, multi-armed "galaxy" point field — the resting
  * state the Data Universe chapter (04) travels through between statistic
  * formations, giving it a distinct sense of depth/scale from the tighter

@@ -14,6 +14,7 @@ import {
   secondaryConceptNodes,
   universeStats,
   universeStatRanges,
+  universeStations,
   productPanels,
   gameItemDefinitions,
   playgroundGames,
@@ -108,6 +109,15 @@ describe("content data integrity", () => {
     universeStats.forEach((stat) => {
       expect(stat.token.length).toBeGreaterThan(0);
     });
+  });
+
+  it("gives every data universe statistic its own distinct 3D station treatment", () => {
+    expect(universeStations).toHaveLength(universeStats.length);
+    universeStations.forEach((station, index) => {
+      expect(station.stat).toEqual(universeStats[index]);
+    });
+    const variants = new Set(universeStations.map((station) => station.variant));
+    expect(variants.size).toBe(universeStations.length);
   });
 
   it("maps the product experience panels 1:1 onto the real service pillars", () => {

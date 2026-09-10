@@ -9,7 +9,7 @@ import { GameSection } from "@/components/sections/GameSection";
 import { FutureSection } from "@/components/sections/FutureSection";
 import { CtaSection } from "@/components/sections/CtaSection";
 import { siteConfig } from "@/data/site";
-import { primaryConceptNodes, universeStats, aboutPartnerNote, playgroundGames } from "@/data/journey";
+import { primaryConceptNodes, universeStats, universeStations, aboutPartnerNote, playgroundGames } from "@/data/journey";
 import { teamMembers } from "@/data/team";
 
 describe("homepage chapters", () => {
@@ -63,6 +63,30 @@ describe("homepage chapters", () => {
     expect(document.getElementById("universe")).toHaveAttribute("data-stage", "universe");
     universeStats.forEach((stat) => {
       expect(screen.getByText(stat.token)).toBeInTheDocument();
+    });
+  });
+
+  it("gives every data universe stat card an accessible, non-duplicated caption of its decorative 3D scene", () => {
+    render(<UniverseSection />);
+    const cards = screen.getAllByRole("listitem");
+    expect(cards).toHaveLength(universeStations.length);
+
+    const seenCaptions = new Set<string>();
+    universeStations.forEach((station) => {
+      const statNode = screen.getByText(station.stat.token);
+      const card = statNode.closest("li");
+      expect(card).not.toBeNull();
+      // The real, sourced statistic copy (label + description) must still be
+      // present and visible alongside the sr-only 3D caption — the caption
+      // supplements, never replaces, the primary accessible content.
+      expect(card).toHaveTextContent(station.stat.label);
+      expect(card).toHaveTextContent(station.stat.description);
+
+      const caption = card?.querySelector(".sr-only");
+      expect(caption).not.toBeNull();
+      expect(caption?.textContent).toMatch(/^3D scene:/);
+      expect(seenCaptions.has(caption?.textContent ?? "")).toBe(false);
+      seenCaptions.add(caption?.textContent ?? "");
     });
   });
 
