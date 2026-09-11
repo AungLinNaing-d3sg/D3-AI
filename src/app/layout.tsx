@@ -97,7 +97,21 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <style>{".motion-reveal{visibility:visible !important;}"}</style>
         </noscript>
       </head>
-      <body className="flex min-h-full flex-col antialiased">
+      {/*
+        `suppressHydrationWarning` is scoped to this single element only (it
+        does NOT suppress mismatch warnings anywhere else in the tree) and
+        exists solely to silence the one, well-documented, unavoidable false
+        positive React itself calls out
+        (https://react.dev/link/hydration-mismatch): third-party browser
+        extensions (Grammarly, Dashlane, ColorZilla, etc.) inject their own
+        attributes (e.g. `data-gr-ext-installed`, `data-new-gr-c-s-check-loaded`)
+        straight onto `<body>` *before* React hydrates, which React would
+        otherwise (correctly, but unfixably from application code) flag as a
+        "didn't match the client properties" error on every visit for anyone
+        with such an extension installed. This is the official, minimal fix
+        for exactly that scenario — not a blanket suppression, and it does
+        nothing to mask any real mismatch caused by this app's own code. */}
+      <body className="flex min-h-full flex-col antialiased" suppressHydrationWarning>
         {/* Skip link for keyboard/screen-reader users to bypass repeated nav. */}
         <a
           href="#main-content"
