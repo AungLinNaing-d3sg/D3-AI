@@ -67,8 +67,13 @@ describe("homepage chapters", () => {
   it("renders the typography chapter's word list accessibly, independent of the 3D particle formation", () => {
     render(<TypographySection />);
     expect(document.getElementById("typography")).toHaveAttribute("data-stage", "typography");
-    expect(screen.getByRole("heading", { level: 2, name: "D3-SG" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "DATA" })).toBeInTheDocument();
     expect(screen.getByText("AI", { selector: "p" })).toBeInTheDocument();
+  });
+
+  it("never renders a D3-SG card in the typography chapter", () => {
+    render(<TypographySection />);
+    expect(screen.queryByText("D3-SG")).not.toBeInTheDocument();
   });
 
   it("renders the neural network chapter with every technology node label", () => {

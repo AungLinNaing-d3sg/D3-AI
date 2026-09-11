@@ -50,11 +50,13 @@ export const aboutPartnerNote =
 
 /**
  * Chapter 03 — 3D AI Typography. The word sequence particles form/explode/
- * reform through, grounded in the company's own name and three real
- * service pillars (src/data/services.ts) rather than generic buzzwords,
- * ending on "AI" as the bridge into the Neural Network chapter.
+ * reform through, grounded in the three real service pillars
+ * (src/data/services.ts) rather than generic buzzwords, ending on "AI" as
+ * the bridge into the Neural Network chapter. No longer opens on "D3-SG" —
+ * removed from the cycle (both the particle formation and its card) so the
+ * chapter reads as 4 evenly-balanced disciplines rather than 5.
  */
-export const typographyWords = ["D3-SG", "DATA", "DYNAMICS", "DIGITAL", "AI"] as const;
+export const typographyWords = ["DATA", "DYNAMICS", "DIGITAL", "AI"] as const;
 
 /** Even scroll-progress ranges for each word above, shared by the 3D
  * particle-morph scene and the DOM caption overlay so both read from the

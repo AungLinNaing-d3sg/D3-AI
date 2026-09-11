@@ -4,6 +4,7 @@ import { useCallback, useRef } from "react";
 import { Section } from "@/components/ui/Section";
 import { Container } from "@/components/ui/Container";
 import { Reveal } from "@/components/motion/Reveal";
+import { HeroGreeting } from "@/components/motion/HeroGreeting";
 import { useJourneyFrame } from "@/hooks/useJourneyFrame";
 import type { JourneyState } from "@/lib/motion/journeyState";
 import { siteConfig } from "@/data/site";
@@ -61,32 +62,23 @@ export function IntroSection() {
           keeps animating behind it either way. */}
       <div className="relative flex h-auto items-center py-14 md:sticky md:top-0 md:h-[100svh] md:py-0">
         <Container>
-          <div ref={contentRef} className="tilt-perspective flex max-w-3xl flex-col gap-6">
+          <div ref={contentRef} className="flex max-w-3xl flex-col gap-6">
             <Reveal as="p" className="type-eyebrow text-brand-400">
               {siteConfig.name} · Singapore
             </Reveal>
 
-            {/* Cinematic per-character 3D entrance (Z-depth + rotateX, see
-                Reveal.tsx `variant="chars"`), followed by a one-shot light
-                sweep once the title settles (see globals.css
-                `.hero-title-sweep`) — the title is the visual focal point,
-                so it establishes first and gets the most deliberate
-                treatment of anything on the page. */}
-            <Reveal
-              as="h1"
-              delay={0.05}
-              id="intro-heading"
-              variant="chars"
-              className="hero-title-sweep type-display-hero text-ink-50"
-            >
-              {siteConfig.tagline}
-            </Reveal>
+            {/* Words assemble from converging "data" particles rather than a
+                per-character stagger, then catch a one-shot light sweep —
+                see components/motion/HeroGreeting.tsx. The title is the
+                visual focal point, so it establishes first and gets the
+                most deliberate treatment of anything on the page. */}
+            <HeroGreeting id="intro-heading" text={siteConfig.tagline} className="type-hero-greeting text-ink-50" />
 
             {/* Masked "curtain" reveal (see Reveal.tsx `variant="mask"`),
                 timed to begin only once the title's own entrance has
                 substantially finished — description follows title, never
                 competes with it. */}
-            <Reveal as="p" delay={1.15} variant="mask" className="max-w-xl type-body-lead text-ink-300">
+            <Reveal as="p" delay={1.9} variant="mask" className="max-w-xl type-body-lead text-ink-300">
               {siteConfig.description}
             </Reveal>
 
@@ -95,7 +87,7 @@ export function IntroSection() {
                 three/scenes/IntroScene.tsx) — non-visual/reduced-motion
                 users still get the concept even though the floating pipeline
                 itself is purely decorative/aria-hidden. */}
-            <Reveal as="div" delay={1.4} className="flex flex-wrap gap-2">
+            <Reveal as="div" delay={2.15} className="flex flex-wrap gap-2">
               {heroPipelineNodes.map((node, index) => (
                 <span
                   key={node.id}

@@ -29,7 +29,7 @@ export function SceneCanvas() {
   const showScene = enableScene && webglSupported;
 
   return (
-    <div className="fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
+    <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
       {showScene ? (
         <Experience quality={quality} enableParallax={!hasCoarsePointer && !prefersReducedMotion} />
       ) : (
