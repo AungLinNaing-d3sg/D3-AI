@@ -7,42 +7,45 @@ import { universeStations } from "@/data/journey";
  * and `@react-three/drei` are stubbed for the whole suite (see jest.config.ts
  * `moduleNameMapper` + src/test/mocks/*) since jsdom has no WebGL context —
  * `useFrame` is a no-op there, so this suite can only assert the *static*
- * render tree (structure/content), not the per-frame morph/camera-dolly math
- * itself (unreachable without a real frame loop) — see
+ * render tree (structure/content), not the per-frame typewriter/camera-dolly
+ * math itself (unreachable without a real frame loop) — see
  * __tests__/ProductScene.debug.test.tsx for the same pattern.
  *
- * Regression coverage for the redesigned per-statistic "stations" (one
- * particle field + hand-authored node/line structure per real statistic,
- * see three/scenes/UniverseScene.tsx `STATION_LAYOUTS`) and the very
- * large, low-opacity background typography behind them.
+ * Regression coverage for the "live coding terminal" backdrop (a single
+ * `CanvasTexture`-driven screen, bezel, desk with a faint reflection, an
+ * abstracted coder silhouette, and a handful of device-tiered floating
+ * "code block" accents — see three/scenes/UniverseScene.tsx) that replaced
+ * the previous per-statistic particle-formation stations.
  */
 describe("UniverseScene", () => {
-  it("renders without crashing for both quality tiers", () => {
+  it("renders without crashing for every quality tier", () => {
     expect(() => render(<UniverseScene quality="high" />)).not.toThrow();
+    expect(() => render(<UniverseScene quality="medium" />)).not.toThrow();
     expect(() => render(<UniverseScene quality="low" />)).not.toThrow();
   });
 
-  it("renders one particle field per real statistic, plus one per background word", () => {
+  it("renders exactly one shared ambient particle field, not one per statistic", () => {
     const { container } = render(<UniverseScene quality="high" />);
-    // 4 real statistic stations + 4 background typography words.
-    expect(container.querySelectorAll("points")).toHaveLength(universeStations.length + 4);
+    expect(container.querySelectorAll("points")).toHaveLength(1);
   });
 
-  it("assembles the hand-authored node/edge structure for every station", () => {
+  it("assembles the terminal composition: bezel, screen, desk, reflection, glow, and a screen light", () => {
     const { container } = render(<UniverseScene quality="high" />);
-    // Singapore (7) + 20+ years (6) + Microsoft (8) + Real-world (6) nodes.
-    expect(container.querySelectorAll("icosahedrongeometry")).toHaveLength(27);
-    // Singapore (8) + 20+ years (5) + Microsoft (12) + Real-world (7) edges.
-    expect(container.querySelectorAll("line")).toHaveLength(32);
+    // 4 planes: glow bloom, screen surface, desk surface, desk reflection.
+    expect(container.querySelectorAll("planegeometry")).toHaveLength(4);
+    // Silhouette head is the only sphere in the composition.
+    expect(container.querySelectorAll("spheregeometry")).toHaveLength(1);
+    expect(container.querySelectorAll("pointlight")).toHaveLength(1);
   });
 
-  it("gives only the Real-world station travelling particle couriers, and only at high quality", () => {
+  it("renders fewer floating code-block accents on lower device tiers", () => {
     const high = render(<UniverseScene quality="high" />);
-    // Real-world has 7 connections -> 7 travelling couriers.
-    expect(high.container.querySelectorAll("spheregeometry")).toHaveLength(7);
-
+    const medium = render(<UniverseScene quality="medium" />);
     const low = render(<UniverseScene quality="low" />);
-    expect(low.container.querySelectorAll("spheregeometry")).toHaveLength(0);
+    // boxgeometry = 1 screen bezel + 1 silhouette body + N code blocks.
+    expect(high.container.querySelectorAll("boxgeometry")).toHaveLength(2 + 4);
+    expect(medium.container.querySelectorAll("boxgeometry")).toHaveLength(2 + 3);
+    expect(low.container.querySelectorAll("boxgeometry")).toHaveLength(2 + 2);
   });
 
   it("covers exactly the 4 real, sourced statistics in a fixed, meaningful order", () => {
@@ -51,12 +54,6 @@ describe("UniverseScene", () => {
       "20+ years",
       "Microsoft",
       "Real-world",
-    ]);
-    expect(universeStations.map((station) => station.variant)).toEqual([
-      "location",
-      "timeline",
-      "network",
-      "impact",
     ]);
   });
 });

@@ -25,6 +25,13 @@ const accentBorderClass: Record<PlaygroundGameId, string> = {
   "data-sort": "border-amber-400/30 hover:border-amber-400/70",
 };
 
+const accentGlowHex: Record<PlaygroundGameId, string> = {
+  train: "#fd6a50",
+  "signal-hunt": "#22d3ee",
+  "neural-path": "#a78bfa",
+  "data-sort": "#fbbf24",
+};
+
 /**
  * Chapter 07 — "THE AI PLAYGROUND". One cohesive interactive chapter built
  * from 4 experiences: the existing "Train Your AI" catcher plus 3 new,
@@ -117,13 +124,22 @@ export function AiPlayground() {
           const accuracy = completed[game.id];
           return (
             <li key={game.id}>
+              {/* Floating, elevated tile (lift + glow on hover) rather than
+                  a flat card — these are the chapter's primary actions, so
+                  they get the most emphatic treatment of any card grid on
+                  the site. */}
               <button
                 type="button"
                 onClick={() => selectGame(game.id)}
                 aria-label={`Play ${game.title}`}
-                className={`group flex h-full w-full flex-col items-start gap-2 rounded-2xl border bg-white/[0.03] p-6 text-left transition-all duration-300 hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 ${accentBorderClass[game.id]}`}
+                className={`group relative flex h-full w-full flex-col items-start gap-2 overflow-hidden rounded-2xl border bg-white/[0.03] p-6 text-left shadow-[0_20px_50px_-30px_rgba(0,0,0,0.9)] transition-all duration-300 pointer-fine:hover:-translate-y-1 hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 ${accentBorderClass[game.id]}`}
               >
-                <div className="flex w-full items-center justify-between">
+                <span
+                  className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-25"
+                  style={{ backgroundColor: accentGlowHex[game.id] }}
+                  aria-hidden="true"
+                />
+                <div className="relative flex w-full items-center justify-between">
                   <span className={`text-xs font-semibold uppercase tracking-[0.24em] ${accentTextClass[game.id]}`}>
                     {String(game.index).padStart(2, "0")}
                   </span>

@@ -9,7 +9,14 @@ import { GameSection } from "@/components/sections/GameSection";
 import { FutureSection } from "@/components/sections/FutureSection";
 import { CtaSection } from "@/components/sections/CtaSection";
 import { siteConfig } from "@/data/site";
-import { primaryConceptNodes, universeStats, universeStations, aboutPartnerNote, playgroundGames } from "@/data/journey";
+import {
+  heroPipelineNodes,
+  technologyNetworkNodes,
+  universeStats,
+  universeStations,
+  aboutPartnerNote,
+  playgroundGames,
+} from "@/data/journey";
 import { teamMembers } from "@/data/team";
 
 describe("homepage chapters", () => {
@@ -17,6 +24,20 @@ describe("homepage chapters", () => {
     render(<IntroSection />);
     expect(screen.getByRole("heading", { level: 1, name: siteConfig.tagline })).toBeInTheDocument();
     expect(document.getElementById("intro")).toHaveAttribute("data-stage", "intro");
+  });
+
+  it("renders the hero pipeline stages accessibly in the intro chapter", () => {
+    render(<IntroSection />);
+    heroPipelineNodes.forEach((node) => {
+      expect(screen.getByText(node.label)).toBeInTheDocument();
+    });
+  });
+
+  it("never renders the hero pipeline stages in the neural network chapter", () => {
+    render(<NeuralSection />);
+    heroPipelineNodes.forEach((node) => {
+      expect(screen.queryAllByText(node.label)).toHaveLength(0);
+    });
   });
 
   it("renders the about-us chapter with the real, sourced leadership team", () => {
@@ -50,10 +71,10 @@ describe("homepage chapters", () => {
     expect(screen.getByText("AI", { selector: "p" })).toBeInTheDocument();
   });
 
-  it("renders the neural network chapter with every concept and technology node label", () => {
+  it("renders the neural network chapter with every technology node label", () => {
     render(<NeuralSection />);
     expect(document.getElementById("neural")).toHaveAttribute("data-stage", "neural");
-    primaryConceptNodes.forEach((node) => {
+    technologyNetworkNodes.forEach((node) => {
       expect(screen.getByText(node.label)).toBeInTheDocument();
     });
   });
@@ -66,12 +87,15 @@ describe("homepage chapters", () => {
     });
   });
 
-  it("gives every data universe stat card an accessible, non-duplicated caption of its decorative 3D scene", () => {
+  it("gives every data universe stat card an accessible caption of the shared decorative 3D scene", () => {
     render(<UniverseSection />);
     const cards = screen.getAllByRole("listitem");
     expect(cards).toHaveLength(universeStations.length);
 
-    const seenCaptions = new Set<string>();
+    // One shared 3D backdrop (a live coding terminal, not a per-statistic
+    // composition — see three/scenes/UniverseScene.tsx) sits behind every
+    // card now, so every card's caption is expected to be identical, not
+    // unique per station.
     universeStations.forEach((station) => {
       const statNode = screen.getByText(station.stat.token);
       const card = statNode.closest("li");
@@ -85,8 +109,6 @@ describe("homepage chapters", () => {
       const caption = card?.querySelector(".sr-only");
       expect(caption).not.toBeNull();
       expect(caption?.textContent).toMatch(/^3D scene:/);
-      expect(seenCaptions.has(caption?.textContent ?? "")).toBe(false);
-      seenCaptions.add(caption?.textContent ?? "");
     });
   });
 

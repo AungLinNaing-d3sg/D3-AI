@@ -14,6 +14,7 @@ export const teamMembers: TeamMember[] = [
     name: "Maximillium Yip",
     role: "Chief Executive Officer",
     initials: "MY",
+    photo: "/maximillium-yip.jpg",
     bio: [
       "More than 20 years in the industry as a sales leader",
       "Certifications in ITIL, PMP and Six Sigma Black Belt",
@@ -24,6 +25,7 @@ export const teamMembers: TeamMember[] = [
     name: "Leo Kyaw",
     role: "Chief Operating Officer",
     initials: "LK",
+    photo: "/mr.leo-kyaw.png",
     bio: [
       "More than 16 years in IT as BU Head, Project Director, and Technical Specialist",
       "Double degree in Physics & Business Information Systems; EMBA from Quantic School of Business and Technology",

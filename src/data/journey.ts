@@ -66,12 +66,14 @@ export const typographyWordRanges = typographyWords.map((word, index) => ({
 }));
 
 /**
- * Chapter 04 — Neural Network. Five primary concept nodes (verbatim from the
- * brief) form the core of the graph; the real technology ecosystem
- * (src/data/technology.ts) supplies the secondary, smaller labelled nodes so
- * the network visualises actual capabilities, not filler.
+ * Chapter 01 — Cinematic AI Intro. The five-stage thought pipeline (verbatim
+ * from the brief — THINK, LEARN, UNDERSTAND, PREDICT, CREATE) that orbits the
+ * hero's central "AI core" (see three/scenes/IntroScene.tsx). Lives
+ * exclusively in the hero now — no other chapter renders these nodes, so the
+ * floating pipeline reads as this chapter's own signature moment rather than
+ * a component reused throughout the page.
  */
-export const primaryConceptNodes: ConceptNode[] = [
+export const heroPipelineNodes: ConceptNode[] = [
   { id: "think", label: "THINK", position: [0, 0.9, 0] },
   { id: "learn", label: "LEARN", position: [1.5, -0.2, 0.6] },
   { id: "understand", label: "UNDERSTAND", position: [-1.6, -0.1, 0.9] },
@@ -79,7 +81,14 @@ export const primaryConceptNodes: ConceptNode[] = [
   { id: "create", label: "CREATE", position: [-0.9, 0.4, -1.1] },
 ];
 
-export const secondaryConceptNodes: ConceptNode[] = techNodes.map((node, index) => {
+/**
+ * Chapter 04 — Neural Network / technology ecosystem. The real technology
+ * stack (src/data/technology.ts) arranged as its own standalone network
+ * around a central hub — no longer "secondary" to the hero pipeline above
+ * (that moved to chapter 01), this is chapter 04's entire, self-contained
+ * visual now.
+ */
+export const technologyNetworkNodes: ConceptNode[] = techNodes.map((node, index) => {
   const angle = (index / techNodes.length) * Math.PI * 2;
   const radius = 2.6;
   return {

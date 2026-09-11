@@ -2,565 +2,409 @@
 
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import type {
-  BufferAttribute,
-  Group,
-  LineBasicMaterial,
-  Mesh,
-  MeshBasicMaterial,
-  MeshStandardMaterial,
-} from "three";
+import { CanvasTexture, SRGBColorSpace } from "three";
+import type { BufferAttribute, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, PointLight } from "three";
 import { ParticleSystem, type ParticleSystemHandle } from "@/components/three/primitives/ParticleSystem";
 import { journeyState } from "@/lib/motion/journeyState";
-import { clamp, damp, lerp, smoothstep } from "@/lib/motion/mathUtils";
-import { clusterPoints, galaxyPoints, sampleTextPoints } from "@/lib/three/textSampler";
+import { clamp, damp } from "@/lib/motion/mathUtils";
 import { universeStatRanges, universeStations } from "@/data/journey";
-import type { UniverseStation, UniverseStationVariant } from "@/types";
 import { SCENE_TIER_CONFIG, tieredParticleCount, type SceneQuality } from "@/lib/three/deviceTiers";
 
 interface UniverseSceneProps {
   quality: SceneQuality;
 }
 
-type Vec3 = [number, number, number];
-type Edge = [number, number];
+/** Canvas-texture terminal "screen" resolution — reduced on the lowest tier
+ * to cut fill-rate/upload cost, not just redraw frequency (see
+ * `redrawInterval` in `useFrame` below). */
+const TEXTURE_SIZE: Record<SceneQuality, [number, number]> = {
+  high: [512, 320],
+  medium: [448, 280],
+  low: [384, 240],
+};
 
-interface StationLayout {
-  /** Small, hand-authored node anchor points, local to the station's own
-   * group (see `buildStationWorldPositions`) — never randomised, so every
-   * reload reads the same intentional shape. */
-  nodes: Vec3[];
-  /** Node index pairs joined by a connecting line. */
-  edges: Edge[];
-  /** Base colour for this station's nodes/lines/particle field. */
-  color: string;
-  /** Whether small particle "couriers" travel the connections once formed
-   * (Real-world only) — omitted on `quality === "low"` for performance. */
-  travellers: boolean;
-}
+const MAX_VISIBLE_LINES = 7;
+const CHARS_PER_SECOND = 26;
+const CURSOR_BLINK_SECONDS = 0.5;
 
-/** Base (desktop) Z-depth spacing between consecutive stations — this, not
- * any change to the shared global camera, is what the "camera dolly" (see
- * the `useFrame` below) actually travels through. Scaled down per device
- * tier by `depthScale` (see `src/lib/three/deviceTiers.ts`) so tablet/mobile
- * get a shorter, cheaper dolly instead of the full cinematic depth. */
-const BASE_STATION_SPACING = 4.6;
-
-/** Small x/y offsets per station index so the dolly path reads as a gentle
- * cinematic weave rather than a dead-straight line. */
-const STATION_XY_OFFSETS: [number, number][] = [
-  [0, 0.1],
-  [-0.85, 0],
-  [0.85, 0.05],
-  [0, -0.1],
+/** Generic "someone is actively coding" atmosphere lines — never a stand-in
+ * for a real product claim (those come from `buildScriptLines` below,
+ * sourced from the real statistics). */
+const FILLER_LINES = [
+  "> initialising analysis pipeline...",
+  "const signal = filterNoise(stream);",
+  "await model.train(signal);",
+  'deploy(system, { region: "ap-southeast-1" });',
+  "> build complete — 0 errors",
 ];
 
 /**
- * Hand-authored per-station structure — see `UniverseStationVariant` in
- * src/types/index.ts for what each shape communicates. Every variant is a
- * genuinely different composition (hub cluster / receding timeline / cube
- * network / irregular graph), not one wireframe recoloured four times.
+ * One real, sourced line per statistic (src/data/journey.ts
+ * `universeStations`, itself from src/data/pillars.ts), interleaved with the
+ * generic filler above — the terminal always eventually "types" the
+ * company's own real proof points, never invented figures. Returns both the
+ * ordered script and a lookup from each statistic's index to its line's
+ * position in that script, so the scroll-driven "jump to this stat's line"
+ * behaviour in `useFrame` doesn't need to duplicate this interleaving logic.
  */
-const STATION_LAYOUTS: Record<UniverseStationVariant, StationLayout> = {
-  // Singapore — a compact hub-and-spoke data cluster: one hub with a small
-  // cross-linked ring of satellite nodes, reading as a single, structured
-  // location anchoring a regional data network.
-  location: {
-    nodes: [
-      [0, 0, 0],
-      [0.55, 0.34, 0.12],
-      [-0.5, 0.3, -0.16],
-      [0.36, -0.42, 0.2],
-      [-0.42, -0.36, -0.06],
-      [0.16, 0.56, -0.2],
-      [-0.2, -0.58, 0.16],
-    ],
-    edges: [
-      [0, 1],
-      [0, 2],
-      [0, 3],
-      [0, 4],
-      [0, 5],
-      [0, 6],
-      [1, 5],
-      [3, 4],
-    ],
-    color: "#fd6a50",
-    travellers: false,
-  },
-  // 20+ years — a chain of depth markers receding into the screen behind
-  // the large "20+" typography, reading as a dimensional timeline rather
-  // than a flat number.
-  timeline: {
-    nodes: [
-      [0, 0.1, 0.4],
-      [0.32, 0.16, -0.35],
-      [-0.28, 0.05, -1.1],
-      [0.24, 0.14, -1.85],
-      [-0.22, 0.02, -2.6],
-      [0.18, 0.1, -3.35],
-    ],
-    edges: [
-      [0, 1],
-      [1, 2],
-      [2, 3],
-      [3, 4],
-      [4, 5],
-    ],
-    color: "#ffb199",
-    travellers: false,
-  },
-  // Microsoft — a structured cube of technology nodes/blocks (8 corners,
-  // 12 edges), communicating an assembled, connected platform rather than
-  // an organic network.
-  network: {
-    nodes: [
-      [-0.46, 0.34, 0.34],
-      [0.46, 0.34, 0.34],
-      [-0.46, -0.34, 0.34],
-      [0.46, -0.34, 0.34],
-      [-0.46, 0.34, -0.34],
-      [0.46, 0.34, -0.34],
-      [-0.46, -0.34, -0.34],
-      [0.46, -0.34, -0.34],
-    ],
-    edges: [
-      [0, 1],
-      [0, 2],
-      [1, 3],
-      [2, 3],
-      [4, 5],
-      [4, 6],
-      [5, 7],
-      [6, 7],
-      [0, 4],
-      [1, 5],
-      [2, 6],
-      [3, 7],
-    ],
-    color: "#67e8f9",
-    travellers: false,
-  },
-  // Real-world — an irregular graph of project nodes, with particle
-  // "couriers" travelling the connections once formed — reads as active
-  // delivery/impact rather than a static diagram.
-  impact: {
-    nodes: [
-      [-0.5, 0.3, 0.1],
-      [0.15, 0.5, -0.2],
-      [0.55, -0.05, 0.15],
-      [0.05, -0.45, -0.1],
-      [-0.45, -0.25, 0.3],
-      [-0.05, 0.05, -0.45],
-    ],
-    edges: [
-      [0, 1],
-      [1, 2],
-      [2, 3],
-      [3, 4],
-      [4, 0],
-      [0, 5],
-      [2, 5],
-    ],
-    color: "#a5b4fc",
-    travellers: true,
-  },
-};
+function buildScript(): { lines: string[]; statLineIndex: number[] } {
+  const lines: string[] = [];
+  const statLineIndex: number[] = [];
+  universeStations.forEach((station, index) => {
+    lines.push(FILLER_LINES[index % FILLER_LINES.length] ?? "");
+    statLineIndex.push(lines.length);
+    lines.push(`// ${station.stat.label}: ${station.stat.token}`);
+  });
+  return { lines, statLineIndex };
+}
 
-const BACKGROUND_WORDS = ["DATA", "IMPACT", "REAL", "EXPERIENCE"] as const;
-const BACKGROUND_WORD_LAYOUT: [number, number][] = [
-  [-1.6, 0.7],
-  [1.3, -0.6],
-  [-0.9, -0.75],
-  [1.6, 0.65],
-];
+function truncateToWidth(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string {
+  if (ctx.measureText(text).width <= maxWidth) return text;
+  let result = text;
+  while (result.length > 1 && ctx.measureText(`${result}…`).width > maxWidth) {
+    result = result.slice(0, -1);
+  }
+  return `${result}…`;
+}
 
-/** Builds the world position each station's group sits at — every
- * per-station visual (particle field, nodes, edges) is a child of this, so
- * it only needs small, local-scale coordinates (see `STATION_LAYOUTS`).
- * `stationSpacing` is the device-tiered value (see `BASE_STATION_SPACING`),
- * not the fixed desktop constant, so the dolly travels a shorter Z distance
- * on tablet/mobile. */
-function buildStationWorldPositions(stationSpacing: number): Vec3[] {
-  return universeStations.map((_, index) => {
-    const offset: [number, number] = STATION_XY_OFFSETS[index] ?? [0, 0];
-    return [offset[0], offset[1], -index * stationSpacing];
+function drawTerminal(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  history: string[],
+  current: string,
+  showCursor: boolean
+) {
+  ctx.clearRect(0, 0, width, height);
+
+  ctx.fillStyle = "#070a12";
+  ctx.fillRect(0, 0, width, height);
+
+  // Title bar — the one literal "terminal window" cue.
+  ctx.fillStyle = "#11161f";
+  ctx.fillRect(0, 0, width, 28);
+  const dotColors = ["#f14a30", "#fbbf24", "#34d399"];
+  dotColors.forEach((color, i) => {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(16 + i * 18, 14, 5, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.fillStyle = "#5b6b8c";
+  ctx.font = "12px 'Courier New', monospace";
+  ctx.textBaseline = "middle";
+  ctx.textAlign = "center";
+  ctx.fillText("d3sg — zsh", width / 2, 14);
+  ctx.textAlign = "left";
+
+  ctx.font = "14px 'Courier New', monospace";
+  ctx.textBaseline = "top";
+  const lineHeight = Math.round(height / 15);
+  const startY = 40;
+  const visible = [...history, current].slice(-MAX_VISIBLE_LINES);
+  const maxWidth = width - 28;
+
+  visible.forEach((line, i) => {
+    const y = startY + i * lineHeight;
+    if (y > height - lineHeight) return;
+    ctx.fillStyle = line.startsWith("//") ? "#fd6a50" : line.startsWith(">") ? "#67e8f9" : "#d7e0f0";
+    const truncated = truncateToWidth(ctx, line, maxWidth);
+    ctx.fillText(truncated, 14, y);
+    if (i === visible.length - 1 && showCursor) {
+      const measured = ctx.measureText(truncated).width;
+      ctx.fillStyle = "#fd6a50";
+      ctx.fillRect(14 + measured + 2, y + 2, 8, 14);
+    }
   });
 }
 
-/** Mirrors the page-level chapter crossfade envelope in
- * lib/motion/scrollTimeline.ts (not exported there — it's intentionally
- * private to the single global timeline), scoped down to blending between
- * this one chapter's own stations rather than duplicating global timeline
- * API surface for a single caller. */
-function stationFocus(local: number, edge: number, isFirst: boolean, isLast: boolean): number {
-  const inWeight = isFirst ? 1 : smoothstep(0, edge, local);
-  const outWeight = isLast ? 1 : 1 - smoothstep(1 - edge, 1, local);
-  return clamp(Math.min(inWeight, outWeight));
-}
-
-/** The "20+ years" statistic's giant 3D typography centrepiece uses only the
- * leading "20+" — full "20+ years" stays intact as real HTML text in
- * components/sections/UniverseSection.tsx; trimming here is purely a visual
- * simplification for the particle-formed word (long text samples poorly at
- * a station's compact local scale), never a change to the sourced data
- * itself. */
-function displayToken(station: UniverseStation): string {
-  if (station.variant !== "timeline") return station.stat.token;
-  const match = /^\d+\+?/.exec(station.stat.token);
-  return match ? match[0] : station.stat.token;
-}
-
 /**
- * Chapter 05 — Data Universe ("By the numbers"). Redesigned as a single
- * cinematic data universe the camera dollies through (see the `useFrame`
- * below), rather than one particle field recoloured for four statistics:
- * each real, sourced statistic (src/data/pillars.ts via data/journey.ts
- * `universeStations`) gets its own distinct structure — a Singapore data
- * cluster, a receding "20+ years" timeline, a Microsoft technology cube, and
- * a Real-world impact graph with travelling particles — that assembles
- * (particles gather → structure forms → statistic typography emerges →
- * connections animate) and dissolves again as scroll progress moves
- * forward/backward. Very large, low-opacity background words drift slowly
- * through Z for atmosphere. The always-visible, accessible statistic cards
- * in components/sections/UniverseSection.tsx remain the primary information
- * layer; everything here is decorative/aria-hidden.
+ * Chapter 05 — Data Universe ("By the numbers"). Replaces the previous
+ * per-statistic particle-formation dolly with a single, persistent scene: a
+ * floating terminal screen — a live `CanvasTexture` "typing" a short,
+ * looping script that always eventually types each real statistic's own
+ * label/token (never invented copy), a soft-glowing bezel, a desk surface
+ * with a faint reflection of the screen's glow, and an abstracted, unlit
+ * coder silhouette seated at it — reading as "someone is actively building
+ * this" rather than an abstract particle field. Small drifting particles
+ * and floating geometric "code block" accents keep the space alive. Scroll
+ * position still drives which statistic's line the terminal jumps to type
+ * next (see the `activeStatIndex` tracking in `useFrame`), and the shared
+ * global camera (lib/motion/scrollTimeline.ts) still dollies past the whole
+ * composition exactly as it does for every other chapter — this scene's
+ * content does not move independently of that. The always-visible,
+ * accessible statistic cards in components/sections/UniverseSection.tsx
+ * remain the primary, dominant information layer; everything here sits
+ * behind them on the shared fixed background canvas and is purely
+ * decorative/`aria-hidden`.
  */
 export function UniverseScene({ quality }: UniverseSceneProps) {
-  const dollyRef = useRef<Group>(null);
-  const stationGroupRefs = useRef<Array<Group | null>>([]);
-  const fieldHandleRefs = useRef<Array<ParticleSystemHandle | null>>([]);
-  const nodeMeshRefs = useRef<Mesh[][]>([]);
-  const edgeMaterialRefs = useRef<LineBasicMaterial[][]>([]);
-  const travellerMeshRefs = useRef<Mesh[][]>([]);
-  const backgroundGroupRefs = useRef<Array<Group | null>>([]);
-  const backgroundHandleRefs = useRef<Array<ParticleSystemHandle | null>>([]);
-  const backgroundInitialized = useRef<boolean[]>(BACKGROUND_WORDS.map(() => false));
+  const groupRef = useRef<Group>(null);
+  const screenRef = useRef<Mesh>(null);
+  const glowRef = useRef<Mesh>(null);
+  const reflectionRef = useRef<Mesh>(null);
+  const deskRef = useRef<Mesh>(null);
+  const silhouetteHeadRef = useRef<Mesh>(null);
+  const silhouetteBodyRef = useRef<Mesh>(null);
+  const screenLightRef = useRef<PointLight>(null);
+  const blockRefs = useRef<Mesh[]>([]);
+  const dustHandle = useRef<ParticleSystemHandle>(null);
+  const dustInitialized = useRef(false);
+  const tilt = useRef({ x: 0, y: 0 });
 
-  const perStationCount = tieredParticleCount(900, quality);
-  const backgroundCount = tieredParticleCount(220, quality);
-  const tierConfig = SCENE_TIER_CONFIG[quality];
-  const stationSpacing = BASE_STATION_SPACING * tierConfig.depthScale;
-  const stationWorldPositions = useMemo(
-    () => buildStationWorldPositions(stationSpacing),
-    [stationSpacing]
-  );
+  const objectScale = SCENE_TIER_CONFIG[quality].objectScale;
+  const dustCount = tieredParticleCount(260, quality);
+  const blockCount = quality === "low" ? 2 : quality === "medium" ? 3 : 4;
+  /** Lower tiers redraw the terminal's canvas texture less often — the
+   * typewriter/cursor state still advances every frame (cheap), only the
+   * actual `CanvasTexture` repaint (the expensive part) is throttled. */
+  const redrawInterval = quality === "low" ? 1 / 8 : quality === "medium" ? 1 / 11 : 1 / 14;
 
-  const edgeSegments = useMemo(
+  const { lines: scriptLines, statLineIndex } = useMemo(() => buildScript(), []);
+  const [textureWidth, textureHeight] = TEXTURE_SIZE[quality];
+
+  const canvas = useMemo(() => {
+    const el = document.createElement("canvas");
+    el.width = textureWidth;
+    el.height = textureHeight;
+    return el;
+  }, [textureWidth, textureHeight]);
+
+  const ctx = useMemo(() => canvas.getContext("2d"), [canvas]);
+
+  const texture = useMemo(() => {
+    const tex = new CanvasTexture(canvas);
+    tex.colorSpace = SRGBColorSpace;
+    return tex;
+  }, [canvas]);
+
+  const typed = useRef({ lineIndex: 0, charIndex: 0, timer: 0, history: [] as string[] });
+  const cursor = useRef({ blinkTimer: 0, visible: true });
+  const redrawTimer = useRef(0);
+  const lastActiveStat = useRef(-1);
+
+  const blockLayouts = useMemo(
     () =>
-      universeStations.map((station) => {
-        const layout = STATION_LAYOUTS[station.variant];
-        return layout.edges.map(([a, b]) => {
-          const from: Vec3 = layout.nodes[a] ?? [0, 0, 0];
-          const to: Vec3 = layout.nodes[b] ?? [0, 0, 0];
-          return new Float32Array([from[0], from[1], from[2], to[0], to[1], to[2]]);
-        });
-      }),
-    []
+      Array.from({ length: blockCount }, (_, i) => ({
+        radius: 1.6 + (i % 2) * 0.4,
+        height: 0.3 + i * 0.18,
+        speed: 0.12 + i * 0.04,
+        phase: (i / blockCount) * Math.PI * 2,
+      })),
+    [blockCount]
   );
-
-  const stationFields = useMemo(() => {
-    if (typeof document === "undefined") return [];
-    return universeStations.map((station) => {
-      const layout = STATION_LAYOUTS[station.variant];
-      return {
-        keyframes: [
-          galaxyPoints(perStationCount, 3.1),
-          clusterPoints(layout.nodes, perStationCount, 0.85),
-          sampleTextPoints(displayToken(station), perStationCount, 240, 2.9),
-          galaxyPoints(perStationCount, 3.1),
-        ],
-      };
-    });
-  }, [perStationCount]);
-
-  const stationPhases = useMemo(
-    () =>
-      universeStations.map(() => {
-        const array = new Float32Array(perStationCount);
-        for (let i = 0; i < perStationCount; i += 1) array[i] = Math.random() * Math.PI * 2;
-        return array;
-      }),
-    [perStationCount]
-  );
-
-  const backgroundWordFields = useMemo(() => {
-    if (typeof document === "undefined") return [];
-    return BACKGROUND_WORDS.map((word) => sampleTextPoints(word, backgroundCount, 200, 9));
-  }, [backgroundCount]);
-
-  const stationCount = universeStations.length;
 
   useFrame((state, delta) => {
     const weight = journeyState.weight.universe;
     const progress = clamp(journeyState.progress.universe);
     const time = state.clock.elapsedTime;
-    const dolly = dollyRef.current;
+    const group = groupRef.current;
 
-    if (dolly) dolly.visible = weight > 0.001;
-
-    // Cinematic dolly: slide the whole station assembly so scroll progress
-    // continuously carries the "camera" between each statistic's own
-    // composition, without touching the shared global camera (see
-    // lib/motion/scrollTimeline.ts, still the single source of truth for the
-    // real THREE.PerspectiveCamera across all 9 chapters) — this chapter's
-    // *content* travels instead.
-    const continuous = progress * Math.max(stationCount - 1, 1);
-    const baseIndex = Math.min(Math.floor(continuous), stationCount - 1);
-    const nextIndex = Math.min(baseIndex + 1, stationCount - 1);
-    const dollyT = smoothstep(0, 1, continuous - baseIndex);
-    const fromPos: Vec3 = stationWorldPositions[baseIndex] ?? [0, 0, 0];
-    const toPos: Vec3 = stationWorldPositions[nextIndex] ?? fromPos;
-
-    if (dolly) {
-      const targetX = -lerp(fromPos[0], toPos[0], dollyT);
-      const targetY = -lerp(fromPos[1], toPos[1], dollyT) * 0.6;
-      const targetZ = -lerp(fromPos[2], toPos[2], dollyT);
-      dolly.position.x = damp(dolly.position.x, targetX, 3, delta);
-      dolly.position.y = damp(dolly.position.y, targetY, 3, delta);
-      dolly.position.z = damp(dolly.position.z, targetZ, 3, delta);
-      dolly.rotation.y = damp(dolly.rotation.y, Math.sin(progress * Math.PI) * 0.06, 3, delta);
+    if (group) {
+      group.visible = weight > 0.001;
+      const pointer = journeyState.pointer;
+      tilt.current.x = damp(tilt.current.x, pointer.y * 0.05, 3, delta);
+      tilt.current.y = damp(tilt.current.y, pointer.x * 0.08, 3, delta);
+      group.rotation.x = tilt.current.x;
+      group.rotation.y = tilt.current.y;
     }
 
-    // Background typography: very large, low-opacity words drifting slowly
-    // through Z with scroll progress — atmosphere behind the real stations,
-    // never competing with their content or the HTML statistic cards.
-    BACKGROUND_WORDS.forEach((_, i) => {
-      const handle = backgroundHandleRefs.current[i];
-      const group = backgroundGroupRefs.current[i];
-      if (!handle) return;
+    // Jump the typewriter to the statistic currently centred in the scroll
+    // range the instant it becomes active — the one explicit "scroll
+    // position drives the coding animation" moment, layered on top of the
+    // otherwise-autonomous looping script so the terminal never looks idle
+    // between jumps either.
+    const activeIndex = universeStatRanges.findIndex((range) => progress >= range.start && progress < range.end);
+    if (activeIndex !== -1 && activeIndex !== lastActiveStat.current) {
+      lastActiveStat.current = activeIndex;
+      const targetLine = statLineIndex[activeIndex];
+      if (targetLine !== undefined) {
+        typed.current.lineIndex = targetLine;
+        typed.current.charIndex = 0;
+        typed.current.timer = 0;
+      }
+    }
 
-      if (!backgroundInitialized.current[i]) {
-        const source = backgroundWordFields[i];
-        if (source) {
-          handle.positions.set(source);
-          const attribute = handle.points?.geometry.attributes.position as BufferAttribute | undefined;
-          if (attribute) attribute.needsUpdate = true;
-          backgroundInitialized.current[i] = true;
-        }
+    const charInterval = 1 / CHARS_PER_SECOND;
+    typed.current.timer += delta;
+    while (typed.current.timer >= charInterval) {
+      typed.current.timer -= charInterval;
+      const fullLine = scriptLines[typed.current.lineIndex] ?? "";
+      if (typed.current.charIndex < fullLine.length) {
+        typed.current.charIndex += 1;
+      } else {
+        typed.current.history.push(fullLine);
+        if (typed.current.history.length > MAX_VISIBLE_LINES) typed.current.history.shift();
+        typed.current.lineIndex = (typed.current.lineIndex + 1) % scriptLines.length;
+        typed.current.charIndex = 0;
       }
+    }
 
-      if (group) {
-        const drift = progress * 3.5;
-        group.position.z = damp(group.position.z, -(i * 6) - 6 + drift, 2, delta);
-      }
-      if (handle.material) {
-        handle.material.opacity = damp(handle.material.opacity, 0.05 * weight, 3, delta);
-      }
+    cursor.current.blinkTimer += delta;
+    if (cursor.current.blinkTimer >= CURSOR_BLINK_SECONDS) {
+      cursor.current.blinkTimer -= CURSOR_BLINK_SECONDS;
+      cursor.current.visible = !cursor.current.visible;
+    }
+
+    redrawTimer.current += delta;
+    if (weight > 0.001 && ctx && redrawTimer.current >= redrawInterval) {
+      redrawTimer.current = 0;
+      const fullLine = scriptLines[typed.current.lineIndex] ?? "";
+      const currentTyped = fullLine.slice(0, typed.current.charIndex);
+      drawTerminal(ctx, textureWidth, textureHeight, typed.current.history, currentTyped, cursor.current.visible);
+      texture.needsUpdate = true;
+    }
+
+    const glowPulse = 0.75 + Math.sin(time * 0.6) * 0.08;
+
+    if (screenRef.current) {
+      const material = screenRef.current.material as MeshStandardMaterial;
+      material.opacity = damp(material.opacity, weight, 4, delta);
+      material.emissiveIntensity = damp(material.emissiveIntensity, glowPulse * weight, 4, delta);
+    }
+
+    if (glowRef.current) {
+      const material = glowRef.current.material as MeshBasicMaterial;
+      material.opacity = damp(material.opacity, 0.22 * glowPulse * weight, 4, delta);
+    }
+
+    if (reflectionRef.current) {
+      const material = reflectionRef.current.material as MeshBasicMaterial;
+      material.opacity = damp(material.opacity, 0.1 * glowPulse * weight, 4, delta);
+    }
+
+    if (deskRef.current) {
+      const material = deskRef.current.material as MeshStandardMaterial;
+      material.opacity = damp(material.opacity, 0.6 * weight, 4, delta);
+    }
+
+    if (silhouetteHeadRef.current) {
+      const material = silhouetteHeadRef.current.material as MeshStandardMaterial;
+      material.opacity = damp(material.opacity, 0.9 * weight, 4, delta);
+    }
+    if (silhouetteBodyRef.current) {
+      const material = silhouetteBodyRef.current.material as MeshStandardMaterial;
+      material.opacity = damp(material.opacity, 0.9 * weight, 4, delta);
+    }
+
+    if (screenLightRef.current) {
+      screenLightRef.current.intensity = damp(screenLightRef.current.intensity, 1.1 * glowPulse * weight, 4, delta);
+    }
+
+    blockRefs.current.forEach((mesh, i) => {
+      if (!mesh) return;
+      const layout = blockLayouts[i];
+      if (!layout) return;
+      const angle = layout.phase + time * layout.speed;
+      mesh.position.set(Math.cos(angle) * layout.radius, layout.height + Math.sin(time * 0.4 + layout.phase) * 0.1, Math.sin(angle) * layout.radius * 0.6 - 0.6);
+      mesh.rotation.x += delta * 0.3;
+      mesh.rotation.y += delta * 0.22;
+      const material = mesh.material as MeshStandardMaterial;
+      material.opacity = damp(material.opacity, 0.55 * weight, 5, delta);
     });
 
-    universeStations.forEach((station, index) => {
-      const layout = STATION_LAYOUTS[station.variant];
-      const range = universeStatRanges[index];
-      const field = stationFields[index];
-      const group = stationGroupRefs.current[index];
-      if (!range || !field) return;
-
-      const span = Math.max(range.end - range.start, 1e-6);
-      const local = clamp((progress - range.start) / span);
-      const focus = stationFocus(local, 0.3, index === 0, index === stationCount - 1);
-      const stationVisibility = weight * focus;
-
-      if (group) {
-        group.visible = stationVisibility > 0.001;
-        group.rotation.y = damp(group.rotation.y, Math.sin(time * 0.12 + index) * 0.03, 3, delta);
-      }
-
-      // Particle field: scatter -> gathered structure -> statistic
-      // typography -> scatter, driven entirely by this station's own local
-      // progress so scrolling back up reverses the sequence naturally.
-      const handle = fieldHandleRefs.current[index];
-      const positions = handle?.positions;
-      const material = handle?.material;
-      if (material) {
-        material.opacity = damp(material.opacity, 0.85 * stationVisibility, 4, delta);
-      }
-      if (positions && stationVisibility > 0.001) {
-        const segments = field.keyframes.length - 1;
-        const scaled = Math.min(local, 0.9999) * segments;
-        const segIndex = Math.floor(scaled);
-        const segT = smoothstep(0, 1, scaled - segIndex);
-        const from = field.keyframes[segIndex] ?? field.keyframes[0];
-        const to = field.keyframes[segIndex + 1] ?? from;
-        const phases = stationPhases[index];
-        if (from && to) {
-          for (let i = 0; i < perStationCount; i += 1) {
-            const base = i * 3;
-            const phase = phases?.[i] ?? 0;
-            const jitter = Math.sin(time * 0.6 + phase) * 0.02;
-            positions[base] = lerp(from[base] ?? 0, to[base] ?? 0, segT) + jitter;
-            positions[base + 1] = lerp(from[base + 1] ?? 0, to[base + 1] ?? 0, segT) + jitter * 0.6;
-            positions[base + 2] = lerp(from[base + 2] ?? 0, to[base + 2] ?? 0, segT);
-          }
-          const attribute = handle?.points?.geometry.attributes.position as BufferAttribute | undefined;
-          if (attribute) attribute.needsUpdate = true;
+    if (!dustInitialized.current) {
+      const positions = dustHandle.current?.positions;
+      if (positions) {
+        const pointCount = positions.length / 3;
+        for (let i = 0; i < pointCount; i += 1) {
+          positions[i * 3] = (Math.random() - 0.5) * 6;
+          positions[i * 3 + 1] = (Math.random() - 0.5) * 3.4;
+          positions[i * 3 + 2] = (Math.random() - 0.5) * 4 - 1;
         }
+        dustInitialized.current = true;
+        const attribute = dustHandle.current?.points?.geometry.attributes.position as
+          | BufferAttribute
+          | undefined;
+        if (attribute) attribute.needsUpdate = true;
       }
-
-      // Structure: nodes assemble first (staggered), edges connect once
-      // both endpoints have appeared — "data structure forms" ahead of the
-      // statistic itself emerging.
-      const nodeMeshes: Mesh[] = nodeMeshRefs.current[index] ?? [];
-      const appearValues = layout.nodes.map((_, ni) => smoothstep(0.04 + ni * 0.03, 0.3 + ni * 0.03, local));
-      nodeMeshes.forEach((mesh, ni) => {
-        if (!mesh) return;
-        const appear = appearValues[ni] ?? 0;
-        const targetScale = 0.5 + appear * 0.6;
-        mesh.scale.setScalar(damp(mesh.scale.x, targetScale, 6, delta));
-        const meshMaterial = mesh.material as MeshStandardMaterial;
-        meshMaterial.opacity = damp(meshMaterial.opacity, appear * stationVisibility, 5, delta);
-        meshMaterial.emissiveIntensity = damp(meshMaterial.emissiveIntensity, 0.5 + appear * 0.9, 5, delta);
-      });
-
-      const edgeMaterials: LineBasicMaterial[] = edgeMaterialRefs.current[index] ?? [];
-      edgeMaterials.forEach((edgeMaterial, ei) => {
-        if (!edgeMaterial) return;
-        const pair = layout.edges[ei];
-        const a = appearValues[pair?.[0] ?? 0] ?? 0;
-        const b = appearValues[pair?.[1] ?? 0] ?? 0;
-        edgeMaterial.opacity = damp(edgeMaterial.opacity, Math.min(a, b) * stationVisibility * 0.55, 5, delta);
-      });
-
-      // Real-world only: small particle "couriers" travel each connection
-      // once it has formed, reading as active delivery rather than a static
-      // diagram.
-      const travellerMeshes = travellerMeshRefs.current[index];
-      if (layout.travellers && travellerMeshes) {
-        const segmentsList: Float32Array[] = edgeSegments[index] ?? [];
-        travellerMeshes.forEach((mesh, ei) => {
-          if (!mesh) return;
-          const positionsArray = segmentsList[ei];
-          const pair = layout.edges[ei];
-          const a = appearValues[pair?.[0] ?? 0] ?? 0;
-          const b = appearValues[pair?.[1] ?? 0] ?? 0;
-          const edgeAppear = Math.min(a, b);
-          const material = mesh.material as MeshBasicMaterial;
-          material.opacity = damp(material.opacity, edgeAppear * stationVisibility * 0.9, 5, delta);
-          if (positionsArray) {
-            const t = (time * 0.35 + ei * 0.17) % 1;
-            mesh.position.set(
-              lerp(positionsArray[0] ?? 0, positionsArray[3] ?? 0, t),
-              lerp(positionsArray[1] ?? 0, positionsArray[4] ?? 0, t),
-              lerp(positionsArray[2] ?? 0, positionsArray[5] ?? 0, t)
-            );
-          }
-        });
-      }
-    });
+    }
+    const dustMaterial = dustHandle.current?.material;
+    if (dustMaterial) dustMaterial.opacity = damp(dustMaterial.opacity, 0.28 * weight, 4, delta);
   });
 
   return (
-    <group ref={dollyRef} scale={tierConfig.objectScale}>
-      {BACKGROUND_WORDS.map((word, i) => {
-        const layout: [number, number] = BACKGROUND_WORD_LAYOUT[i] ?? [0, 0];
-        return (
-          <group
-            key={`universe-bg-${word}`}
-            position={[layout[0], layout[1], -(i * 6) - 6]}
-            ref={(g) => {
-              backgroundGroupRefs.current[i] = g;
-            }}
-          >
-            <ParticleSystem
-              ref={(handle) => {
-                backgroundHandleRefs.current[i] = handle;
-              }}
-              count={backgroundCount}
-              size={0.05}
-              color="#c7cfe0"
-              opacity={0}
-              sizeAttenuation
-            />
-          </group>
-        );
-      })}
+    <group ref={groupRef} scale={objectScale} position={[0, 0.1, 0]}>
+      <ParticleSystem ref={dustHandle} count={dustCount} size={0.02} color="#67e8f9" opacity={0} additive />
 
-      {universeStations.map((station, index) => {
-        const layout = STATION_LAYOUTS[station.variant];
-        const position: Vec3 = stationWorldPositions[index] ?? [0, 0, -index * stationSpacing];
+      <pointLight ref={screenLightRef} position={[0, 0.2, 0.9]} intensity={0} color="#fd6a50" distance={4} />
 
-        return (
-          <group
-            key={station.stat.label}
-            position={position}
-            ref={(g) => {
-              stationGroupRefs.current[index] = g;
-            }}
-          >
-            <ParticleSystem
-              ref={(handle) => {
-                fieldHandleRefs.current[index] = handle;
-              }}
-              count={perStationCount}
-              size={0.03}
-              color={layout.color}
-              opacity={0}
-              additive
-              sizeAttenuation
-            />
+      {/* Soft additive bloom behind the screen — a cheap stand-in for real
+          screen glow/bleed without a bloom post-processing pass. */}
+      <mesh ref={glowRef} position={[0, 0.15, -0.05]}>
+        <planeGeometry args={[3.4, 2.2]} />
+        <meshBasicMaterial transparent opacity={0} color="#fd6a50" depthWrite={false} />
+      </mesh>
 
-            {layout.nodes.map((node, ni) => (
-              <mesh
-                key={`${station.variant}-node-${ni}`}
-                position={node}
-                ref={(mesh) => {
-                  if (!mesh) return;
-                  const bucket: Mesh[] = nodeMeshRefs.current[index] ?? [];
-                  bucket[ni] = mesh;
-                  nodeMeshRefs.current[index] = bucket;
-                }}
-              >
-                <icosahedronGeometry args={[0.06, 0]} />
-                <meshStandardMaterial
-                  transparent
-                  opacity={0}
-                  color={layout.color}
-                  emissive={layout.color}
-                  emissiveIntensity={0.7}
-                  roughness={0.3}
-                  metalness={0.4}
-                />
-              </mesh>
-            ))}
+      {/* Screen bezel */}
+      <mesh position={[0, 0.15, -0.06]}>
+        <boxGeometry args={[2.9, 1.85, 0.08]} />
+        <meshStandardMaterial color="#0b0f1a" roughness={0.5} metalness={0.4} />
+      </mesh>
 
-            {(edgeSegments[index] ?? []).map((edgePositions, ei) => (
-              <line key={`${station.variant}-edge-${ei}`}>
-                <bufferGeometry>
-                  <bufferAttribute attach="attributes-position" args={[edgePositions, 3]} />
-                </bufferGeometry>
-                <lineBasicMaterial
-                  transparent
-                  opacity={0}
-                  color={layout.color}
-                  ref={(material) => {
-                    if (!material) return;
-                    const bucket: LineBasicMaterial[] = edgeMaterialRefs.current[index] ?? [];
-                    bucket[ei] = material;
-                    edgeMaterialRefs.current[index] = bucket;
-                  }}
-                />
-              </line>
-            ))}
+      {/* Screen surface — the live terminal, driven entirely by the
+          CanvasTexture drawn in useFrame above. */}
+      <mesh ref={screenRef} position={[0, 0.15, 0]}>
+        <planeGeometry args={[2.6, 1.6]} />
+        <meshStandardMaterial
+          transparent
+          opacity={0}
+          color="#000000"
+          emissive="#ffffff"
+          emissiveMap={texture}
+          emissiveIntensity={0}
+          roughness={0.35}
+          metalness={0.1}
+        />
+      </mesh>
 
-            {layout.travellers &&
-              quality === "high" &&
-              (edgeSegments[index] ?? []).map((_, ei) => (
-                <mesh
-                  key={`${station.variant}-traveller-${ei}`}
-                  ref={(mesh) => {
-                    if (!mesh) return;
-                    const bucket: Mesh[] = travellerMeshRefs.current[index] ?? [];
-                    bucket[ei] = mesh;
-                    travellerMeshRefs.current[index] = bucket;
-                  }}
-                >
-                  <sphereGeometry args={[0.035, 10, 10]} />
-                  <meshBasicMaterial transparent opacity={0} color={layout.color} />
-                </mesh>
-              ))}
-          </group>
-        );
-      })}
+      {/* Desk surface, with a faint, fading reflection of the screen glow —
+          a cheap trick standing in for a real planar reflection. */}
+      <mesh ref={deskRef} position={[0, -0.78, 0.35]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[3.4, 1.6]} />
+        <meshStandardMaterial transparent opacity={0} color="#0d1220" roughness={0.25} metalness={0.5} />
+      </mesh>
+      <mesh ref={reflectionRef} position={[0, -0.77, -0.05]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[2.6, 1.2]} />
+        <meshBasicMaterial transparent opacity={0} color="#fd6a50" depthWrite={false} />
+      </mesh>
+
+      {/* Abstracted, silhouette-only coder seated at the desk — deliberately
+          unlit/flat rather than a detailed character model. */}
+      <group position={[0.95, -0.55, 0.55]} scale={0.8}>
+        <mesh ref={silhouetteHeadRef} position={[0, 0.42, 0]}>
+          <sphereGeometry args={[0.16, 16, 16]} />
+          <meshStandardMaterial transparent opacity={0} color="#05070d" roughness={0.9} />
+        </mesh>
+        <mesh ref={silhouetteBodyRef} position={[0, 0.08, 0]}>
+          <boxGeometry args={[0.4, 0.48, 0.26]} />
+          <meshStandardMaterial transparent opacity={0} color="#05070d" roughness={0.9} />
+        </mesh>
+      </group>
+
+      {/* Small floating "code block" accents drifting around the terminal —
+          the "floating technical elements" that keep the space alive
+          without competing with the screen content itself. */}
+      {blockLayouts.map((_, index) => (
+        <mesh
+          key={`universe-code-block-${index}`}
+          scale={0.09}
+          ref={(mesh) => {
+            if (mesh) blockRefs.current[index] = mesh;
+          }}
+        >
+          <boxGeometry args={[1, 1, 1]} />
+          <meshStandardMaterial
+            transparent
+            opacity={0}
+            color="#67e8f9"
+            emissive="#22d3ee"
+            emissiveIntensity={0.6}
+            roughness={0.3}
+            metalness={0.4}
+          />
+        </mesh>
+      ))}
     </group>
   );
 }

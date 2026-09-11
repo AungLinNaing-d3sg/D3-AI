@@ -10,8 +10,8 @@ import {
   aboutPartnerNote,
   typographyWords,
   typographyWordRanges,
-  primaryConceptNodes,
-  secondaryConceptNodes,
+  heroPipelineNodes,
+  technologyNetworkNodes,
   universeStats,
   universeStatRanges,
   universeStations,
@@ -92,15 +92,18 @@ describe("content data integrity", () => {
     });
   });
 
-  it("builds the neural network from the 5 brief-specified concepts plus the real technology ecosystem", () => {
-    expect(primaryConceptNodes.map((node) => node.label)).toEqual([
+  it("gives the hero the 5 brief-specified pipeline stages, exclusively", () => {
+    expect(heroPipelineNodes.map((node) => node.label)).toEqual([
       "THINK",
       "LEARN",
       "UNDERSTAND",
       "PREDICT",
       "CREATE",
     ]);
-    expect(secondaryConceptNodes).toHaveLength(techNodes.length);
+  });
+
+  it("builds the neural network chapter from the real technology ecosystem alone", () => {
+    expect(technologyNetworkNodes).toHaveLength(techNodes.length);
   });
 
   it("sources the data universe statistics from the real brand pillars, not invented numbers", () => {

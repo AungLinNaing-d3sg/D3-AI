@@ -180,6 +180,12 @@ function DigitalDevice({ index, activityRef }: DeviceProps) {
  * name, so this array's order matters. */
 const DEVICE_COMPONENTS = [DataDevice, DynamicsDevice, DigitalDevice] as const;
 
+/** Each floating panel's accent colour, matching its own hologram's palette
+ * (see `DataDevice`/`DynamicsDevice`/`DigitalDevice` above) so the glass
+ * panel and the 3D object it floats beside always read as one themed pair
+ * rather than a generic reused card. */
+const PANEL_ACCENTS = ["#22d3ee", "#fd6a50", "#67e8f9"] as const;
+
 /**
  * The unifying "AI core" the three product panels emerge from and orbit
  * around — a faceted nucleus in a soft wireframe shell, encircled by two
@@ -354,35 +360,77 @@ export function ProductScene({ quality }: ProductSceneProps) {
 
       <AiCore />
 
-      {devicePanels.map(({ panel, Device }, index) => (
-        <group
-          key={panel.slug}
-          position={[0, index % 2 === 0 ? 0.2 : -0.15, 0]}
-          ref={(node) => {
-            if (node) panelGroupRefs.current[index] = node;
-          }}
-        >
-          <Device index={index} activityRef={activityRef} />
+      {devicePanels.map(({ panel, Device }, index) => {
+        const accent = PANEL_ACCENTS[index % PANEL_ACCENTS.length] ?? "#fd6a50";
+        return (
+          <group
+            key={panel.slug}
+            position={[0, index % 2 === 0 ? 0.2 : -0.15, 0]}
+            ref={(node) => {
+              if (node) panelGroupRefs.current[index] = node;
+            }}
+          >
+            <Device index={index} activityRef={activityRef} />
 
-          <Html transform occlude={false} distanceFactor={5.2} className="pointer-events-none select-none">
-            <div className="w-[min(22rem,86vw)] rounded-3xl border border-white/15 bg-ink-900/75 p-7 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.8)] backdrop-blur-xl">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-brand-400">
-                {panel.eyebrow}
-              </p>
-              <h3 className="mt-3 font-display text-xl font-semibold text-ink-50">{panel.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-ink-300">{panel.summary}</p>
-              <ul className="mt-4 space-y-1.5">
-                {panel.bullets.slice(0, 4).map((bullet) => (
-                  <li key={bullet} className="flex items-start gap-2 text-xs text-ink-200">
-                    <span className="mt-1 h-1 w-1 flex-none rounded-full bg-brand-400" aria-hidden="true" />
-                    {bullet}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </Html>
-        </group>
-      ))}
+            <Html
+              transform
+              occlude={false}
+              distanceFactor={5.2}
+              className="pointer-events-none select-none"
+              aria-hidden="true"
+            >
+              {/* Floating "glass" composition rather than a flat card: two
+                  translucent, softly rotated panels stacked behind the main
+                  one fake layered depth, and the main panel's corners are
+                  angled (not uniformly rounded) so it reads as a piece of
+                  integrated tech UI rather than a generic rectangle sitting
+                  in front of the scene. */}
+              <div className="relative w-[min(22rem,86vw)]">
+                <div className="absolute -inset-4 -rotate-[4deg] rounded-[2rem] border border-white/10 bg-white/[0.02] backdrop-blur-md" />
+                <div
+                  className="absolute -inset-2 rotate-2 rounded-[1.75rem] border backdrop-blur-md"
+                  style={{ borderColor: `${accent}33`, backgroundColor: `${accent}0d` }}
+                />
+
+                <div
+                  className="relative overflow-hidden border bg-ink-900/80 p-5 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.8)] backdrop-blur-xl sm:p-7"
+                  style={{
+                    borderColor: `${accent}40`,
+                    clipPath:
+                      "polygon(0 14px, 14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%)",
+                  }}
+                >
+                  <div
+                    className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full blur-3xl"
+                    style={{ backgroundColor: `${accent}33` }}
+                  />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/[0.05] via-transparent to-transparent" />
+
+                  <div className="relative">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.28em]" style={{ color: accent }}>
+                      {panel.eyebrow}
+                    </p>
+                    <h3 className="mt-3 font-display text-xl font-semibold text-ink-50">{panel.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-ink-300">{panel.summary}</p>
+                    <ul className="mt-4 space-y-1.5 border-t border-white/10 pt-3">
+                      {panel.bullets.slice(0, 4).map((bullet) => (
+                        <li key={bullet} className="flex items-start gap-2 text-xs text-ink-200">
+                          <span
+                            className="mt-1 h-1 w-1 flex-none rounded-full"
+                            style={{ backgroundColor: accent }}
+                            aria-hidden="true"
+                          />
+                          {bullet}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </Html>
+          </group>
+        );
+      })}
     </group>
   );
 }

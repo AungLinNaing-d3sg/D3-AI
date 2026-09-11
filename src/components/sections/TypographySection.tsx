@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, type CSSProperties } from "react";
 import { Section } from "@/components/ui/Section";
 import { Container } from "@/components/ui/Container";
 import { Reveal } from "@/components/motion/Reveal";
@@ -29,6 +29,7 @@ const wordDescriptions: Record<string, string> = {
 export function TypographySection() {
   const captionWordRef = useRef<HTMLSpanElement>(null);
   const captionDescRef = useRef<HTMLParagraphElement>(null);
+  const cardRefs = useRef<Array<HTMLLIElement | null>>([]);
 
   const onFrame = useCallback((state: JourneyState) => {
     const local = state.progress.typography;
@@ -40,6 +41,19 @@ export function TypographySection() {
     if (captionDescRef.current) {
       captionDescRef.current.textContent = wordDescriptions[active.word] ?? "";
     }
+
+    // Same scroll-driven active-item highlight pattern as the About/Data
+    // Universe chapters (see components/sections/AboutSection.tsx and
+    // UniverseSection.tsx) — kept in sync with the same `local` progress
+    // value that drives the caption above, and the same word ranges the 3D
+    // particle formation reads (see typographyWordRanges), rather than a
+    // second, independent timing source.
+    typographyWordRanges.forEach((range, index) => {
+      const card = cardRefs.current[index];
+      if (!card) return;
+      const isActive = local >= range.start && local < range.end;
+      card.dataset.active = isActive ? "true" : "false";
+    });
   }, []);
 
   useJourneyFrame(onFrame);
@@ -48,13 +62,13 @@ export function TypographySection() {
     <Section
       stageId="typography"
       ariaLabelledBy="typography-heading"
-      className="min-h-[100vh] md:min-h-[120vh] lg:min-h-[140vh]"
+      className="min-h-[90vh] md:min-h-[110vh] lg:min-h-[125vh]"
     >
       {/* Pinned only from tablet up — see IntroSection for why mobile flows
           normally instead of holding a full-screen pin. A little more
           runway than the single-beat chapters since 5 words cycle through
           here (see typographyWordRanges). */}
-      <div className="relative flex h-auto flex-col justify-between gap-10 py-12 md:sticky md:top-0 md:h-[100svh] md:py-24 lg:py-28">
+      <div className="relative flex h-auto flex-col justify-between gap-8 py-10 md:sticky md:top-0 md:h-[100svh] md:py-16 lg:py-20">
         <Container>
           <Reveal as="p" className="type-eyebrow text-brand-400">
             03 — Built from three real disciplines
@@ -80,13 +94,23 @@ export function TypographySection() {
       <Container className="relative z-10 pb-24">
         <h2 className="sr-only">The words that shape D3-SG</h2>
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {typographyWordRanges.map(({ word }) => (
+          {typographyWordRanges.map(({ word }, index) => (
             <li
               key={word}
-              className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 text-sm text-ink-200"
+              ref={(node) => {
+                cardRefs.current[index] = node;
+              }}
+              data-active="false"
+              style={{ "--halo-color": "#fd6a50" } as CSSProperties}
+              className="data-active-halo flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 text-sm text-ink-200 transition-all duration-300 data-[active=false]:opacity-70 data-[active=true]:border-brand-400/40 data-[active=true]:bg-brand-500/10"
             >
-              <p className="font-display text-lg font-semibold text-ink-50">{word}</p>
-              <p className="mt-1 text-xs leading-relaxed text-ink-400">{wordDescriptions[word]}</p>
+              <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full border border-brand-400/30 bg-brand-500/10 font-mono text-[11px] font-bold text-brand-300">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <div>
+                <p className="font-display text-lg font-semibold text-ink-50">{word}</p>
+                <p className="mt-1 text-xs leading-relaxed text-ink-400">{wordDescriptions[word]}</p>
+              </div>
             </li>
           ))}
         </ul>

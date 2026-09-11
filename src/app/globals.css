@@ -170,6 +170,68 @@ body {
   }
 }
 
+/*
+ * ---------------------------------------------------------------------
+ * Scroll-driven "active item" halo
+ * ---------------------------------------------------------------------
+ * Shared premium active-state effect for scroll-highlighted item grids
+ * (Typography words, About team, Data Universe stats — each already toggles
+ * a `data-active="true"/"false"` attribute on the current item via its own
+ * `useJourneyFrame` callback; this class is the one shared visual treatment
+ * layered on top). A slowly rotating conic-gradient ring reads as a soft
+ * "light sweep" tracing the active item's edge — replacing a flat static
+ * border — while inactive items stay fully subdued (no halo at all).
+ * `@property` lets the browser interpolate `--halo-angle` smoothly frame to
+ * frame instead of jumping; browsers without support simply keep the halo
+ * static at its start angle, a harmless, still-legible degradation. The
+ * sitewide `prefers-reduced-motion` rule already disables all
+ * `animation-duration`s, so this automatically goes static for those users
+ * too, with no extra guard needed here.
+ */
+@property --halo-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.data-active-halo {
+  position: relative;
+  isolation: isolate;
+}
+
+.data-active-halo::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--halo-angle),
+    transparent 0deg,
+    var(--halo-color, #f14a30) 35deg,
+    transparent 110deg
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.45s ease;
+  animation: halo-spin 3.4s linear infinite;
+}
+
+.data-active-halo[data-active="true"]::before {
+  opacity: 1;
+}
+
+@keyframes halo-spin {
+  to {
+    --halo-angle: 360deg;
+  }
+}
+
 /* Radial spotlight / grid background used behind hero & CTA sections. */
 .bg-grid {
   background-image:
@@ -180,6 +242,42 @@ body {
 
 .text-balance {
   text-wrap: balance;
+}
+
+/*
+ * One-shot light sweep across the hero title, timed to start right as its
+ * `Reveal variant="chars"` per-character entrance settles (see
+ * components/sections/IntroSection.tsx) — a refined "energy" pass rather
+ * than a generic glow, reads as light catching the title's own depth. The
+ * sitewide `prefers-reduced-motion` rule above already collapses this
+ * animation's duration to ~0, so no extra guard is needed here.
+ */
+.hero-title-sweep {
+  position: relative;
+  isolation: isolate;
+}
+
+.hero-title-sweep::after {
+  content: "";
+  position: absolute;
+  inset: -15% -25%;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.5) 48%,
+    rgba(255, 255, 255, 0.12) 54%,
+    transparent 70%
+  );
+  transform: translateX(-140%) skewX(-16deg);
+  animation: hero-sweep 1.6s 1.15s ease-out 1;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+@keyframes hero-sweep {
+  to {
+    transform: translateX(140%) skewX(-16deg);
+  }
 }
 
 /* Perspective wrapper for hover-tilt elements. */
@@ -248,13 +346,37 @@ body {
   font-size: clamp(1.9rem, 1.5rem + 2vw, 3.25rem);
 }
 
+/*
+ * Only consumer: the Data Universe "By the numbers" stat token badge
+ * (components/sections/UniverseSection.tsx). That grid goes 1 → 2 → 4
+ * columns at `sm`/`lg`, so each card gets *narrower* as the viewport grows —
+ * a plain `vw`-driven size (the previous `clamp(1.9rem, 1.5rem + 1.6vw,
+ * 2.75rem)`) grows with viewport width regardless of column count, so it
+ * hit its largest size exactly where cards had the least room (the 4-column
+ * desktop grid), overflowing the card/badge there while looking fine on the
+ * single-column mobile layout. Sized per breakpoint against the grid's own
+ * column changes instead, so it shrinks exactly where the card does; the
+ * base (mobile, 1-column) size is unchanged from the old clamp's floor.
+ */
 .type-display-stat {
   font-family: var(--font-mono-technical), var(--font-sans-display), sans-serif;
   font-weight: 700;
   letter-spacing: -0.01em;
-  line-height: 1;
+  line-height: 1.05;
   font-variant-numeric: tabular-nums;
-  font-size: clamp(1.9rem, 1.5rem + 1.6vw, 2.75rem);
+  font-size: 1.9rem;
+}
+
+@media (min-width: 640px) {
+  .type-display-stat {
+    font-size: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .type-display-stat {
+    font-size: 1.25rem;
+  }
 }
 
 .type-body-lead {

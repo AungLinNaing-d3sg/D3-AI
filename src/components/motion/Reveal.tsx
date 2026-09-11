@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, type ReactNode } from "react";
 import { ensureGsapRegistered, gsap, SplitText } from "@/lib/motion/gsap";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+import { useDeviceCapability } from "@/hooks/useDeviceCapability";
 
 /** The small, fixed set of host elements `<Reveal>` actually needs to
  * render as. Kept as a closed union (rather than a fully generic
@@ -22,8 +23,12 @@ type RevealTag = "div" | "p" | "span" | "h1" | "h2" | "h3";
  *   are marked `aria-hidden`.
  * - `"blur"` — a blur-to-sharp fade, for supporting headline copy that sits
  *   just below a `"chars"`/`"words"` title.
+ * - `"mask"` — a left-to-right clip-path "curtain" reveal combined with a
+ *   subtle blur/depth settle, for premium hero copy that should read as
+ *   materialising rather than a plain fade or a literal per-character
+ *   typewriter.
  */
-type RevealVariant = "fade" | "chars" | "words" | "blur";
+type RevealVariant = "fade" | "chars" | "words" | "blur" | "mask";
 
 interface RevealProps {
   children: ReactNode;
@@ -74,6 +79,7 @@ export function Reveal({
     ref.current = node;
   }, []);
   const prefersReducedMotion = usePrefersReducedMotion();
+  const { isCompact } = useDeviceCapability();
 
   useEffect(() => {
     const el = ref.current;
@@ -112,27 +118,49 @@ export function Reveal({
         gsap.set(el, { autoAlpha: 1 });
         split = SplitText.create(el, { type: variant });
         const targets = variant === "chars" ? split.chars : split.words;
+        // Skip the per-character Z-depth/rotation transform on compact
+        // (mobile) devices — a plain fade/slide is far cheaper to composite
+        // per-frame across dozens of split spans on a low-end mobile GPU,
+        // while still keeping the same stagger reveal rhythm.
         gsap.fromTo(
           targets,
-          {
-            autoAlpha: 0,
-            y,
-            z: -40,
-            rotateX: -18,
-            scale: 0.94,
-            transformPerspective: 600,
-            transformOrigin: "50% 100%",
-          },
+          isCompact
+            ? { autoAlpha: 0, y }
+            : {
+                autoAlpha: 0,
+                y,
+                z: -40,
+                rotateX: -18,
+                scale: 0.94,
+                transformPerspective: 600,
+                transformOrigin: "50% 100%",
+              },
           {
             autoAlpha: 1,
             y: 0,
-            z: 0,
-            rotateX: 0,
-            scale: 1,
+            ...(isCompact ? {} : { z: 0, rotateX: 0, scale: 1 }),
             duration: 0.8,
             delay,
             ease: "power3.out",
             stagger: variant === "chars" ? 0.018 : 0.05,
+            scrollTrigger,
+          }
+        );
+        return;
+      }
+
+      if (variant === "mask") {
+        gsap.fromTo(
+          el,
+          { autoAlpha: 0, y: y * 0.5, clipPath: "inset(0% 100% 0% 0%)", filter: "blur(6px)" },
+          {
+            autoAlpha: 1,
+            y: 0,
+            clipPath: "inset(0% 0% 0% 0%)",
+            filter: "blur(0px)",
+            duration: 1.1,
+            delay,
+            ease: "power3.out",
             scrollTrigger,
           }
         );
@@ -174,7 +202,7 @@ export function Reveal({
       ctx.revert();
       split?.revert();
     };
-  }, [prefersReducedMotion, delay, y, variant]);
+  }, [prefersReducedMotion, delay, y, variant, isCompact]);
 
   const classes = [className, prefersReducedMotion ? "" : "motion-reveal"]
     .filter(Boolean)

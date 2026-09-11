@@ -13,7 +13,7 @@ import { siteConfig } from "@/data/site";
  */
 export function CtaSection() {
   return (
-    <Section stageId="cta" ariaLabelledBy="cta-heading" className="flex min-h-[100svh] items-center py-16 sm:py-24 lg:py-28">
+    <Section stageId="cta" ariaLabelledBy="cta-heading" className="flex min-h-[85svh] items-center py-14 sm:py-20 lg:py-24">
       <Container className="flex flex-col items-center gap-8 text-center">
         <Reveal as="p" className="type-eyebrow text-brand-400">
           09 — Let&rsquo;s talk

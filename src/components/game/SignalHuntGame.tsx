@@ -6,6 +6,7 @@ import { SignalHuntScene } from "@/components/three/games/SignalHuntScene";
 import { GameFrame } from "@/components/game/GameFrame";
 import { Button } from "@/components/ui/Button";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+import { useDeviceCapability } from "@/hooks/useDeviceCapability";
 import { clamp } from "@/lib/motion/mathUtils";
 import type { NodeStatus, SignalNode } from "@/components/game/SignalHuntGame.types";
 
@@ -56,6 +57,7 @@ interface SignalHuntGameProps {
  */
 export function SignalHuntGame({ onFinish, onExit }: SignalHuntGameProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
+  const { isCompact } = useDeviceCapability();
   const [phase, setPhase] = useState<Phase>("ready");
   const [statuses, setStatuses] = useState<StatusMap>(idleStatuses);
   const [score, setScore] = useState(0);
@@ -167,12 +169,12 @@ export function SignalHuntGame({ onFinish, onExit }: SignalHuntGameProps) {
             <Canvas
               aria-hidden="true"
               className="pointer-events-none absolute inset-0"
-              dpr={[1, 1.5]}
+              dpr={isCompact ? [1, 1] : [1, 1.5]}
               camera={{ position: [0, 0.1, 3.4], fov: 46 }}
-              gl={{ antialias: true, alpha: true }}
+              gl={{ antialias: !isCompact, alpha: true }}
             >
               <color attach="background" args={["#050b14"]} />
-              <SignalHuntScene nodes={SIGNAL_NODES} statuses={statuses} quality="high" />
+              <SignalHuntScene nodes={SIGNAL_NODES} statuses={statuses} quality={isCompact ? "low" : "high"} />
             </Canvas>
           ) : (
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,_#0e2230_0%,_#050b14_75%)]" />
@@ -190,7 +192,7 @@ export function SignalHuntGame({ onFinish, onExit }: SignalHuntGameProps) {
                   onClick={() => resolveNode(node)}
                   aria-label={`Transmission ${node.label}`}
                   style={{ left: `${node.xPercent}%`, top: `${node.yPercent}%` }}
-                  className="absolute flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border text-[9px] font-semibold uppercase tracking-wide text-white shadow-lg transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 disabled:pointer-events-none data-[status=idle]:border-white/25 data-[status=idle]:bg-white/10 data-[status=idle]:hover:scale-110 data-[status=correct]:scale-0 data-[status=correct]:border-emerald-400 data-[status=correct]:bg-emerald-500/60 data-[status=incorrect]:scale-0 data-[status=incorrect]:border-rose-400 data-[status=incorrect]:bg-rose-500/60"
+                  className="absolute flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border text-[9px] font-semibold uppercase tracking-wide text-white shadow-lg transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 disabled:pointer-events-none data-[status=idle]:border-white/25 data-[status=idle]:bg-white/10 data-[status=idle]:pointer-fine:hover:scale-110 data-[status=correct]:scale-0 data-[status=correct]:border-emerald-400 data-[status=correct]:bg-emerald-500/60 data-[status=incorrect]:scale-0 data-[status=incorrect]:border-rose-400 data-[status=incorrect]:bg-rose-500/60"
                 >
                   {node.label}
                 </button>

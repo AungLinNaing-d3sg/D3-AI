@@ -39,7 +39,11 @@ export function Experience({ quality, enableParallax }: ExperienceProps) {
   return (
     <Canvas
       dpr={dpr}
-      gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+      gl={{
+        antialias: quality !== "low",
+        alpha: true,
+        powerPreference: quality === "low" ? "low-power" : "high-performance",
+      }}
       camera={{ position: [0, 0.5, 9.5], fov: 42, near: 0.1, far: 40 }}
       eventSource={typeof document !== "undefined" ? document.body : undefined}
       eventPrefix="client"

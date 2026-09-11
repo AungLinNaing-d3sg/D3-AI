@@ -1,12 +1,17 @@
+import type { CSSProperties } from "react";
 import type { ServiceIconName } from "@/types";
 
 interface ServiceIconProps {
   name: ServiceIconName;
   className?: string;
+  /** Overrides the icon's colour (defaults to Tailwind's `text-*` via
+   * `currentColor`) — used to tint the icon per-accent without a matching
+   * `text-*` utility class for every possible hex. */
+  style?: CSSProperties;
 }
 
 /** Minimal, hand-authored line icons for the three service pillars. */
-export function ServiceIcon({ name, className = "h-7 w-7" }: ServiceIconProps) {
+export function ServiceIcon({ name, className = "h-7 w-7", style }: ServiceIconProps) {
   const shared = {
     viewBox: "0 0 24 24",
     fill: "none",
@@ -15,6 +20,7 @@ export function ServiceIcon({ name, className = "h-7 w-7" }: ServiceIconProps) {
     strokeLinecap: "round" as const,
     strokeLinejoin: "round" as const,
     className,
+    style,
     "aria-hidden": true,
   };
 

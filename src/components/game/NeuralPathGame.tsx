@@ -6,6 +6,7 @@ import { NeuralPathScene } from "@/components/three/games/NeuralPathScene";
 import { GameFrame } from "@/components/game/GameFrame";
 import { Button } from "@/components/ui/Button";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+import { useDeviceCapability } from "@/hooks/useDeviceCapability";
 import { nodeVisual, type PathNode } from "@/components/game/NeuralPathGame.types";
 
 interface LayerDefinition {
@@ -74,6 +75,7 @@ interface NeuralPathGameProps {
  */
 export function NeuralPathGame({ onFinish, onExit }: NeuralPathGameProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
+  const { isCompact } = useDeviceCapability();
   const [phase, setPhase] = useState<Phase>("ready");
   const [currentLayer, setCurrentLayer] = useState(0);
   const [wrongAttempts, setWrongAttempts] = useState(0);
@@ -182,12 +184,17 @@ export function NeuralPathGame({ onFinish, onExit }: NeuralPathGameProps) {
             <Canvas
               aria-hidden="true"
               className="pointer-events-none absolute inset-0"
-              dpr={[1, 1.5]}
+              dpr={isCompact ? [1, 1] : [1, 1.5]}
               camera={{ position: [0, 0, 4.2], fov: 44 }}
-              gl={{ antialias: true, alpha: true }}
+              gl={{ antialias: !isCompact, alpha: true }}
             >
               <color attach="background" args={["#0a0716"]} />
-              <NeuralPathScene nodes={ALL_NODES} currentLayer={currentLayer} flashId={flashId} quality="high" />
+              <NeuralPathScene
+                nodes={ALL_NODES}
+                currentLayer={currentLayer}
+                flashId={flashId}
+                quality={isCompact ? "low" : "high"}
+              />
             </Canvas>
           ) : (
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,_#1c1533_0%,_#0a0716_75%)]" />
@@ -206,7 +213,7 @@ export function NeuralPathGame({ onFinish, onExit }: NeuralPathGameProps) {
                   onClick={() => chooseNode(node)}
                   aria-label={`${LAYERS[node.layer]?.title ?? "Junction"}: ${node.label}`}
                   style={{ left: `${node.xPercent}%`, top: `${node.yPercent}%` }}
-                  className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-300 disabled:pointer-events-none data-[visual=locked]:border-white/10 data-[visual=locked]:bg-white/5 data-[visual=locked]:opacity-40 data-[visual=available]:border-violet-300/60 data-[visual=available]:bg-violet-500/20 data-[visual=available]:hover:scale-110 data-[visual=active-path]:border-emerald-400/70 data-[visual=active-path]:bg-emerald-500/20 data-[visual=dormant]:border-white/10 data-[visual=dormant]:bg-white/5 data-[visual=dormant]:opacity-30 data-[visual=flash]:scale-110 data-[visual=flash]:border-rose-400 data-[visual=flash]:bg-rose-500/50"
+                  className="absolute min-h-11 -translate-x-1/2 -translate-y-1/2 rounded-full border px-3.5 py-2.5 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-300 disabled:pointer-events-none data-[visual=locked]:border-white/10 data-[visual=locked]:bg-white/5 data-[visual=locked]:opacity-40 data-[visual=available]:border-violet-300/60 data-[visual=available]:bg-violet-500/20 data-[visual=available]:pointer-fine:hover:scale-110 data-[visual=active-path]:border-emerald-400/70 data-[visual=active-path]:bg-emerald-500/20 data-[visual=dormant]:border-white/10 data-[visual=dormant]:bg-white/5 data-[visual=dormant]:opacity-30 data-[visual=flash]:scale-110 data-[visual=flash]:border-rose-400 data-[visual=flash]:bg-rose-500/50"
                 >
                   {node.label}
                 </button>

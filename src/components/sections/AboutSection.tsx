@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, type CSSProperties } from "react";
+import Image from "next/image";
 import { Section } from "@/components/ui/Section";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
@@ -40,11 +41,11 @@ export function AboutSection() {
     <Section
       stageId="about"
       ariaLabelledBy="about-heading"
-      className="min-h-[85vh] md:min-h-[100vh] lg:min-h-[120vh]"
+      className="min-h-[75vh] md:min-h-[95vh] lg:min-h-[105vh]"
     >
       {/* Pinned only from tablet up — see IntroSection for why mobile flows
           normally instead of holding a full-screen pin. */}
-      <div className="relative flex h-auto flex-col justify-center gap-8 py-12 md:sticky md:top-0 md:h-[100svh] md:gap-10 md:py-24 lg:py-28">
+      <div className="relative flex h-auto flex-col justify-center gap-8 py-10 md:sticky md:top-0 md:h-[100svh] md:gap-8 md:py-16 lg:py-20">
         <Container className="flex flex-col gap-10">
           <SectionHeading
             headingId="about-heading"
@@ -83,10 +84,28 @@ export function AboutSection() {
                 cardRefs.current[index] = node;
               }}
               data-active="false"
-              className="group rounded-3xl border border-white/10 bg-white/[0.03] p-7 transition-colors duration-300 data-[active=true]:border-brand-400/50 data-[active=true]:bg-brand-500/10"
+              style={{ "--halo-color": "#fd6a50" } as CSSProperties}
+              className="data-active-halo group rounded-3xl border border-white/10 bg-white/[0.03] p-7 transition-colors duration-300 data-[active=true]:border-brand-400/50 data-[active=true]:bg-brand-500/10"
             >
-              <p className="font-display text-lg font-semibold text-ink-50">{member.name}</p>
-              <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-brand-400">{member.role}</p>
+              <Reveal as="div" delay={index * 0.08} className="flex items-center gap-4">
+                <div className="relative h-16 w-16 flex-none animate-float-slow sm:h-20 sm:w-20">
+                  <div
+                    className="absolute -inset-1 rounded-2xl bg-brand-500/30 opacity-0 blur-md transition-opacity duration-300 group-hover:opacity-70 group-data-[active=true]:opacity-70"
+                    aria-hidden="true"
+                  />
+                  <Image
+                    src={member.photo}
+                    alt={member.name}
+                    width={96}
+                    height={96}
+                    className="relative h-full w-full rounded-2xl border border-white/15 object-cover ring-1 ring-white/10 transition-transform duration-300 pointer-fine:group-hover:scale-105 group-data-[active=true]:border-brand-400/60"
+                  />
+                </div>
+                <div>
+                  <p className="font-display text-lg font-semibold text-ink-50">{member.name}</p>
+                  <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-brand-400">{member.role}</p>
+                </div>
+              </Reveal>
               <ul className="mt-4 flex flex-col gap-2 border-t border-white/10 pt-4">
                 {member.bio.map((line) => (
                   <li key={line} className="flex items-start gap-2 text-xs leading-relaxed text-ink-300">

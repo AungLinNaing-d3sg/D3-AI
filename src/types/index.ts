@@ -53,6 +53,8 @@ export interface TeamMember {
   role: string;
   initials: string;
   bio: string[];
+  /** Path (under `public/`) to this member's profile photo. */
+  photo: string;
 }
 
 export interface BrandPillar {

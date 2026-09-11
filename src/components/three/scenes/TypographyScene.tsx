@@ -14,6 +14,23 @@ interface TypographySceneProps {
   quality: SceneQuality;
 }
 
+/** Must match the `worldScale` passed to `sampleTextPoints` below — the
+ * single source of truth both the particle sampling and the mobile/tablet
+ * frustum-fit computation (see the `quality !== "high"` branch in `useFrame`)
+ * read from, so they can never drift out of sync. */
+const TEXT_WORLD_SCALE = 3.6;
+
+/** `sampleTextPoints` shrinks each word's font until it fits within 90% of
+ * its sampling canvas — this mirrors that same ratio so the fit-to-viewport
+ * calculation below reasons about the word's actual worst-case rendered
+ * width, not the full (padded) `TEXT_WORLD_SCALE` bounding box. */
+const TEXT_MAX_WIDTH_RATIO = 0.9;
+
+/** Fraction of the currently-visible frustum width the formed word may
+ * occupy on tablet/mobile — leaves a small breathing-room margin either
+ * side rather than fitting exactly edge-to-edge. */
+const MOBILE_FIT_MARGIN = 0.92;
+
 /**
  * Chapter 03 — 3D AI Typography. Huge "physical" words built from thousands
  * of individual particles rather than flat HTML or a font-geometry asset
@@ -32,7 +49,7 @@ export function TypographyScene({ quality }: TypographySceneProps) {
     if (typeof document === "undefined") return [];
     const frames: Float32Array[] = [scatterPoints(count, 5.5)];
     typographyWords.forEach((word) => {
-      frames.push(sampleTextPoints(word, count));
+      frames.push(sampleTextPoints(word, count, 220, TEXT_WORLD_SCALE));
       frames.push(scatterPoints(count, 5.5));
     });
     return frames;
@@ -45,6 +62,7 @@ export function TypographyScene({ quality }: TypographySceneProps) {
   }, [count]);
 
   const tilt = useRef({ x: 0, y: 0 });
+  const fitScale = useRef(objectScale);
 
   useFrame((state, delta) => {
     const group = groupRef.current;
@@ -59,6 +77,22 @@ export function TypographyScene({ quality }: TypographySceneProps) {
       tilt.current.y = damp(tilt.current.y, pointer.x * 0.22, 3, delta);
       group.rotation.x = tilt.current.x;
       group.rotation.y = tilt.current.y + Math.sin(state.clock.elapsedTime * 0.05) * 0.05;
+
+      // A portrait phone's much narrower horizontal FOV (a function of
+      // aspect ratio, not just device tier) can still clip the formed
+      // word's edges even after `objectScale` — so, only below the desktop
+      // tier (desktop keeps its exact authored scale, untouched), keep
+      // re-fitting the group to whatever width is actually visible at this
+      // depth right now, on top of (never beyond) the tier's own scale.
+      let targetScale = objectScale;
+      if (quality !== "high") {
+        const viewport = state.viewport.getCurrentViewport(state.camera, [0, 0, 0], state.size);
+        const textWorldWidth = TEXT_WORLD_SCALE * 2 * TEXT_MAX_WIDTH_RATIO;
+        const fitToViewport = (viewport.width * MOBILE_FIT_MARGIN) / textWorldWidth;
+        targetScale = Math.min(objectScale, fitToViewport);
+      }
+      fitScale.current = damp(fitScale.current, Math.max(targetScale, 0.001), 4, delta);
+      group.scale.setScalar(fitScale.current);
     }
 
     if (material) {
