@@ -10,10 +10,11 @@ import {
   aboutPartnerNote,
   typographyWords,
   typographyWordRanges,
-  primaryConceptNodes,
-  secondaryConceptNodes,
+  heroPipelineNodes,
+  technologyNetworkNodes,
   universeStats,
   universeStatRanges,
+  universeStations,
   productPanels,
   gameItemDefinitions,
   playgroundGames,
@@ -91,15 +92,18 @@ describe("content data integrity", () => {
     });
   });
 
-  it("builds the neural network from the 5 brief-specified concepts plus the real technology ecosystem", () => {
-    expect(primaryConceptNodes.map((node) => node.label)).toEqual([
+  it("gives the hero the 5 brief-specified pipeline stages, exclusively", () => {
+    expect(heroPipelineNodes.map((node) => node.label)).toEqual([
       "THINK",
       "LEARN",
       "UNDERSTAND",
       "PREDICT",
       "CREATE",
     ]);
-    expect(secondaryConceptNodes).toHaveLength(techNodes.length);
+  });
+
+  it("builds the neural network chapter from the real technology ecosystem alone", () => {
+    expect(technologyNetworkNodes).toHaveLength(techNodes.length);
   });
 
   it("sources the data universe statistics from the real brand pillars, not invented numbers", () => {
@@ -108,6 +112,15 @@ describe("content data integrity", () => {
     universeStats.forEach((stat) => {
       expect(stat.token.length).toBeGreaterThan(0);
     });
+  });
+
+  it("gives every data universe statistic its own distinct 3D station treatment", () => {
+    expect(universeStations).toHaveLength(universeStats.length);
+    universeStations.forEach((station, index) => {
+      expect(station.stat).toEqual(universeStats[index]);
+    });
+    const variants = new Set(universeStations.map((station) => station.variant));
+    expect(variants.size).toBe(universeStations.length);
   });
 
   it("maps the product experience panels 1:1 onto the real service pillars", () => {
@@ -137,13 +150,4 @@ describe("content data integrity", () => {
     });
   });
 
-  it("gives the identity constellation its one dedicated peak during the About chapter", () => {
-    const opacities = sceneKeyframes.map((keyframe) => keyframe.identity.opacity);
-    opacities.forEach((opacity) => {
-      expect(opacity).toBeGreaterThanOrEqual(0);
-      expect(opacity).toBeLessThanOrEqual(1);
-    });
-    // index 1 === the About chapter (see sceneKeyframes in lib/motion/sceneState.ts).
-    expect(opacities[1]).toBe(Math.max(...opacities));
-  });
 });

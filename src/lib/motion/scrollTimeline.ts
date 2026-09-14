@@ -38,6 +38,26 @@ const lightKeyframes: LightKeyframe[] = [
   { ambient: 0.3, key: 1.8, rim: 0.5, colorHex: "#f14a30" }, // cta
 ];
 
+/**
+ * Compresses the shared camera flight's Z-axis travel and look-at depth
+ * around a fixed reference point, for the "reduce camera movement and
+ * depth/Z-axis travel" mobile/tablet requirement (see
+ * `src/lib/three/deviceTiers.ts` `depthScale` — 1 = full desktop cinematic
+ * depth, lower = a flatter, shorter dolly). `x`/`y`/`fov` are left untouched
+ * since they're already small/stylistic, not the "how far the camera
+ * travels" concern this exists to address.
+ */
+const CAMERA_DEPTH_REFERENCE_Z = 5;
+
+function scaleCameraKeyframes(depthScale: number): CameraKeyframe[] {
+  if (depthScale >= 1) return cameraKeyframes;
+  return cameraKeyframes.map((frame) => ({
+    ...frame,
+    z: CAMERA_DEPTH_REFERENCE_Z + (frame.z - CAMERA_DEPTH_REFERENCE_Z) * depthScale,
+    lookZ: frame.lookZ * depthScale,
+  }));
+}
+
 /** Soft crossfade envelope: ramps 0→1 over the first `edge` of local
  * progress and 1→0 over the last `edge`, flat at 1 in between. The very
  * first/last stage never fades to 0 at the outer page boundary since
@@ -67,17 +87,23 @@ interface StageBounds {
  * @param stageEls Stage sections in document order, each tagged
  *   `data-stage="<StageId>"`; must line up 1:1 with `STAGE_IDS`.
  * @param wrapperEl The ancestor spanning all stages.
+ * @param depthScale Device-tiered camera Z-axis/look-at depth compression —
+ *   see `scaleCameraKeyframes` above and `src/lib/three/deviceTiers.ts`
+ *   (1 = full desktop depth, lower on tablet/mobile).
  * @returns A cleanup function that removes the ScrollTrigger.
  */
 export function initJourneyTimeline(
   stageEls: { id: StageId; el: HTMLElement }[],
-  wrapperEl: HTMLElement
+  wrapperEl: HTMLElement,
+  depthScale = 1
 ): () => void {
   if (typeof window === "undefined" || stageEls.length === 0) {
     return () => undefined;
   }
 
   ensureGsapRegistered();
+
+  const activeCameraKeyframes = scaleCameraKeyframes(depthScale);
 
   const bounds: StageBounds[] = stageEls.map(({ id }) => ({ id, top: 0, height: 1 }));
   let total = 1;
@@ -143,8 +169,8 @@ export function initJourneyTimeline(
       const localT = bound ? clamp((scrollY - bound.top) / bound.height) : 0;
       const eased = smoothstep(0, 1, localT);
 
-      const from = cameraKeyframes[resolvedIndex] ?? cameraKeyframes[0];
-      const to = cameraKeyframes[resolvedIndex + 1] ?? cameraKeyframes[cameraKeyframes.length - 1];
+      const from = activeCameraKeyframes[resolvedIndex] ?? activeCameraKeyframes[0];
+      const to = activeCameraKeyframes[resolvedIndex + 1] ?? activeCameraKeyframes[activeCameraKeyframes.length - 1];
       if (from && to) {
         journeyState.camera.x = lerp(from.x, to.x, eased);
         journeyState.camera.y = lerp(from.y, to.y, eased);

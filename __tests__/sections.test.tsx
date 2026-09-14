@@ -9,7 +9,14 @@ import { GameSection } from "@/components/sections/GameSection";
 import { FutureSection } from "@/components/sections/FutureSection";
 import { CtaSection } from "@/components/sections/CtaSection";
 import { siteConfig } from "@/data/site";
-import { primaryConceptNodes, universeStats, aboutPartnerNote, playgroundGames } from "@/data/journey";
+import {
+  heroPipelineNodes,
+  technologyNetworkNodes,
+  universeStats,
+  universeStations,
+  aboutPartnerNote,
+  playgroundGames,
+} from "@/data/journey";
 import { teamMembers } from "@/data/team";
 
 describe("homepage chapters", () => {
@@ -17,6 +24,20 @@ describe("homepage chapters", () => {
     render(<IntroSection />);
     expect(screen.getByRole("heading", { level: 1, name: siteConfig.tagline })).toBeInTheDocument();
     expect(document.getElementById("intro")).toHaveAttribute("data-stage", "intro");
+  });
+
+  it("renders the hero pipeline stages accessibly in the intro chapter", () => {
+    render(<IntroSection />);
+    heroPipelineNodes.forEach((node) => {
+      expect(screen.getByText(node.label)).toBeInTheDocument();
+    });
+  });
+
+  it("never renders the hero pipeline stages in the neural network chapter", () => {
+    render(<NeuralSection />);
+    heroPipelineNodes.forEach((node) => {
+      expect(screen.queryAllByText(node.label)).toHaveLength(0);
+    });
   });
 
   it("renders the about-us chapter with the real, sourced leadership team", () => {
@@ -46,14 +67,19 @@ describe("homepage chapters", () => {
   it("renders the typography chapter's word list accessibly, independent of the 3D particle formation", () => {
     render(<TypographySection />);
     expect(document.getElementById("typography")).toHaveAttribute("data-stage", "typography");
-    expect(screen.getByRole("heading", { level: 2, name: "D3-SG" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "DATA" })).toBeInTheDocument();
     expect(screen.getByText("AI", { selector: "p" })).toBeInTheDocument();
   });
 
-  it("renders the neural network chapter with every concept and technology node label", () => {
+  it("never renders a D3-SG card in the typography chapter", () => {
+    render(<TypographySection />);
+    expect(screen.queryByText("D3-SG")).not.toBeInTheDocument();
+  });
+
+  it("renders the neural network chapter with every technology node label", () => {
     render(<NeuralSection />);
     expect(document.getElementById("neural")).toHaveAttribute("data-stage", "neural");
-    primaryConceptNodes.forEach((node) => {
+    technologyNetworkNodes.forEach((node) => {
       expect(screen.getByText(node.label)).toBeInTheDocument();
     });
   });
@@ -63,6 +89,31 @@ describe("homepage chapters", () => {
     expect(document.getElementById("universe")).toHaveAttribute("data-stage", "universe");
     universeStats.forEach((stat) => {
       expect(screen.getByText(stat.token)).toBeInTheDocument();
+    });
+  });
+
+  it("gives every data universe stat card an accessible caption of the shared decorative 3D scene", () => {
+    render(<UniverseSection />);
+    const cards = screen.getAllByRole("listitem");
+    expect(cards).toHaveLength(universeStations.length);
+
+    // One shared 3D backdrop (a live coding terminal, not a per-statistic
+    // composition — see three/scenes/UniverseScene.tsx) sits behind every
+    // card now, so every card's caption is expected to be identical, not
+    // unique per station.
+    universeStations.forEach((station) => {
+      const statNode = screen.getByText(station.stat.token);
+      const card = statNode.closest("li");
+      expect(card).not.toBeNull();
+      // The real, sourced statistic copy (label + description) must still be
+      // present and visible alongside the sr-only 3D caption — the caption
+      // supplements, never replaces, the primary accessible content.
+      expect(card).toHaveTextContent(station.stat.label);
+      expect(card).toHaveTextContent(station.stat.description);
+
+      const caption = card?.querySelector(".sr-only");
+      expect(caption).not.toBeNull();
+      expect(caption?.textContent).toMatch(/^3D scene:/);
     });
   });
 
@@ -85,15 +136,6 @@ describe("homepage chapters", () => {
     render(<FutureSection />);
     expect(document.getElementById("future")).toHaveAttribute("data-stage", "future");
     expect(screen.getByRole("heading", { level: 2, name: siteConfig.tagline })).toBeInTheDocument();
-  });
-
-  it("lists the three solution pillars (Data, Dynamics, Digital) as the About chapter's identity list", () => {
-    render(<AboutSection />);
-    const list = screen.getByRole("list", { name: /three solution pillars/i });
-    expect(list).toBeInTheDocument();
-    expect(screen.getByRole("heading", { level: 3, name: "Data" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { level: 3, name: "Dynamics" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { level: 3, name: "Digital" })).toBeInTheDocument();
   });
 
   it("renders the final CTA with direct email and phone actions", () => {

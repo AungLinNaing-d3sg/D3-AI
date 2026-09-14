@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, type CSSProperties } from "react";
 import { Section } from "@/components/ui/Section";
 import { Container } from "@/components/ui/Container";
 import { Reveal } from "@/components/motion/Reveal";
@@ -8,10 +8,8 @@ import { useJourneyFrame } from "@/hooks/useJourneyFrame";
 import type { JourneyState } from "@/lib/motion/journeyState";
 import { typographyWordRanges } from "@/data/journey";
 import { services } from "@/data/services";
-import { siteConfig } from "@/data/site";
 
 const wordDescriptions: Record<string, string> = {
-  "D3-SG": siteConfig.description,
   DATA: services[0]?.summary ?? "",
   DYNAMICS: services[1]?.summary ?? "",
   DIGITAL: services[2]?.summary ?? "",
@@ -29,6 +27,7 @@ const wordDescriptions: Record<string, string> = {
 export function TypographySection() {
   const captionWordRef = useRef<HTMLSpanElement>(null);
   const captionDescRef = useRef<HTMLParagraphElement>(null);
+  const cardRefs = useRef<Array<HTMLLIElement | null>>([]);
 
   const onFrame = useCallback((state: JourneyState) => {
     const local = state.progress.typography;
@@ -40,29 +39,52 @@ export function TypographySection() {
     if (captionDescRef.current) {
       captionDescRef.current.textContent = wordDescriptions[active.word] ?? "";
     }
+
+    // Same scroll-driven active-item highlight pattern as the About/Data
+    // Universe chapters (see components/sections/AboutSection.tsx and
+    // UniverseSection.tsx) — kept in sync with the same `local` progress
+    // value that drives the caption above, and the same word ranges the 3D
+    // particle formation reads (see typographyWordRanges), rather than a
+    // second, independent timing source.
+    typographyWordRanges.forEach((range, index) => {
+      const card = cardRefs.current[index];
+      if (!card) return;
+      const isActive = local >= range.start && local < range.end;
+      card.dataset.active = isActive ? "true" : "false";
+    });
   }, []);
 
   useJourneyFrame(onFrame);
 
   return (
-    <Section stageId="typography" ariaLabelledBy="typography-heading" className="min-h-[440vh]">
-      <div className="sticky top-0 flex h-[100svh] flex-col justify-between py-24 sm:py-28">
+    <Section
+      stageId="typography"
+      ariaLabelledBy="typography-heading"
+      className="min-h-[90vh] md:min-h-[110vh] lg:min-h-[125vh]"
+    >
+      {/* Pinned only from tablet up — see IntroSection for why mobile flows
+          normally instead of holding a full-screen pin. A little more
+          runway than the single-beat chapters since 4 words cycle through
+          here (see typographyWordRanges). */}
+      <div className="relative flex h-auto flex-col justify-between gap-8 py-10 md:sticky md:top-0 md:h-[100svh] md:py-16 lg:py-20">
         <Container>
-          <Reveal as="p" className="text-xs font-semibold uppercase tracking-[0.32em] text-brand-400">
+          <Reveal as="p" className="type-eyebrow text-brand-400">
             03 — Built from three real disciplines
           </Reveal>
         </Container>
 
         <Container>
           <div className="max-w-2xl">
-            <h2
-              id="typography-heading"
-              className="font-display text-4xl font-semibold tracking-tight text-ink-50 sm:text-5xl"
-            >
-              <span ref={captionWordRef}>D3-SG</span>
+            {/* Initial (pre-scroll/no-JS) state matches whatever `onFrame`
+                would compute for `progress.typography === 0` — the first
+                word in `typographyWordRanges`, now DATA since D3-SG was
+                removed from the cycle — so there's no flash of a stale word
+                before the first scroll-driven frame runs. */}
+            <h2 id="typography-heading" className="type-display-section text-ink-50">
+              <span ref={captionWordRef}>DATA</span>
             </h2>
-            <p ref={captionDescRef} className="mt-4 max-w-lg text-balance text-base leading-relaxed text-ink-300">
-              {siteConfig.description}
+            <p ref={captionDescRef} className="mt-4 max-w-lg type-body-lead text-ink-300">
+              {wordDescriptions.DATA}
             </p>
           </div>
         </Container>
@@ -74,14 +96,30 @@ export function TypographySection() {
           this text directly. */}
       <Container className="relative z-10 pb-24">
         <h2 className="sr-only">The words that shape D3-SG</h2>
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {typographyWordRanges.map(({ word }) => (
+        {/* 4 evenly-balanced cards (1 col mobile, 2x2 tablet, 4x1 desktop) —
+            deliberately not a 5-column grid with an empty slot now that
+            D3-SG has been removed from the cycle entirely (see
+            typographyWords in data/journey.ts). Sized up slightly (bigger
+            badge, more padding, larger gap) versus the old 5-card layout
+            since each card now gets proportionally more of the row. */}
+        <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {typographyWordRanges.map(({ word }, index) => (
             <li
               key={word}
-              className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 text-sm text-ink-200"
+              ref={(node) => {
+                cardRefs.current[index] = node;
+              }}
+              data-active="false"
+              style={{ "--halo-color": "#fd6a50" } as CSSProperties}
+              className="data-active-halo flex items-start gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-sm text-ink-200 transition-all duration-300 data-[active=false]:opacity-70 data-[active=true]:border-brand-400/40 data-[active=true]:bg-brand-500/10"
             >
-              <p className="font-display text-lg font-semibold text-ink-50">{word}</p>
-              <p className="mt-1 text-xs leading-relaxed text-ink-400">{wordDescriptions[word]}</p>
+              <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full border border-brand-400/30 bg-brand-500/10 font-mono text-xs font-bold text-brand-300">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <div>
+                <p className="font-display text-xl font-semibold text-ink-50">{word}</p>
+                <p className="mt-1.5 text-xs leading-relaxed text-ink-400">{wordDescriptions[word]}</p>
+              </div>
             </li>
           ))}
         </ul>

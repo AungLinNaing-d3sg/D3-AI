@@ -6,6 +6,7 @@ import { DataSortScene } from "@/components/three/games/DataSortScene";
 import { GameFrame } from "@/components/game/GameFrame";
 import { Button } from "@/components/ui/Button";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+import { useDeviceCapability } from "@/hooks/useDeviceCapability";
 import type { DataObject, ObjectStatus, Zone } from "@/components/game/DataSortGame.types";
 
 /** Fixed, deterministic field — 5 objects that belong in "Process" (real
@@ -51,6 +52,7 @@ interface DataSortGameProps {
  */
 export function DataSortGame({ onFinish, onExit }: DataSortGameProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
+  const { isCompact } = useDeviceCapability();
   const [phase, setPhase] = useState<Phase>("ready");
   const [resolutions, setResolutions] = useState<ResolutionMap>(idleResolutions);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -188,9 +190,9 @@ export function DataSortGame({ onFinish, onExit }: DataSortGameProps) {
             <Canvas
               aria-hidden="true"
               className="pointer-events-none absolute inset-0"
-              dpr={[1, 1.5]}
+              dpr={isCompact ? [1, 1] : [1, 1.5]}
               camera={{ position: [0, 0, 3.6], fov: 46 }}
-              gl={{ antialias: true, alpha: true }}
+              gl={{ antialias: !isCompact, alpha: true }}
             >
               <color attach="background" args={["#120d05"]} />
               <DataSortScene
@@ -198,7 +200,7 @@ export function DataSortGame({ onFinish, onExit }: DataSortGameProps) {
                 statuses={statuses}
                 processZone={PROCESS_ZONE}
                 discardZone={DISCARD_ZONE}
-                quality="high"
+                quality={isCompact ? "low" : "high"}
               />
             </Canvas>
           ) : (
@@ -218,7 +220,7 @@ export function DataSortGame({ onFinish, onExit }: DataSortGameProps) {
                   aria-pressed={objectStatus === "selected"}
                   aria-label={`Data object ${object.label}`}
                   style={{ left: `${object.xPercent}%`, top: `${object.yPercent}%` }}
-                  className="absolute flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border text-[8px] font-semibold uppercase tracking-wide text-white shadow-lg transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 disabled:pointer-events-none data-[status=idle]:border-white/25 data-[status=idle]:bg-white/10 data-[status=idle]:hover:scale-110 data-[status=selected]:scale-125 data-[status=selected]:border-white data-[status=selected]:bg-white/30 data-[status=flash]:border-rose-400 data-[status=flash]:bg-rose-500/50 data-[status=resolved]:scale-0"
+                  className="absolute flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border text-[8px] font-semibold uppercase tracking-wide text-white shadow-lg transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 disabled:pointer-events-none data-[status=idle]:border-white/25 data-[status=idle]:bg-white/10 data-[status=idle]:pointer-fine:hover:scale-110 data-[status=selected]:scale-125 data-[status=selected]:border-white data-[status=selected]:bg-white/30 data-[status=flash]:border-rose-400 data-[status=flash]:bg-rose-500/50 data-[status=resolved]:scale-0"
                 >
                   {object.label}
                 </button>
@@ -230,7 +232,7 @@ export function DataSortGame({ onFinish, onExit }: DataSortGameProps) {
               disabled={phase !== "playing" || !selectedId}
               onClick={() => sendToZone("process")}
               style={{ left: `${PROCESS_ZONE.xPercent}%`, top: `${PROCESS_ZONE.yPercent}%` }}
-              className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-400/60 bg-emerald-500/20 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-200 shadow-lg transition-transform duration-300 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:pointer-events-none disabled:opacity-50"
+              className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-400/60 bg-emerald-500/20 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-200 shadow-lg transition-transform duration-300 pointer-fine:hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:pointer-events-none disabled:opacity-50"
             >
               Process
             </button>
@@ -239,7 +241,7 @@ export function DataSortGame({ onFinish, onExit }: DataSortGameProps) {
               disabled={phase !== "playing" || !selectedId}
               onClick={() => sendToZone("discard")}
               style={{ left: `${DISCARD_ZONE.xPercent}%`, top: `${DISCARD_ZONE.yPercent}%` }}
-              className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-rose-400/60 bg-rose-500/20 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-200 shadow-lg transition-transform duration-300 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 disabled:pointer-events-none disabled:opacity-50"
+              className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-rose-400/60 bg-rose-500/20 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-200 shadow-lg transition-transform duration-300 pointer-fine:hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 disabled:pointer-events-none disabled:opacity-50"
             >
               Discard
             </button>

@@ -4,6 +4,8 @@ import type {
   PlaygroundGameDefinition,
   ProductPanel,
   UniverseStat,
+  UniverseStation,
+  UniverseStationVariant,
   VisionPillar,
 } from "@/types";
 import { services } from "@/data/services";
@@ -48,11 +50,13 @@ export const aboutPartnerNote =
 
 /**
  * Chapter 03 — 3D AI Typography. The word sequence particles form/explode/
- * reform through, grounded in the company's own name and three real
- * service pillars (src/data/services.ts) rather than generic buzzwords,
- * ending on "AI" as the bridge into the Neural Network chapter.
+ * reform through, grounded in the three real service pillars
+ * (src/data/services.ts) rather than generic buzzwords, ending on "AI" as
+ * the bridge into the Neural Network chapter. No longer opens on "D3-SG" —
+ * removed from the cycle (both the particle formation and its card) so the
+ * chapter reads as 4 evenly-balanced disciplines rather than 5.
  */
-export const typographyWords = ["D3-SG", "DATA", "DYNAMICS", "DIGITAL", "AI"] as const;
+export const typographyWords = ["DATA", "DYNAMICS", "DIGITAL", "AI"] as const;
 
 /** Even scroll-progress ranges for each word above, shared by the 3D
  * particle-morph scene and the DOM caption overlay so both read from the
@@ -64,12 +68,14 @@ export const typographyWordRanges = typographyWords.map((word, index) => ({
 }));
 
 /**
- * Chapter 04 — Neural Network. Five primary concept nodes (verbatim from the
- * brief) form the core of the graph; the real technology ecosystem
- * (src/data/technology.ts) supplies the secondary, smaller labelled nodes so
- * the network visualises actual capabilities, not filler.
+ * Chapter 01 — Cinematic AI Intro. The five-stage thought pipeline (verbatim
+ * from the brief — THINK, LEARN, UNDERSTAND, PREDICT, CREATE) that orbits the
+ * hero's central "AI core" (see three/scenes/IntroScene.tsx). Lives
+ * exclusively in the hero now — no other chapter renders these nodes, so the
+ * floating pipeline reads as this chapter's own signature moment rather than
+ * a component reused throughout the page.
  */
-export const primaryConceptNodes: ConceptNode[] = [
+export const heroPipelineNodes: ConceptNode[] = [
   { id: "think", label: "THINK", position: [0, 0.9, 0] },
   { id: "learn", label: "LEARN", position: [1.5, -0.2, 0.6] },
   { id: "understand", label: "UNDERSTAND", position: [-1.6, -0.1, 0.9] },
@@ -77,7 +83,14 @@ export const primaryConceptNodes: ConceptNode[] = [
   { id: "create", label: "CREATE", position: [-0.9, 0.4, -1.1] },
 ];
 
-export const secondaryConceptNodes: ConceptNode[] = techNodes.map((node, index) => {
+/**
+ * Chapter 04 — Neural Network / technology ecosystem. The real technology
+ * stack (src/data/technology.ts) arranged as its own standalone network
+ * around a central hub — no longer "secondary" to the hero pipeline above
+ * (that moved to chapter 01), this is chapter 04's entire, self-contained
+ * visual now.
+ */
+export const technologyNetworkNodes: ConceptNode[] = techNodes.map((node, index) => {
   const angle = (index / techNodes.length) * Math.PI * 2;
   const radius = 2.6;
   return {
@@ -108,6 +121,25 @@ export const universeStatRanges = universeStats.map((stat, index) => ({
   stat,
   start: index / universeStats.length,
   end: (index + 1) / universeStats.length,
+}));
+
+/** Fixed, hand-authored order matching `brandPillars`/`universeStats`
+ * (Singapore, 20+ years, Microsoft, Real-world) — see
+ * `UniverseStationVariant` in src/types/index.ts for what each treatment
+ * communicates. Order matters and is not re-derived from content, since the
+ * *meaning* of each variant is tied to which real statistic it is. */
+const universeStationVariants: UniverseStationVariant[] = ["location", "timeline", "network", "impact"];
+
+/**
+ * Chapter 05 — Data Universe "stations". Pairs each real, sourced statistic
+ * with the distinct 3D visual treatment the camera dollies to as the user
+ * scrolls (see three/scenes/UniverseScene.tsx) — the redesigned data
+ * universe gives each stat its own composition instead of one particle field
+ * recoloured four times.
+ */
+export const universeStations: UniverseStation[] = universeStats.map((stat, index) => ({
+  stat,
+  variant: universeStationVariants[index] ?? "impact",
 }));
 
 /**

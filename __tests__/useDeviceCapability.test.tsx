@@ -35,8 +35,29 @@ describe("useDeviceCapability", () => {
     const { result } = renderHook(() => useDeviceCapability());
 
     expect(result.current.isCompact).toBe(true);
+    expect(result.current.tier).toBe("mobile");
     expect(result.current.quality).toBe("low");
     // Reduced motion is a separate, independent concern from viewport size.
     expect(result.current.enableScene).toBe(true);
+  });
+
+  it("drops to the medium-quality tablet tier for the tablet-range media query only", () => {
+    mockMatchMedia((query) => query.includes("min-width: 768px"));
+    const { result } = renderHook(() => useDeviceCapability());
+
+    expect(result.current.isCompact).toBe(false);
+    expect(result.current.isTablet).toBe(true);
+    expect(result.current.tier).toBe("tablet");
+    expect(result.current.quality).toBe("medium");
+  });
+
+  it("gates parallax-worthy pointer effects on coarse/touch pointers independently of viewport width", () => {
+    mockMatchMedia((query) => query.includes("pointer: coarse"));
+    const { result } = renderHook(() => useDeviceCapability());
+
+    expect(result.current.hasCoarsePointer).toBe(true);
+    // A touch device can still be a wide/desktop-class viewport.
+    expect(result.current.tier).toBe("desktop");
+    expect(result.current.quality).toBe("high");
   });
 });

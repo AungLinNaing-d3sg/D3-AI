@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Sora } from "next/font/google";
+import { Inter, JetBrains_Mono, Sora } from "next/font/google";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { SmoothScrollProvider } from "@/components/motion/SmoothScrollProvider";
@@ -14,6 +14,21 @@ const bodyFont = Inter({
 
 const displayFont = Sora({
   variable: "--font-sans-display",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+/**
+ * Technical/numeric accent face — used sparingly for eyebrow labels,
+ * statistic figures, and other short, technical typographic moments (see
+ * globals.css `.type-eyebrow` / `.type-display-stat`) to give the type
+ * system an AI/technology register alongside the two display/body faces
+ * above, rather than introducing a whole third voice. Self-hosted by
+ * `next/font` at build time (no runtime network request), so it stays
+ * compatible with the strict `font-src 'self' data:` CSP in next.config.ts.
+ */
+const monoFont = JetBrains_Mono({
+  variable: "--font-mono-technical",
   subsets: ["latin"],
   display: "swap",
 });
@@ -50,6 +65,11 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 const organizationJsonLd = {
@@ -69,7 +89,7 @@ const organizationJsonLd = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${bodyFont.variable} ${displayFont.variable} h-full`}>
+    <html lang="en" className={`${bodyFont.variable} ${displayFont.variable} ${monoFont.variable} h-full`}>
       <head>
         {/* Progressive-enhancement fallback for the scroll-reveal animations
             in components/motion/Reveal.tsx — see globals.css `.motion-reveal`. */}
@@ -77,7 +97,21 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <style>{".motion-reveal{visibility:visible !important;}"}</style>
         </noscript>
       </head>
-      <body className="flex min-h-full flex-col antialiased">
+      {/*
+        `suppressHydrationWarning` is scoped to this single element only (it
+        does NOT suppress mismatch warnings anywhere else in the tree) and
+        exists solely to silence the one, well-documented, unavoidable false
+        positive React itself calls out
+        (https://react.dev/link/hydration-mismatch): third-party browser
+        extensions (Grammarly, Dashlane, ColorZilla, etc.) inject their own
+        attributes (e.g. `data-gr-ext-installed`, `data-new-gr-c-s-check-loaded`)
+        straight onto `<body>` *before* React hydrates, which React would
+        otherwise (correctly, but unfixably from application code) flag as a
+        "didn't match the client properties" error on every visit for anyone
+        with such an extension installed. This is the official, minimal fix
+        for exactly that scenario — not a blanket suppression, and it does
+        nothing to mask any real mismatch caused by this app's own code. */}
+      <body className="flex min-h-full flex-col antialiased" suppressHydrationWarning>
         {/* Skip link for keyboard/screen-reader users to bypass repeated nav. */}
         <a
           href="#main-content"

@@ -12,9 +12,10 @@ import { ProductScene } from "@/components/three/scenes/ProductScene";
 import { GameAmbienceScene } from "@/components/three/scenes/GameAmbienceScene";
 import { FutureScene } from "@/components/three/scenes/FutureScene";
 import { CtaScene } from "@/components/three/scenes/CtaScene";
+import { SCENE_TIER_CONFIG, type SceneQuality } from "@/lib/three/deviceTiers";
 
 interface ExperienceProps {
-  quality: "high" | "low";
+  quality: SceneQuality;
   enableParallax: boolean;
 }
 
@@ -33,12 +34,16 @@ interface ExperienceProps {
  * per-frame work) once its own weight reaches zero.
  */
 export function Experience({ quality, enableParallax }: ExperienceProps) {
-  const dpr: [number, number] = quality === "high" ? [1, 2] : [1, 1.25];
+  const dpr = SCENE_TIER_CONFIG[quality].dpr;
 
   return (
     <Canvas
       dpr={dpr}
-      gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+      gl={{
+        antialias: quality !== "low",
+        alpha: true,
+        powerPreference: quality === "low" ? "low-power" : "high-performance",
+      }}
       camera={{ position: [0, 0.5, 9.5], fov: 42, near: 0.1, far: 40 }}
       eventSource={typeof document !== "undefined" ? document.body : undefined}
       eventPrefix="client"

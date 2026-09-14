@@ -13,8 +13,15 @@ import { AiPlayground } from "@/components/game/AiPlayground";
  */
 export function GameSection() {
   return (
-    <Section stageId="game" ariaLabelledBy="game-heading" className="min-h-[150vh]">
-      <div className="sticky top-0 flex h-[100svh] flex-col items-center justify-center gap-8 py-14 sm:py-16">
+    <Section
+      stageId="game"
+      ariaLabelledBy="game-heading"
+      className="min-h-[80vh] md:min-h-[95vh] lg:min-h-[105vh]"
+    >
+      {/* Pinned only from tablet up — on mobile the playground menu/games
+          (which can genuinely exceed one viewport of content) flow normally
+          instead of being clipped inside a fixed-height pin. */}
+      <div className="relative flex h-auto flex-col items-center justify-center gap-6 py-8 md:sticky md:top-0 md:h-[100svh] md:gap-6 md:py-10 lg:py-12">
         <Container className="flex flex-col items-center gap-8">
           <SectionHeading
             headingId="game-heading"
