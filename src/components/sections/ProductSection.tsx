@@ -27,7 +27,7 @@ export function ProductSection() {
     >
       {/* Pinned only from tablet up — see IntroSection for why mobile flows
           normally instead of holding a full-screen pin. */}
-      <div className="relative flex h-auto items-center py-10 md:sticky md:top-0 md:h-[100svh] md:py-16 lg:py-20">
+      <div className="relative flex h-auto items-center py-10 md:sticky md:top-0 md:min-h-[100svh] md:py-16 lg:py-20">
         <Container>
           <SectionHeading
             headingId="product-heading"

@@ -19,9 +19,16 @@ export function GameSection() {
       className="min-h-[80vh] md:min-h-[95vh] lg:min-h-[105vh]"
     >
       {/* Pinned only from tablet up — on mobile the playground menu/games
-          (which can genuinely exceed one viewport of content) flow normally
-          instead of being clipped inside a fixed-height pin. */}
-      <div className="relative flex h-auto flex-col items-center justify-center gap-6 py-8 md:sticky md:top-0 md:h-[100svh] md:gap-6 md:py-10 lg:py-12">
+          flow normally instead of being held in a full-screen pin.
+          `md:min-h-[100svh]` (not a fixed `h-[100svh]`) on tablet/desktop
+          too, since the playground menu/games can genuinely exceed one
+          viewport of content — a fixed height would let that overflow
+          clip/overlap the next chapter and shortchange this stage's own
+          scroll distance, which is what let the page reach the Future/CTA
+          chapters' scroll range before this one's content had actually
+          finished. `min-h` lets the section grow to fit real content while
+          still pinning for the rest. */}
+      <div className="relative flex h-auto flex-col items-center justify-center gap-6 py-8 md:sticky md:top-0 md:min-h-[100svh] md:gap-6 md:py-10 lg:py-12">
         <Container className="flex flex-col items-center gap-8">
           <SectionHeading
             headingId="game-heading"

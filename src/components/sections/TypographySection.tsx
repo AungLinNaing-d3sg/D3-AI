@@ -66,7 +66,7 @@ export function TypographySection() {
           normally instead of holding a full-screen pin. A little more
           runway than the single-beat chapters since 4 words cycle through
           here (see typographyWordRanges). */}
-      <div className="relative flex h-auto flex-col justify-between gap-8 py-10 md:sticky md:top-0 md:h-[100svh] md:py-16 lg:py-20">
+      <div className="relative flex h-auto flex-col justify-between gap-8 py-10 md:sticky md:top-0 md:min-h-[100svh] md:py-16 lg:py-20">
         <Container>
           <Reveal as="p" className="type-eyebrow text-brand-400">
             03 — Built from three real disciplines

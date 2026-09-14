@@ -21,7 +21,7 @@ export function FutureSection() {
     >
       {/* Pinned only from tablet up — see IntroSection for why mobile flows
           normally instead of holding a full-screen pin. */}
-      <div className="relative flex h-auto flex-col justify-center gap-8 py-10 md:sticky md:top-0 md:h-[100svh] md:gap-10 md:py-16 lg:py-20">
+      <div className="relative flex h-auto flex-col justify-center gap-8 py-10 md:sticky md:top-0 md:min-h-[100svh] md:gap-10 md:py-16 lg:py-20">
         <Container className="flex flex-col gap-10">
           <SectionHeading
             headingId="future-heading"
