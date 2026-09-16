@@ -37,7 +37,7 @@ function buildSatelliteLayouts(count: number): SatelliteLayout[] {
 }
 
 /**
- * Chapter 07 backdrop — the real "AI Playground" (see
+ * Chapter 06 backdrop — the real "AI Playground" (see
  * components/game/AiPlayground.tsx) is DOM-driven, with each of its 4 games
  * owning its own small, self-contained R3F canvas for the actual gameplay
  * interaction. This shared, fixed-canvas scene supplies the chapter's

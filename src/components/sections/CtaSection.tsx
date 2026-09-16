@@ -6,7 +6,7 @@ import { ContactForm } from "@/components/sections/ContactForm";
 import { siteConfig } from "@/data/site";
 
 /**
- * Chapter 09 — Final CTA. A centred message, two direct contact actions,
+ * Chapter 08 — Final CTA. A centred message, two direct contact actions,
  * and a "Send us a message" form (field set matches the legacy D3-SG
  * Contact Us page — see `/docs/ContactUs.png`), mirroring the 3D scene
  * settling to one calm glow (see three/scenes/CtaScene.tsx).
@@ -24,7 +24,7 @@ export function CtaSection() {
       />
       <Container className="relative flex flex-col items-center gap-8 text-center">
         <Reveal as="p" className="type-eyebrow text-brand-400">
-          09 — Let&rsquo;s talk
+          08 — Let&rsquo;s talk
         </Reveal>
 
         <Reveal as="h2" delay={0.05} id="cta-heading" variant="chars" className="type-display-hero text-ink-50">

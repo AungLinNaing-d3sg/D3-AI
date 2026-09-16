@@ -4,7 +4,6 @@ import { AboutSection } from "@/components/sections/AboutSection";
 import { TypographySection } from "@/components/sections/TypographySection";
 import { NeuralSection } from "@/components/sections/NeuralSection";
 import { UniverseSection } from "@/components/sections/UniverseSection";
-import { ProductSection } from "@/components/sections/ProductSection";
 import { GameSection } from "@/components/sections/GameSection";
 import { FutureSection } from "@/components/sections/FutureSection";
 import { CtaSection } from "@/components/sections/CtaSection";
@@ -18,6 +17,7 @@ import {
   playgroundGames,
 } from "@/data/journey";
 import { teamMembers } from "@/data/team";
+import { services } from "@/data/services";
 
 describe("homepage chapters", () => {
   it("renders the intro hero headline and tagline as the page's h1", () => {
@@ -64,16 +64,24 @@ describe("homepage chapters", () => {
     });
   });
 
-  it("renders the typography chapter's word list accessibly, independent of the 3D particle formation", () => {
+  it("renders the typography chapter's discipline cards accessibly, independent of the 3D sphere", () => {
     render(<TypographySection />);
     expect(document.getElementById("typography")).toHaveAttribute("data-stage", "typography");
-    expect(screen.getByRole("heading", { level: 2, name: "DATA" })).toBeInTheDocument();
-    expect(screen.getByText("AI", { selector: "p" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Three disciplines, one intelligent system" })
+    ).toBeInTheDocument();
+    services.forEach((service) => {
+      expect(screen.getByRole("button", { name: new RegExp(`focus ${service.title}`, "i") })).toBeInTheDocument();
+      expect(screen.getByText(service.title)).toBeInTheDocument();
+    });
   });
 
-  it("never renders a D3-SG card in the typography chapter", () => {
+  it("starts every discipline card inactive", () => {
     render(<TypographySection />);
-    expect(screen.queryByText("D3-SG")).not.toBeInTheDocument();
+    services.forEach((service) => {
+      const button = screen.getByRole("button", { name: new RegExp(`focus ${service.title}`, "i") });
+      expect(button).toHaveAttribute("data-active", "false");
+    });
   });
 
   it("renders the neural network chapter with every technology node label", () => {
@@ -115,12 +123,6 @@ describe("homepage chapters", () => {
       expect(caption).not.toBeNull();
       expect(caption?.textContent).toMatch(/^3D scene:/);
     });
-  });
-
-  it("renders the product experience chapter's three real service panels", () => {
-    render(<ProductSection />);
-    expect(document.getElementById("product")).toHaveAttribute("data-stage", "product");
-    expect(screen.getAllByRole("article")).toHaveLength(3);
   });
 
   it("renders the AI Playground chapter with all 4 cohesive game entry points", () => {

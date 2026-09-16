@@ -4,7 +4,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { AiPlayground } from "@/components/game/AiPlayground";
 
 /**
- * Chapter 07 — The AI Playground. A colour-reactive particle drift (see
+ * Chapter 06 — The AI Playground. A colour-reactive particle drift (see
  * three/scenes/GameAmbienceScene.tsx) sits behind 4 cohesive interactive
  * experiences (components/game/AiPlayground.tsx: Train Your AI + 3 new
  * self-contained 3D mini-games) with explicit Play/Replay/Skip controls at
@@ -32,7 +32,7 @@ export function GameSection() {
         <Container className="flex flex-col items-center gap-8">
           <SectionHeading
             headingId="game-heading"
-            eyebrow="07 — Optional · interactive"
+            eyebrow="06 — Optional · interactive"
             title="The AI Playground"
             description="Four hands-on ways to see how an AI tells signal from noise — pick any experience below, or play them all."
             align="center"

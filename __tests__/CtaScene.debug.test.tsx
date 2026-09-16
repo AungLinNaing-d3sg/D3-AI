@@ -2,13 +2,13 @@ import { render } from "@testing-library/react";
 import { CtaScene } from "@/components/three/scenes/CtaScene";
 
 /**
- * Chapter 09 (Final CTA) 3D scene. `@react-three/fiber`/`@react-three/drei`
+ * Chapter 08 (Final CTA) 3D scene. `@react-three/fiber`/`@react-three/drei`
  * are stubbed for the whole suite (see jest.config.ts `moduleNameMapper` +
  * src/test/mocks/*) since jsdom has no WebGL context — `useFrame` is a
  * no-op there, so this suite can only assert the *static* render tree
  * (structure/initial props), not the per-frame opacity/scale damping math
  * itself (unreachable without a real frame loop) — matching the existing
- * ProductScene/UniverseScene debug suites' approach.
+ * UniverseScene debug suite's approach.
  *
  * Regression coverage for the CTA glow readability fix: the emissive core
  * must sit set back from the camera instead of centred directly behind the

@@ -14,9 +14,9 @@ interface CtaSceneProps {
 }
 
 /**
- * Chapter 09 — Final CTA. Everything the journey has built up (typography,
- * network, universe, product UI, cinematic monoliths) simplifies down to a
- * single soft, breathing glow — a calm, memorable full stop that mirrors
+ * Chapter 08 — Final CTA. Everything the journey has built up (disciplines,
+ * network, universe, cinematic monoliths) simplifies down to a single soft,
+ * breathing glow — a calm, memorable full stop that mirrors
  * the DOM CTA's own minimalism (see components/sections/CtaSection.tsx).
  */
 export function CtaScene({ quality }: CtaSceneProps) {

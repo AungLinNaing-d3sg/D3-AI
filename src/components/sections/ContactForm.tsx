@@ -39,7 +39,7 @@ function SubmitButton() {
 }
 
 /**
- * "Send us a message" contact form (Chapter 09 — Final CTA). Field set
+ * "Send us a message" contact form (Chapter 08 — Final CTA). Field set
  * mirrors the legacy D3-SG Contact Us page 1:1 — see `/docs/ContactUs.png`:
  * Name, Email, Phone Number, Message.
  *
