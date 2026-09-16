@@ -77,7 +77,6 @@ export const STAGE_IDS = [
   "typography",
   "neural",
   "universe",
-  "product",
   "game",
   "future",
   "cta",
@@ -145,16 +144,6 @@ export interface UniverseStation {
   variant: UniverseStationVariant;
 }
 
-/** A floating product panel in the AI Product Experience stage (05),
- * sourced 1:1 from src/data/services.ts. */
-export interface ProductPanel {
-  slug: string;
-  eyebrow: string;
-  title: string;
-  summary: string;
-  bullets: string[];
-}
-
 /** "TRAIN YOUR AI" mini-game (chapter 07) item classification. */
 export type GameItemKind = "data" | "knowledge" | "experience" | "noise" | "error" | "bias";
 
@@ -167,7 +156,7 @@ export interface GameItemDefinition {
 }
 
 /**
- * Chapter 07 — "THE AI PLAYGROUND". Four cohesive interactive experiences
+ * Chapter 06 — "THE AI PLAYGROUND". Four cohesive interactive experiences
  * (Train Your AI + 3 new 3D mini-games) presented as one menu rather than
  * unrelated games bolted together — see src/components/game/AiPlayground.tsx.
  */

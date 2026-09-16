@@ -55,7 +55,7 @@ export function UniverseSection() {
           see the "By the numbers" mobile requirement. A little more runway
           than the single-beat chapters since 4 stations cycle through here
           (see universeStatRanges). */}
-      <div className="relative flex h-auto flex-col justify-center gap-8 py-10 md:sticky md:top-0 md:h-[100svh] md:gap-8 md:py-16 lg:gap-10 lg:py-20">
+      <div className="relative flex h-auto flex-col justify-center gap-8 py-10 md:sticky md:top-0 md:min-h-[100svh] md:gap-8 md:py-16 lg:gap-10 lg:py-20">
         <Container className="flex flex-col gap-10">
           <SectionHeading
             headingId="universe-heading"

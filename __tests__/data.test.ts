@@ -15,7 +15,6 @@ import {
   universeStats,
   universeStatRanges,
   universeStations,
-  productPanels,
   gameItemDefinitions,
   playgroundGames,
   visionPillars,
@@ -56,14 +55,13 @@ describe("content data integrity", () => {
     });
   });
 
-  it("defines exactly the 9 scrollytelling chapters in journey order", () => {
+  it("defines exactly the 8 scrollytelling chapters in journey order", () => {
     expect(STAGE_IDS).toEqual([
       "intro",
       "about",
       "typography",
       "neural",
       "universe",
-      "product",
       "game",
       "future",
       "cta",
@@ -121,10 +119,6 @@ describe("content data integrity", () => {
     });
     const variants = new Set(universeStations.map((station) => station.variant));
     expect(variants.size).toBe(universeStations.length);
-  });
-
-  it("maps the product experience panels 1:1 onto the real service pillars", () => {
-    expect(productPanels).toHaveLength(services.length);
   });
 
   it("defines exactly the brief's TRAIN YOUR AI vocabulary (3 positive, 3 negative)", () => {

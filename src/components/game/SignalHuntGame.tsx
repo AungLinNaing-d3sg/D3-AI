@@ -53,7 +53,7 @@ interface SignalHuntGameProps {
  * scene (`SignalHuntScene`, components/three/games/SignalHuntScene.tsx) is
  * purely decorative/`aria-hidden`; the real, keyboard-operable interaction is
  * the button grid layered on top — same "3D decorates, HTML carries the
- * interaction" split used across the main journey (see AboutScene/ProductScene).
+ * interaction" split used across the main journey (see AboutScene/NeuralScene).
  */
 export function SignalHuntGame({ onFinish, onExit }: SignalHuntGameProps) {
   const prefersReducedMotion = usePrefersReducedMotion();

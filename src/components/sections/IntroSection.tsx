@@ -60,7 +60,7 @@ export function IntroSection() {
           full-screen hold, per the "mobile scroll experience" requirement;
           the decorative 3D scene (fixed, full-viewport — see SceneCanvas)
           keeps animating behind it either way. */}
-      <div className="relative flex h-auto items-center py-14 md:sticky md:top-0 md:h-[100svh] md:py-0">
+      <div className="relative flex h-auto items-center py-14 md:sticky md:top-0 md:min-h-[100svh] md:py-0">
         <Container>
           <div ref={contentRef} className="flex max-w-3xl flex-col gap-6">
             <Reveal as="p" className="type-eyebrow text-brand-400">

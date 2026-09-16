@@ -2,13 +2,11 @@ import type {
   ConceptNode,
   GameItemDefinition,
   PlaygroundGameDefinition,
-  ProductPanel,
   UniverseStat,
   UniverseStation,
   UniverseStationVariant,
   VisionPillar,
 } from "@/types";
-import { services } from "@/data/services";
 import { capabilities } from "@/data/capabilities";
 import { brandPillars } from "@/data/pillars";
 import { techNodes } from "@/data/technology";
@@ -143,20 +141,7 @@ export const universeStations: UniverseStation[] = universeStats.map((stat, inde
 }));
 
 /**
- * Chapter 06 — AI Product Experience. The three real service pillars,
- * reframed as floating product panels (src/data/services.ts is the source
- * of truth; no capabilities are invented here).
- */
-export const productPanels: ProductPanel[] = services.map((service) => ({
-  slug: service.slug,
-  eyebrow: service.icon.toUpperCase(),
-  title: service.title,
-  summary: service.summary,
-  bullets: service.bullets,
-}));
-
-/**
- * Chapter 07 — "TRAIN YOUR AI" mini-game. Item vocabulary is exactly the
+ * Chapter 06 — "TRAIN YOUR AI" mini-game. Item vocabulary is exactly the
  * brief's specified game concept (DATA/KNOWLEDGE/EXPERIENCE to collect,
  * NOISE/ERROR/BIAS to avoid) — this is deliberately game mechanics, not a
  * company fact, so it does not need /docs sourcing.
@@ -171,7 +156,7 @@ export const gameItemDefinitions: GameItemDefinition[] = [
 ];
 
 /**
- * Chapter 07 — "THE AI PLAYGROUND". Four cohesive interactive experiences —
+ * Chapter 06 — "THE AI PLAYGROUND". Four cohesive interactive experiences —
  * the existing "Train Your AI" catcher plus three new 3D mini-games — framed
  * as one continuous playground rather than unrelated games. Deliberately
  * game mechanics/vocabulary, not company facts, so no /docs sourcing is
@@ -219,7 +204,7 @@ export const playgroundGames: PlaygroundGameDefinition[] = [
 ];
 
 /**
- * Chapter 08 — Cinematic AI Future. The three delivery capabilities
+ * Chapter 07 — Cinematic AI Future. The three delivery capabilities
  * (src/data/capabilities.ts) reframed as forward-looking vision pillars —
  * same real facts, future-facing narration.
  */

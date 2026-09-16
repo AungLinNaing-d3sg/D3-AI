@@ -6,7 +6,7 @@ import { ContactForm } from "@/components/sections/ContactForm";
 import { siteConfig } from "@/data/site";
 
 /**
- * Chapter 09 — Final CTA. A centred message, two direct contact actions,
+ * Chapter 08 — Final CTA. A centred message, two direct contact actions,
  * and a "Send us a message" form (field set matches the legacy D3-SG
  * Contact Us page — see `/docs/ContactUs.png`), mirroring the 3D scene
  * settling to one calm glow (see three/scenes/CtaScene.tsx).
@@ -14,9 +14,17 @@ import { siteConfig } from "@/data/site";
 export function CtaSection() {
   return (
     <Section stageId="cta" ariaLabelledBy="cta-heading" className="flex min-h-[85svh] items-center py-14 sm:py-20 lg:py-24">
-      <Container className="flex flex-col items-center gap-8 text-center">
+      {/* Guarantees the heading/copy stay readable against the 3D scene's
+          glow (see three/scenes/CtaScene.tsx) regardless of how bright that
+          glow gets at any point in its animation — a fixed contrast floor
+          rather than relying solely on tuning the scene itself. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_0%,_rgba(5,7,13,0.55)_55%,_rgba(5,7,13,0.92)_100%)]"
+      />
+      <Container className="relative flex flex-col items-center gap-8 text-center">
         <Reveal as="p" className="type-eyebrow text-brand-400">
-          09 — Let&rsquo;s talk
+          08 — Let&rsquo;s talk
         </Reveal>
 
         <Reveal as="h2" delay={0.05} id="cta-heading" variant="chars" className="type-display-hero text-ink-50">
