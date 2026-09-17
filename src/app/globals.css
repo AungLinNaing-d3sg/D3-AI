@@ -245,6 +245,99 @@ body {
 }
 
 /*
+ * ---------------------------------------------------------------------
+ * Readability scrim
+ * ---------------------------------------------------------------------
+ * A soft, off-centre radial dark pool dropped behind a text block so it
+ * reads clearly over the animated 3D scene without resorting to a solid
+ * rectangle, a heavier text-shadow, or larger type. Anchor/size/strength are
+ * exposed as custom properties so each consumer can reposition the pool over
+ * its own copy instead of duplicating the gradient.
+ */
+.readability-scrim {
+  background: radial-gradient(
+    var(--scrim-size, 62%) var(--scrim-size, 62%) at var(--scrim-x, 30%) var(--scrim-y, 45%),
+    rgb(5 7 13 / var(--scrim-strength, 0.72)) 0%,
+    rgb(5 7 13 / calc(var(--scrim-strength, 0.72) * 0.55)) 45%,
+    transparent 75%
+  );
+}
+
+/*
+ * ---------------------------------------------------------------------
+ * Glass surface
+ * ---------------------------------------------------------------------
+ * Shared premium glassmorphism treatment for HTML surfaces (team roster,
+ * stat, and pillar cards) sitting over the animated 3D canvas — a real dark
+ * base tint plus backdrop blur, not just a near-transparent white gradient,
+ * so text stays legible regardless of what's animating behind it; a soft
+ * inner top-highlight and outer glow keep it reading as physical glass
+ * rather than a flat tinted box.
+ */
+.glass-panel {
+  position: relative;
+  isolation: isolate;
+  border-radius: 1.25rem;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  background:
+    linear-gradient(165deg, rgb(255 255 255 / 0.06), rgb(255 255 255 / 0.02)),
+    rgb(5 7 13 / 0.6);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.1),
+    0 20px 50px -25px rgb(0 0 0 / 0.7);
+}
+
+/*
+ * ---------------------------------------------------------------------
+ * Section heading accent
+ * ---------------------------------------------------------------------
+ * A thin, continuously (very slowly) shimmering "data" indicator beneath a
+ * major section's eyebrow, plus a soft static glow on its `<h2>` — one
+ * consistent, elegant treatment (see components/ui/SectionHeading.tsx)
+ * rather than a bespoke animated effect per section. Deliberately not a
+ * one-shot sweep tied to scroll-reveal timing (see `.hero-title-sweep`
+ * above, mount-timed for the one hero heading that appears immediately on
+ * load): a continuous loop reads correctly no matter when a visitor
+ * actually scrolls a given section into view.
+ */
+.section-heading-accent {
+  position: relative;
+  display: block;
+  width: 2.75rem;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, var(--color-brand-400), transparent 75%);
+}
+
+.section-heading-accent::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 45%;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.85), transparent);
+  animation: section-heading-shimmer 4.2s ease-in-out infinite;
+}
+
+@keyframes section-heading-shimmer {
+  0% {
+    transform: translateX(-140%);
+  }
+  55%,
+  100% {
+    transform: translateX(300%);
+  }
+}
+
+.section-heading-glow {
+  text-shadow:
+    0 0 30px rgb(253 106 80 / 0.16),
+    0 0 2px rgb(255 255 255 / 0.12);
+}
+
+/*
  * One-shot light sweep across the hero greeting, timed to start right as its
  * word-by-word particle-converge entrance settles (see
  * components/motion/HeroGreeting.tsx) — a refined "energy" pass rather than
@@ -278,6 +371,45 @@ body {
 @keyframes hero-sweep {
   to {
     transform: translateX(140%) skewX(-16deg);
+  }
+}
+
+/*
+ * Repeatable hover treatment for the hero greeting — distinct from the
+ * one-shot mount sweep above (`.hero-title-sweep::after`), this fires every
+ * time a fine-pointer visitor hovers the title: a warm glow (text-shadow,
+ * transitions smoothly rather than snapping) plus its own light sweep on
+ * `::before` (the `::after` slot is already used by the mount sweep). The
+ * extra scale/depth felt on hover comes from `hoverAmount` in
+ * HeroGreeting.tsx instead — layered into the same damped transform the
+ * pointer-tilt already writes every frame, so it can never fight this CSS.
+ * `hover: hover` keeps this desktop/mouse-only, matching the JS gate.
+ */
+.hero-title-hover {
+  transition: text-shadow 0.45s ease;
+}
+
+.hero-title-hover::before {
+  content: "";
+  position: absolute;
+  inset: -15% -25%;
+  background: linear-gradient(100deg, transparent 35%, rgba(255, 255, 255, 0.4) 50%, transparent 65%);
+  transform: translateX(-140%) skewX(-16deg);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+@media (hover: hover) {
+  .hero-title-hover:hover {
+    text-shadow:
+      0 0 34px rgb(253 106 80 / 0.38),
+      0 0 8px rgb(255 255 255 / 0.28);
+  }
+
+  .hero-title-hover:hover::before {
+    opacity: 1;
+    animation: hero-sweep 1.3s ease-out 1;
   }
 }
 

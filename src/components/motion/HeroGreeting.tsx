@@ -80,6 +80,13 @@ function buildParticles(count: number): ParticleLayout[] {
  * readable, no particles/tilt/float) when the user prefers reduced motion —
  * see `prefersReducedMotion` below — and independent of whether the shared
  * WebGL background is available at all, since this is pure DOM/CSS/GSAP.
+ *
+ * A desktop-only hover state (`hoverAmount`, damped like the tilt above,
+ * never a snap) adds a touch more forward depth and scale on top of the
+ * existing tilt transform, while `.hero-title-hover` in globals.css layers a
+ * soft glow and a repeatable light sweep purely in CSS — kept out of the JS
+ * transform pipeline since text-shadow/pseudo-element opacity never
+ * conflict with the inline `transform` this component sets every frame.
  */
 export function HeroGreeting({ text, id, className = "" }: HeroGreetingProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -89,6 +96,8 @@ export function HeroGreeting({ text, id, className = "" }: HeroGreetingProps) {
   const tilt = useRef({ x: 0, y: 0 });
   const lastFrameTime = useRef<number | null>(null);
   const startTime = useRef<number | null>(null);
+  const isHovered = useRef(false);
+  const hoverAmount = useRef(0);
 
   const prefersReducedMotion = usePrefersReducedMotion();
   const { isCompact, isTablet, hasCoarsePointer } = useDeviceCapability();
@@ -173,10 +182,27 @@ export function HeroGreeting({ text, id, className = "" }: HeroGreetingProps) {
     const floatAmplitude = isCompact ? 1.5 : isTablet ? 2.5 : 4;
     const floatY = Math.sin(elapsed * 0.55) * floatAmplitude;
 
-    heading.style.transform = `perspective(1200px) rotateX(${tilt.current.x}deg) rotateY(${tilt.current.y}deg) translateY(${floatY}px)`;
+    // Damped toward the hover ref rather than snapping — same spring feel as
+    // the pointer tilt above, so the extra depth/lift never reads as a jump.
+    // Skipped on coarse pointers, where "hover" is really just a tap.
+    const targetHover = !hasCoarsePointer && isHovered.current ? 1 : 0;
+    hoverAmount.current = damp(hoverAmount.current, targetHover, 5, delta);
+    const hover = hoverAmount.current;
+
+    heading.style.transform = `perspective(1200px) rotateX(${tilt.current.x}deg) rotateY(${tilt.current.y}deg) translateY(${floatY - hover * 3}px) translateZ(${hover * 16}px) scale(${1 + hover * 0.016})`;
   });
 
-  const classes = [className, prefersReducedMotion ? "" : "motion-reveal hero-title-sweep"]
+  const handleHoverStart = () => {
+    isHovered.current = true;
+  };
+  const handleHoverEnd = () => {
+    isHovered.current = false;
+  };
+
+  const classes = [
+    className,
+    prefersReducedMotion ? "" : "motion-reveal hero-title-sweep hero-title-hover",
+  ]
     .filter(Boolean)
     .join(" ");
 
@@ -202,7 +228,14 @@ export function HeroGreeting({ text, id, className = "" }: HeroGreetingProps) {
           }
         />
       ))}
-      <h1 ref={headingRef} id={id} className={classes} style={{ willChange: "transform" }}>
+      <h1
+        ref={headingRef}
+        id={id}
+        className={classes}
+        style={{ willChange: "transform" }}
+        onMouseEnter={handleHoverStart}
+        onMouseLeave={handleHoverEnd}
+      >
         {words.map((word, index) => (
           <span key={`${word}-${index}`} className="inline-block" style={{ willChange: "transform, filter" }} ref={(el) => {
             wordRefs.current[index] = el;

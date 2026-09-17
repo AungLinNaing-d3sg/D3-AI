@@ -1,6 +1,7 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import type { Route } from "next";
 import Link from "next/link";
+import { handleInPageNavClick } from "@/lib/motion/scrollNav";
 
 type Variant = "primary" | "secondary" | "ghost";
 
@@ -42,8 +43,13 @@ function isInPageOrProtocolHref(href: string) {
  */
 export function LinkButton({ href, variant = "primary", className = "", children }: LinkButtonProps) {
   if (isInPageOrProtocolHref(href)) {
+    const isHash = href.startsWith("#");
     return (
-      <a href={href} className={classes(variant, className)}>
+      <a
+        href={href}
+        onClick={isHash ? (event) => handleInPageNavClick(event, href) : undefined}
+        className={classes(variant, className)}
+      >
         {children}
       </a>
     );

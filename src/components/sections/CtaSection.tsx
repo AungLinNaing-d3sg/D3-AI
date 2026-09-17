@@ -23,11 +23,18 @@ export function CtaSection() {
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_0%,_rgba(5,7,13,0.55)_55%,_rgba(5,7,13,0.92)_100%)]"
       />
       <Container className="relative flex flex-col items-center gap-8 text-center">
-        <Reveal as="p" className="type-eyebrow text-brand-400">
+        <Reveal as="p" className="type-eyebrow text-brand-300">
           08 — Let&rsquo;s talk
         </Reveal>
+        <span aria-hidden="true" className="section-heading-accent" />
 
-        <Reveal as="h2" delay={0.05} id="cta-heading" variant="chars" className="type-display-hero text-ink-50">
+        <Reveal
+          as="h2"
+          delay={0.05}
+          id="cta-heading"
+          variant="chars"
+          className="section-heading-glow type-display-hero text-ink-50"
+        >
           Build the future with AI.
         </Reveal>
 

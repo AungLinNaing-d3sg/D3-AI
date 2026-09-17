@@ -32,6 +32,7 @@ export function NeuralSection() {
             eyebrow="04 — How we build"
             title="A network built on real capability"
             description="The real technology stack behind every engagement — visualised behind this section as a live, camera-traversed network around a central hub."
+            scrim
           />
 
           <Reveal as="div" delay={0.05} className="flex flex-wrap gap-2.5">

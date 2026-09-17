@@ -36,6 +36,7 @@ export function GameSection() {
             title="The AI Playground"
             description="Four hands-on ways to see how an AI tells signal from noise — pick any experience below, or play them all."
             align="center"
+            scrim
           />
           <AiPlayground />
         </Container>

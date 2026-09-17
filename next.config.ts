@@ -46,6 +46,16 @@ async function headers() {
 
 const nextConfig: NextConfig = {
   typedRoutes: true,
+  // `three/addons/...` (aka `three/examples/jsm/...` — see
+  // three/scenes/CtaScene.tsx's `FontLoader`/`TextGeometry` imports, used to
+  // build the real extruded "D3-SG" wordmark) ships as plain ESM source
+  // with no separate CJS build, unlike the bundled `three` package entry
+  // point itself. Turbopack/webpack already handle this fine at build
+  // time, but `next/jest`'s test transform only compiles packages listed
+  // here (see its own jest.js: "node_modules is not transformed, only
+  // `transpiledPackages`") — without this, importing CtaScene in a test
+  // fails the whole suite with "Must use import to load ES Module".
+  transpilePackages: ["three"],
   images: {
     // No remote images are used yet; add remotePatterns here when a CMS/CDN
     // is introduced (e.g. { protocol: "https", hostname: "cdn.d3-sg.com" }).

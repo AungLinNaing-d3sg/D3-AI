@@ -4,6 +4,7 @@ import { useEffect, type ReactNode } from "react";
 import Lenis from "lenis";
 import { ensureGsapRegistered, gsap, ScrollTrigger } from "@/lib/motion/gsap";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+import { lenisInstance } from "@/lib/motion/lenisInstance";
 
 interface SmoothScrollProviderProps {
   children: ReactNode;
@@ -31,6 +32,7 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
     });
 
     lenis.on("scroll", ScrollTrigger.update);
+    lenisInstance.current = lenis;
 
     function onTick(time: number) {
       lenis.raf(time * 1000);
@@ -42,6 +44,7 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
     return () => {
       gsap.ticker.remove(onTick);
       lenis.destroy();
+      lenisInstance.current = null;
     };
   }, [prefersReducedMotion]);
 

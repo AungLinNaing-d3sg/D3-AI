@@ -7,6 +7,7 @@ import { primaryNav } from "@/data/nav";
 import { useJourneyFrame } from "@/hooks/useJourneyFrame";
 import { useDeviceCapability } from "@/hooks/useDeviceCapability";
 import { gsap } from "@/lib/motion/gsap";
+import { handleInPageNavClick } from "@/lib/motion/scrollNav";
 
 /**
  * Sticky header for the single-page scrollytelling homepage. Navigation
@@ -114,6 +115,7 @@ export function Header() {
               href={item.href}
               data-active="false"
               onPointerMove={handlePointerMove}
+              onClick={(event) => handleInPageNavClick(event, item.href)}
               className="nav-link-glow type-nav-link relative rounded-full px-3.5 py-2 text-sm text-ink-200 transition-colors duration-300 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950 data-[active=true]:font-semibold data-[active=true]:text-white"
             >
               {item.label}
@@ -161,7 +163,10 @@ export function Header() {
                 }}
                 href={item.href}
                 data-active="false"
-                onClick={() => setIsMenuOpen(false)}
+                onClick={(event) => {
+                  setIsMenuOpen(false);
+                  handleInPageNavClick(event, item.href);
+                }}
                 className="type-nav-link relative rounded-lg border border-transparent border-l-[3px] px-3 py-2.5 text-sm text-ink-200 transition-all duration-300 hover:border-white/10 hover:bg-white/5 hover:text-white data-[active=true]:border-brand-400/50 data-[active=true]:border-l-brand-400 data-[active=true]:bg-brand-500/15 data-[active=true]:font-semibold data-[active=true]:text-white data-[active=true]:shadow-[inset_0_1px_10px_rgba(253,106,80,0.18)]"
               >
                 {item.label}

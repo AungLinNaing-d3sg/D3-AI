@@ -52,6 +52,7 @@ export function AboutSection() {
             eyebrow="02 — Who we are"
             title="Who we are"
             description={siteConfig.description}
+            scrim
           />
 
           <Reveal as="p" delay={0.12} className="max-w-2xl text-balance text-sm leading-relaxed text-ink-300 sm:text-base">
@@ -85,7 +86,7 @@ export function AboutSection() {
               }}
               data-active="false"
               style={{ "--halo-color": "#fd6a50" } as CSSProperties}
-              className="data-active-halo group rounded-3xl border border-white/10 bg-white/[0.03] p-7 transition-colors duration-300 data-[active=true]:border-brand-400/50 data-[active=true]:bg-brand-500/10"
+              className="glass-panel data-active-halo group p-7 transition-transform duration-300 data-[active=true]:-translate-y-1"
             >
               <Reveal as="div" delay={index * 0.08} className="flex items-center gap-4">
                 <div className="relative h-16 w-16 flex-none animate-float-slow sm:h-20 sm:w-20">

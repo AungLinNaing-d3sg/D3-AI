@@ -93,11 +93,12 @@ export function TypographySection() {
             <Reveal as="p" className="type-eyebrow text-brand-300">
               03 — Built from real disciplines
             </Reveal>
+            <span aria-hidden="true" className="section-heading-accent mt-3" />
             <Reveal
               as="h2"
               delay={0.05}
               id="typography-heading"
-              className="mt-4 type-display-section text-ink-50"
+              className="section-heading-glow mt-4 type-display-section text-ink-50"
             >
               Three disciplines, one intelligent system
             </Reveal>

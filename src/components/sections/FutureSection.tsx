@@ -28,14 +28,18 @@ export function FutureSection() {
             eyebrow="07 — Our vision"
             title={siteConfig.tagline}
             description="Not a distant promise — the same three disciplines you just walked through, carried forward."
+            scrim
           />
 
           {/* Deliberately not a card grid — a circular number badge plus a
               thin accent rule instead of a bordered box, so this chapter
-              reads as its own composition rather than another rectangle. */}
+              reads as its own composition rather than another rectangle. A
+              soft local blur (not a full panel) still keeps each line
+              readable over the calmer but still-lit atmospheric vista
+              behind this chapter (see three/scenes/FutureScene.tsx). */}
           <ul className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {visionPillars.map((pillar, index) => (
-              <li key={pillar.title} className="flex gap-4">
+              <li key={pillar.title} className="flex gap-4 rounded-2xl p-3 backdrop-blur-sm">
                 <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full border border-brand-400/30 bg-brand-500/5 font-mono text-xs font-bold text-brand-300">
                   {String(index + 1).padStart(2, "0")}
                 </span>

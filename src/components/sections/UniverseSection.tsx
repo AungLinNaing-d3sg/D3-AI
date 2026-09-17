@@ -62,6 +62,7 @@ export function UniverseSection() {
             eyebrow="05 — By the numbers"
             title="A data universe built from real numbers"
             description="A live coding terminal, typing behind this section — because these numbers are the product of real, ongoing work, not marketing copy."
+            scrim
           />
 
           <ul className="grid gap-x-4 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
@@ -73,7 +74,7 @@ export function UniverseSection() {
                 }}
                 data-active="false"
                 style={{ "--halo-color": "#f14a30" } as CSSProperties}
-                className="data-active-halo group relative rounded-2xl border border-white/10 bg-white/[0.03] p-6 pt-8 transition-all duration-300 data-[active=true]:scale-[1.02] data-[active=true]:border-brand-400/50 data-[active=true]:bg-brand-500/10"
+                className="glass-panel data-active-halo group relative p-6 pt-8 transition-transform duration-300 data-[active=true]:-translate-y-1"
               >
                 {/* Token floats outside the card body as its own chip
                     rather than sitting flush inside the box — an
@@ -84,7 +85,7 @@ export function UniverseSection() {
                 <span className="absolute -top-4 left-5 right-5 inline-flex items-center justify-center rounded-2xl border border-brand-400/40 bg-ink-950 px-4 py-1 text-center shadow-[0_10px_30px_-15px_rgba(0,0,0,0.85)]">
                   <span className="type-display-stat text-balance text-brand-300">{stat.token}</span>
                 </span>
-                <p className="type-eyebrow text-brand-400">{stat.label}</p>
+                <p className="type-eyebrow text-brand-300">{stat.label}</p>
                 <p className="mt-3 text-sm leading-relaxed text-ink-300">{stat.description}</p>
                 <p className="sr-only">{UNIVERSE_VISUAL_CAPTION}</p>
               </li>
