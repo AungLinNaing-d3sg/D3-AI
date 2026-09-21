@@ -1,16 +1,18 @@
 /**
  * Small, mutable singleton — same pattern as `lib/motion/journeyState.ts` —
- * that lets the DOM-driven "AI Playground" (components/game/AiPlayground.tsx
- * and its 4 games) tell the shared background 3D canvas
- * (three/scenes/GameAmbienceScene.tsx) which game is currently in focus,
+ * that lets the DOM-driven "AI Engineering Playground"
+ * (components/game/AiPlayground.tsx and its 4 experiences) tell the shared
+ * background 3D canvas (three/scenes/GameAmbienceScene.tsx) which experience
+ * — or, within it, which real agent/workflow stage — is currently in focus,
  * without routing every keystroke/click through React re-renders or standing
  * up a second, parallel animation/state system. `useFrame` consumers read
  * this imperatively, exactly like `journeyState`.
  */
 
 export interface PlaygroundState {
-  /** Hex colour of the currently focused game (see data/journey.ts
-   * `playgroundGames`), lerped into the ambience particle field's colour. */
+  /** Hex colour of the currently focused experience/agent/stage (see
+   * data/journey.ts `playgroundExperiences`/`AGENTS`), lerped into the
+   * ambience particle field's colour. */
   accentHex: string;
 }
 
@@ -20,7 +22,8 @@ export const playgroundState: PlaygroundState = {
   accentHex: DEFAULT_PLAYGROUND_ACCENT,
 };
 
-/** Called by `AiPlayground` whenever the selected/played game changes. */
+/** Called by `AiPlayground` (or a nested experience) whenever the focused
+ * experience/agent/stage changes. */
 export function setPlaygroundAccent(hex: string) {
   playgroundState.accentHex = hex;
 }

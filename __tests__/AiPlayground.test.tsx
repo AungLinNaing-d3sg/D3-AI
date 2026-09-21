@@ -1,54 +1,51 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { AiPlayground } from "@/components/game/AiPlayground";
-import { playgroundGames } from "@/data/journey";
+import { playgroundExperiences } from "@/data/journey";
 
 /**
- * Chapter 07's "AI Playground" orchestrator. Verifies the 4 experiences are
- * presented as one cohesive menu, that selecting/exiting a game navigates
- * correctly, and that a completed game is reflected back on the menu — the
- * individual games' own play mechanics are covered by their own test files
- * (SignalHuntGame/NeuralPathGame/DataSortGame/TrainYourAI .test.tsx).
+ * Chapter 06's "AI Engineering Playground" orchestrator. Verifies the 4
+ * experiences are presented as one cohesive menu, that opening/exiting an
+ * experience navigates correctly, and that visiting an experience is
+ * reflected back on the menu — each experience's own internal flow is
+ * exercised by rendering it directly below.
  */
 describe("AiPlayground", () => {
-  it("presents all 4 playground experiences as one menu, with no completion badges yet", () => {
+  it("presents all 4 playground experiences as one menu, with no visited badges yet", () => {
     render(<AiPlayground />);
-    playgroundGames.forEach((game) => {
-      expect(screen.getByRole("button", { name: `Play ${game.title}` })).toBeInTheDocument();
+    playgroundExperiences.forEach((experience) => {
+      expect(screen.getByRole("button", { name: `Open ${experience.title}` })).toBeInTheDocument();
     });
-    expect(screen.queryByText(/% cleared/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/visited/i)).not.toBeInTheDocument();
   });
 
-  it("navigates into Train Your AI and back to the menu", () => {
+  it("navigates into Choose Your AI Agent and back to the menu", () => {
     render(<AiPlayground />);
-    fireEvent.click(screen.getByRole("button", { name: /play train your ai/i }));
+    fireEvent.click(screen.getByRole("button", { name: /open choose your ai agent/i }));
 
-    expect(screen.getByRole("heading", { level: 3, name: /train your ai/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: /meet the real agents behind this repo/i })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /back to the ai playground/i }));
-    expect(screen.getByRole("button", { name: /play train your ai/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /back to ai playground/i }));
+    expect(screen.getByRole("button", { name: /open choose your ai agent/i })).toBeInTheDocument();
   });
 
-  it("navigates into a new 3D mini-game and skips back to the menu", () => {
+  it("navigates into Run the AI Workflow and marks it visited back on the menu", () => {
     render(<AiPlayground />);
-    fireEvent.click(screen.getByRole("button", { name: /play ai signal hunt/i }));
-    expect(screen.getByRole("heading", { level: 3, name: /find the true signal/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /open run the ai workflow/i }));
+    expect(screen.getByRole("heading", { level: 3, name: /scripts\/ai_workflow\.sh/i })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /^skip$/i }));
-    expect(screen.getByRole("button", { name: /play ai signal hunt/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /back to ai playground/i }));
+    expect(screen.getByRole("button", { name: /open run the ai workflow/i })).toBeInTheDocument();
+    expect(screen.getAllByText("Visited")).toHaveLength(1);
   });
 
-  it("records a completed game's accuracy back on the menu card", () => {
+  it("selecting an agent reveals its real responsibility and lets the user advance to the workflow experience", () => {
     render(<AiPlayground />);
-    fireEvent.click(screen.getByRole("button", { name: /play neural path/i }));
-    fireEvent.click(screen.getByRole("button", { name: /^play$/i }));
+    fireEvent.click(screen.getByRole("button", { name: /open choose your ai agent/i }));
+    fireEvent.click(screen.getByRole("button", { name: /select senior-qa/i }));
 
-    fireEvent.click(screen.getByRole("button", { name: /^Ingest: DATA$/i }));
-    fireEvent.click(screen.getByRole("button", { name: /^Process: PATTERN$/i }));
-    fireEvent.click(screen.getByRole("button", { name: /^Reason: INFERENCE$/i }));
-    fireEvent.click(screen.getByRole("button", { name: /^Decide: ACTION$/i }));
+    expect(screen.getAllByText(/writes and maintains unit, integration, and end-to-end tests/i).length).toBeGreaterThan(0);
 
-    fireEvent.click(screen.getByRole("button", { name: /back to playground/i }));
-
-    expect(screen.getByText("100% cleared")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /^next step$/i }));
+    expect(screen.getByRole("heading", { level: 3, name: /scripts\/ai_workflow\.sh/i })).toBeInTheDocument();
   });
 });

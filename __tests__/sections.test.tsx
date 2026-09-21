@@ -14,7 +14,7 @@ import {
   universeStats,
   universeStations,
   aboutPartnerNote,
-  playgroundGames,
+  playgroundExperiences,
 } from "@/data/journey";
 import { teamMembers } from "@/data/team";
 import { services } from "@/data/services";
@@ -125,12 +125,12 @@ describe("homepage chapters", () => {
     });
   });
 
-  it("renders the AI Playground chapter with all 4 cohesive game entry points", () => {
+  it("renders the AI Engineering Playground chapter with all 4 cohesive experience entry points", () => {
     render(<GameSection />);
     expect(document.getElementById("game")).toHaveAttribute("data-stage", "game");
-    expect(screen.getByRole("heading", { level: 2, name: /the ai playground/i })).toBeInTheDocument();
-    playgroundGames.forEach((game) => {
-      expect(screen.getByRole("button", { name: new RegExp(`play ${game.title}`, "i") })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: /ai engineering playground/i })).toBeInTheDocument();
+    playgroundExperiences.forEach((experience) => {
+      expect(screen.getByRole("button", { name: new RegExp(`open ${experience.title}`, "i") })).toBeInTheDocument();
     });
   });
 

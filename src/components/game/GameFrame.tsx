@@ -21,11 +21,10 @@ interface GameFrameProps {
 }
 
 /**
- * Shared chrome for the 3 new "AI Playground" mini-games (Signal Hunt,
- * Neural Path, Data Sort) — consistent card, heading rhythm, and
- * `aria-live` status region, so all four playground experiences (this shell
- * + Train Your AI's own matching idle/playing/finished cards) read as one
- * cohesive interactive chapter rather than unrelated widgets. See
+ * Shared chrome for the 4 "AI Engineering Playground" experiences (Choose
+ * Your AI Agent, Run the AI Workflow, Build & Test, Review & Ship) —
+ * consistent card, heading rhythm, and `aria-live` status region, so all four
+ * read as one cohesive interactive chapter rather than unrelated widgets. See
  * CLAUDE.md "do not duplicate animation logic" / reusable component intent.
  */
 export function GameFrame({

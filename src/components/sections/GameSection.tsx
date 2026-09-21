@@ -4,12 +4,13 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { AiPlayground } from "@/components/game/AiPlayground";
 
 /**
- * Chapter 06 — The AI Playground. A colour-reactive particle drift (see
- * three/scenes/GameAmbienceScene.tsx) sits behind 4 cohesive interactive
- * experiences (components/game/AiPlayground.tsx: Train Your AI + 3 new
- * self-contained 3D mini-games) with explicit Play/Replay/Skip controls at
- * every step, so the journey never forces interaction to continue and no
- * player is ever trapped in a game.
+ * Chapter 06 — The AI Engineering Playground. A colour-reactive particle
+ * drift (see three/scenes/GameAmbienceScene.tsx) sits behind 4 cohesive
+ * experiences (components/game/AiPlayground.tsx) that visualise this repo's
+ * own real AI development pipeline — the 4 subagents in `.claude/agents/*.md`
+ * and the 9-stage `scripts/ai_workflow.sh` — with explicit Start/Run/Skip/
+ * Back controls at every step, so the journey never forces interaction to
+ * continue and no one is ever trapped in an experience.
  */
 export function GameSection() {
   return (
@@ -33,8 +34,8 @@ export function GameSection() {
           <SectionHeading
             headingId="game-heading"
             eyebrow="06 — Optional · interactive"
-            title="The AI Playground"
-            description="Four hands-on ways to see how an AI tells signal from noise — pick any experience below, or play them all."
+            title="AI Engineering Playground"
+            description="See the real AI agents and workflow this repository runs on itself — pick any experience below, or step through them all."
             align="center"
             scrim
           />

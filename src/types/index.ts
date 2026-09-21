@@ -144,32 +144,83 @@ export interface UniverseStation {
   variant: UniverseStationVariant;
 }
 
-/** "TRAIN YOUR AI" mini-game (chapter 07) item classification. */
-export type GameItemKind = "data" | "knowledge" | "experience" | "noise" | "error" | "bias";
+/**
+ * Chapter 06 — "AI ENGINEERING PLAYGROUND". The 4 real subagents defined in
+ * `.claude/agents/*.md` that drive this repo's own AI development pipeline
+ * (see src/components/game/AgentSelectExperience.tsx). Verbatim, real
+ * responsibilities — not invented personas.
+ */
+export type AgentId = "senior-frontend-dev" | "senior-qa" | "senior-security-engineer" | "report-manager";
 
-export interface GameItemDefinition {
-  kind: GameItemKind;
-  label: string;
-  /** Positive items raise the trained model's accuracy, negative items
-   * lower it. */
-  polarity: "positive" | "negative";
+export interface AgentDefinition {
+  id: AgentId;
+  /** 1-based display order, matching `.claude/agents/*.md` reading order. */
+  index: number;
+  /** The agent's real subagent name (matches `claude --agent <name>`). */
+  name: string;
+  role: string;
+  description: string;
+  /** Real `tools:` frontmatter from the agent's own `.md` definition. */
+  tools: string[];
+  /** Short real access-scope summary (e.g. "Review-only · never edits or
+   * commits") pulled from the agent's own description. */
+  accessLabel: string;
+  /** Drives this agent's node glow/accent, and the shared ambience particle
+   * field behind the whole chapter (see lib/motion/playgroundState.ts). */
+  accentHex: string;
 }
 
 /**
- * Chapter 06 — "THE AI PLAYGROUND". Four cohesive interactive experiences
- * (Train Your AI + 3 new 3D mini-games) presented as one menu rather than
- * unrelated games bolted together — see src/components/game/AiPlayground.tsx.
+ * The real, fixed-order stages of `scripts/ai_workflow.sh`
+ * (`STAGE_ORDER=(implement qa build commit-message commit push pr
+ * report-manager security)`) — see
+ * src/components/game/WorkflowRunExperience.tsx.
  */
-export type PlaygroundGameId = "train" | "signal-hunt" | "neural-path" | "data-sort";
+export type WorkflowStageId =
+  | "implement"
+  | "qa"
+  | "build"
+  | "commit-message"
+  | "commit"
+  | "push"
+  | "pr"
+  | "report-manager"
+  | "security";
 
-export interface PlaygroundGameDefinition {
-  id: PlaygroundGameId;
-  /** 1-based display order shown on the game's own selector card. */
+/** Which of the brief's 5 flow labels (USER REQUEST → AI AGENT → WORKFLOW →
+ * IMPLEMENTATION → VALIDATION) a given real stage maps onto. */
+export type WorkflowFlowLabel = "USER REQUEST" | "AI AGENT" | "WORKFLOW" | "IMPLEMENTATION" | "VALIDATION";
+
+export interface WorkflowStageDefinition {
+  id: WorkflowStageId;
+  /** 1-based execution order, matching `STAGE_ORDER` in `ai_workflow.sh`. */
+  index: number;
+  label: string;
+  description: string;
+  /** The real subagent this stage invokes, or `null` for stages that run
+   * plain shell commands (build/commit/push/pr) without a subagent. */
+  agentId: AgentId | null;
+  /** A real, representative command/output line for this stage's terminal
+   * log, or `null` when the stage has no single representative command. */
+  command: string | null;
+  flowLabel: WorkflowFlowLabel;
+}
+
+/**
+ * Chapter 06 — "AI ENGINEERING PLAYGROUND". Four cohesive experiences that
+ * visualise this repo's real AI agents + workflow — see
+ * src/components/game/AiPlayground.tsx.
+ */
+export type PlaygroundExperienceId = "choose-agent" | "run-workflow" | "build-test" | "review-ship";
+
+export interface PlaygroundExperienceDefinition {
+  id: PlaygroundExperienceId;
+  /** 1-based display order shown on the experience's own selector tile. */
   index: number;
   title: string;
   tagline: string;
   description: string;
-  /** Drives both this game's own 3D accent glow and the shared ambience
+  /** Drives both this experience's own accent glow and the shared ambience
    * particle field behind the whole chapter (see lib/motion/playgroundState.ts). */
   accentHex: string;
 }

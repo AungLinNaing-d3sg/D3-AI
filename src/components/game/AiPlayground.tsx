@@ -1,62 +1,65 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { TrainYourAI } from "@/components/game/TrainYourAI";
-import { SignalHuntGame } from "@/components/game/SignalHuntGame";
-import { NeuralPathGame } from "@/components/game/NeuralPathGame";
-import { DataSortGame } from "@/components/game/DataSortGame";
-import { playgroundGames } from "@/data/journey";
+import { AgentSelectExperience } from "@/components/game/AgentSelectExperience";
+import { WorkflowRunExperience } from "@/components/game/WorkflowRunExperience";
+import { BuildTestExperience } from "@/components/game/BuildTestExperience";
+import { ReviewShipExperience } from "@/components/game/ReviewShipExperience";
+import { playgroundExperiences } from "@/data/journey";
 import { resetPlaygroundAccent, setPlaygroundAccent } from "@/lib/motion/playgroundState";
-import type { PlaygroundGameId } from "@/types";
+import type { PlaygroundExperienceId } from "@/types";
 
-type CompletionMap = Partial<Record<PlaygroundGameId, number>>;
+/** The overall narrative this chapter communicates end to end, per the
+ * brief: a real software request becomes a tested, reviewed, shippable
+ * product by moving through the 4 experiences below. */
+const OVERALL_FLOW = ["TASK", "AI AGENT", "AI WORKFLOW", "BUILD", "TEST", "REVIEW", "RESULT"] as const;
 
-const accentTextClass: Record<PlaygroundGameId, string> = {
-  train: "text-brand-400",
-  "signal-hunt": "text-cyan-300",
-  "neural-path": "text-violet-300",
-  "data-sort": "text-amber-300",
+const accentTextClass: Record<PlaygroundExperienceId, string> = {
+  "choose-agent": "text-brand-400",
+  "run-workflow": "text-cyan-300",
+  "build-test": "text-violet-300",
+  "review-ship": "text-emerald-300",
 };
 
-const accentBorderClass: Record<PlaygroundGameId, string> = {
-  train: "border-brand-400/40 hover:border-brand-400/70",
-  "signal-hunt": "border-cyan-400/30 hover:border-cyan-400/70",
-  "neural-path": "border-violet-400/30 hover:border-violet-400/70",
-  "data-sort": "border-amber-400/30 hover:border-amber-400/70",
-};
-
-const accentGlowHex: Record<PlaygroundGameId, string> = {
-  train: "#fd6a50",
-  "signal-hunt": "#22d3ee",
-  "neural-path": "#a78bfa",
-  "data-sort": "#fbbf24",
+const accentBorderClass: Record<PlaygroundExperienceId, string> = {
+  "choose-agent": "border-brand-400/40 hover:border-brand-400/70",
+  "run-workflow": "border-cyan-400/30 hover:border-cyan-400/70",
+  "build-test": "border-violet-400/30 hover:border-violet-400/70",
+  "review-ship": "border-emerald-400/30 hover:border-emerald-400/70",
 };
 
 /**
- * Chapter 07 — "THE AI PLAYGROUND". One cohesive interactive chapter built
- * from 4 experiences: the existing "Train Your AI" catcher plus 3 new,
- * self-contained 3D mini-games (Signal Hunt, Neural Path, Data Sort). A
- * cinematic menu introduces all four as one continuous idea rather than
- * unrelated widgets; picking one hands off into that game's own
- * ready → playing → result flow (each with explicit Play/Replay/Skip
- * controls, so the user is never trapped), then hands back to this menu,
- * which doubles as the natural on-ramp back into the scrollytelling journey.
+ * Chapter 06 — "AI ENGINEERING PLAYGROUND". Visualises this repo's own real
+ * AI development pipeline: the 4 subagents in `.claude/agents/*.md` and the
+ * 9-stage `scripts/ai_workflow.sh` (see data/journey.ts `AGENTS` /
+ * `WORKFLOW_STAGES`), across 4 connected experiences —
+ * Choose Your AI Agent → Run the AI Workflow → Build & Test →
+ * Review & Ship — rather than unrelated mini-games. A cinematic menu
+ * introduces all four as one continuous idea; picking one hands off into
+ * that experience's own ready → running → complete flow (each with
+ * explicit Start/Run/Skip/Back controls, so the user is never trapped), and
+ * each experience can also hand off directly to the next one in sequence via
+ * "Next Step"/"View Result", then back to this menu.
  *
- * Each game owns its own small, self-contained `@react-three/fiber` canvas
- * (see components/game/*Game.tsx) rather than the shared, fixed background
- * canvas (components/three/SceneCanvas.tsx) — the shared canvas stays purely
- * decorative/`aria-hidden` and cannot itself carry click-driven gameplay
- * (see three/scenes/GameAmbienceScene.tsx), so each game gets a real,
- * self-contained 3D scene it can safely raycast/interact with, while its
- * accessible HTML button grid carries the actual interaction.
+ * Each experience owns its own small, self-contained `@react-three/fiber`
+ * canvas (see components/three/experiences/*Scene.tsx) rather than the
+ * shared, fixed background canvas (components/three/SceneCanvas.tsx) — the
+ * shared canvas stays purely decorative/`aria-hidden` and cannot itself
+ * carry click-driven interaction (see three/scenes/GameAmbienceScene.tsx),
+ * so each experience gets a real, self-contained 3D scene it can safely
+ * raycast/interact with, while its accessible HTML controls carry the actual
+ * interaction. Switching `activeExperience` unmounts the previous
+ * experience's entire component tree (including its `<Canvas>`), which tears
+ * down that experience's Three.js resources, animation loops, timers, and
+ * listeners automatically.
  */
 export function AiPlayground() {
-  const [activeGame, setActiveGame] = useState<PlaygroundGameId | null>(null);
-  const [completed, setCompleted] = useState<CompletionMap>({});
+  const [activeExperience, setActiveExperience] = useState<PlaygroundExperienceId | null>(null);
+  const [visited, setVisited] = useState<Set<PlaygroundExperienceId>>(() => new Set());
 
   const activeDefinition = useMemo(
-    () => playgroundGames.find((game) => game.id === activeGame) ?? null,
-    [activeGame]
+    () => playgroundExperiences.find((experience) => experience.id === activeExperience) ?? null,
+    [activeExperience]
   );
 
   useEffect(() => {
@@ -65,99 +68,93 @@ export function AiPlayground() {
     return () => resetPlaygroundAccent();
   }, [activeDefinition]);
 
-  const selectGame = useCallback((id: PlaygroundGameId) => setActiveGame(id), []);
-  const backToMenu = useCallback(() => setActiveGame(null), []);
-  const recordCompletion = useCallback((id: PlaygroundGameId, accuracy: number) => {
-    setCompleted((previous) => ({ ...previous, [id]: accuracy }));
+  const openExperience = useCallback((id: PlaygroundExperienceId) => {
+    setActiveExperience(id);
+    setVisited((previous) => {
+      if (previous.has(id)) return previous;
+      const next = new Set(previous);
+      next.add(id);
+      return next;
+    });
   }, []);
+  const backToMenu = useCallback(() => setActiveExperience(null), []);
 
-  const completedCount = Object.keys(completed).length;
+  const visitedCount = visited.size;
 
-  if (activeGame === "train") {
-    return (
-      <div className="flex w-full flex-col items-center gap-4">
-        <TrainYourAI />
-        <button
-          type="button"
-          onClick={backToMenu}
-          className="text-xs font-semibold uppercase tracking-[0.2em] text-ink-400 underline-offset-4 hover:text-ink-100 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-        >
-          ← Back to the AI Playground
-        </button>
-      </div>
-    );
+  if (activeExperience === "choose-agent") {
+    return <AgentSelectExperience onAdvance={() => openExperience("run-workflow")} onExit={backToMenu} />;
   }
 
-  if (activeGame === "signal-hunt") {
-    return (
-      <SignalHuntGame
-        onFinish={(accuracy) => recordCompletion("signal-hunt", accuracy)}
-        onExit={backToMenu}
-      />
-    );
+  if (activeExperience === "run-workflow") {
+    return <WorkflowRunExperience onAdvance={() => openExperience("build-test")} onExit={backToMenu} />;
   }
 
-  if (activeGame === "neural-path") {
-    return (
-      <NeuralPathGame
-        onFinish={(accuracy) => recordCompletion("neural-path", accuracy)}
-        onExit={backToMenu}
-      />
-    );
+  if (activeExperience === "build-test") {
+    return <BuildTestExperience onAdvance={() => openExperience("review-ship")} onExit={backToMenu} />;
   }
 
-  if (activeGame === "data-sort") {
-    return (
-      <DataSortGame onFinish={(accuracy) => recordCompletion("data-sort", accuracy)} onExit={backToMenu} />
-    );
+  if (activeExperience === "review-ship") {
+    return <ReviewShipExperience onExit={backToMenu} />;
   }
 
   return (
     <div className="flex w-full flex-col items-center gap-8">
       <p className="max-w-xl text-balance text-center text-sm leading-relaxed text-ink-300 sm:text-base">
-        Four ways to think like an AI. Hunt real signal, route a neural network, sort a data universe, or train an
-        agent from scratch — play one, or play them all.
+        This is how D3-SG turns a real software request into a tested, reviewed, shippable product — using the same
+        4 AI agents and 9-stage workflow this repository runs for itself.
       </p>
 
+      <div
+        className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-500"
+        aria-hidden="true"
+      >
+        {OVERALL_FLOW.map((label, index) => (
+          <span key={label} className="flex items-center gap-2">
+            <span>{label}</span>
+            {index < OVERALL_FLOW.length - 1 ? <span>&rarr;</span> : null}
+          </span>
+        ))}
+      </div>
+
       <ul className="grid w-full max-w-3xl gap-4 sm:grid-cols-2">
-        {playgroundGames.map((game) => {
-          const accuracy = completed[game.id];
+        {playgroundExperiences.map((experience) => {
+          const isVisited = visited.has(experience.id);
           return (
-            <li key={game.id}>
+            <li key={experience.id}>
               {/* Floating, elevated tile (lift + glow on hover) rather than
                   a flat card — these are the chapter's primary actions, so
                   they get the most emphatic treatment of any card grid on
                   the site. */}
               <button
                 type="button"
-                onClick={() => selectGame(game.id)}
-                aria-label={`Play ${game.title}`}
-                className={`group relative flex h-full w-full flex-col items-start gap-2 overflow-hidden rounded-2xl border bg-white/[0.03] p-6 text-left shadow-[0_20px_50px_-30px_rgba(0,0,0,0.9)] transition-all duration-300 pointer-fine:hover:-translate-y-1 hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 ${accentBorderClass[game.id]}`}
+                onClick={() => openExperience(experience.id)}
+                aria-label={`Open ${experience.title}`}
+                className={`group relative flex h-full w-full flex-col items-start gap-2 overflow-hidden rounded-2xl border bg-white/[0.03] p-6 text-left shadow-[0_20px_50px_-30px_rgba(0,0,0,0.9)] transition-all duration-300 pointer-fine:hover:-translate-y-1 hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 ${accentBorderClass[experience.id]}`}
               >
                 <span
                   className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-25"
-                  style={{ backgroundColor: accentGlowHex[game.id] }}
+                  style={{ backgroundColor: experience.accentHex }}
                   aria-hidden="true"
                 />
                 <div className="relative flex w-full items-center justify-between">
-                  <span className={`text-xs font-semibold uppercase tracking-[0.24em] ${accentTextClass[game.id]}`}>
-                    {String(game.index).padStart(2, "0")}
+                  <span className={`text-xs font-semibold uppercase tracking-[0.24em] ${accentTextClass[experience.id]}`}>
+                    {String(experience.index).padStart(2, "0")}
                   </span>
-                  {accuracy !== undefined ? (
+                  {isVisited ? (
                     <span className="rounded-full border border-emerald-400/40 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-300">
-                      {accuracy}% cleared
+                      Visited
                     </span>
                   ) : null}
                 </div>
-                <p className="font-display text-lg font-semibold text-ink-50">{game.title}</p>
-                <p className="text-xs font-medium uppercase tracking-wide text-ink-400">{game.tagline}</p>
-                <p className="text-sm leading-relaxed text-ink-300">{game.description}</p>
+                <p className="font-display text-lg font-semibold text-ink-50">{experience.title}</p>
+                <p className="text-xs font-medium uppercase tracking-wide text-ink-400">{experience.tagline}</p>
+                <p className="text-sm leading-relaxed text-ink-300">{experience.description}</p>
                 <span
-                  className={`mt-auto inline-flex items-center gap-1 pt-2 text-xs font-semibold uppercase tracking-[0.2em] ${accentTextClass[game.id]}`}
+                  className={`mt-auto inline-flex items-center gap-1 pt-2 text-xs font-semibold uppercase tracking-[0.2em] ${accentTextClass[experience.id]}`}
                 >
-                  Play
+                  Open
                   <span aria-hidden="true" className="transition-transform duration-300 group-hover:translate-x-1">
-                    →
+                    &rarr;
                   </span>
                 </span>
               </button>
@@ -167,7 +164,7 @@ export function AiPlayground() {
       </ul>
 
       <p aria-live="polite" className="sr-only">
-        {completedCount > 0 ? `${completedCount} of ${playgroundGames.length} playground experiences completed.` : ""}
+        {visitedCount > 0 ? `${visitedCount} of ${playgroundExperiences.length} playground experiences visited.` : ""}
       </p>
     </div>
   );

@@ -1,11 +1,12 @@
 import type {
+  AgentDefinition,
   ConceptNode,
-  GameItemDefinition,
-  PlaygroundGameDefinition,
+  PlaygroundExperienceDefinition,
   UniverseStat,
   UniverseStation,
   UniverseStationVariant,
   VisionPillar,
+  WorkflowStageDefinition,
 } from "@/types";
 import { capabilities } from "@/data/capabilities";
 import { brandPillars } from "@/data/pillars";
@@ -141,65 +142,195 @@ export const universeStations: UniverseStation[] = universeStats.map((stat, inde
 }));
 
 /**
- * Chapter 06 — "TRAIN YOUR AI" mini-game. Item vocabulary is exactly the
- * brief's specified game concept (DATA/KNOWLEDGE/EXPERIENCE to collect,
- * NOISE/ERROR/BIAS to avoid) — this is deliberately game mechanics, not a
- * company fact, so it does not need /docs sourcing.
+ * Chapter 06 — "AI ENGINEERING PLAYGROUND". The 4 real subagents defined in
+ * `.claude/agents/*.md` — verbatim names, roles, responsibilities, tools, and
+ * access scope, not invented personas. Single source of truth read by
+ * `AgentSelectExperience` and `WorkflowRunExperience` alike.
  */
-export const gameItemDefinitions: GameItemDefinition[] = [
-  { kind: "data", label: "DATA", polarity: "positive" },
-  { kind: "knowledge", label: "KNOWLEDGE", polarity: "positive" },
-  { kind: "experience", label: "EXPERIENCE", polarity: "positive" },
-  { kind: "noise", label: "NOISE", polarity: "negative" },
-  { kind: "error", label: "ERROR", polarity: "negative" },
-  { kind: "bias", label: "BIAS", polarity: "negative" },
-];
-
-/**
- * Chapter 06 — "THE AI PLAYGROUND". Four cohesive interactive experiences —
- * the existing "Train Your AI" catcher plus three new 3D mini-games — framed
- * as one continuous playground rather than unrelated games. Deliberately
- * game mechanics/vocabulary, not company facts, so no /docs sourcing is
- * needed; each `accentHex` also drives that game's own hologram glow and the
- * shared ambience particle field behind the whole chapter (see
- * three/scenes/GameAmbienceScene.tsx + lib/motion/playgroundState.ts).
- */
-export const playgroundGames: PlaygroundGameDefinition[] = [
+export const AGENTS: AgentDefinition[] = [
   {
-    id: "train",
+    id: "senior-frontend-dev",
     index: 1,
-    title: "Train Your AI",
-    tagline: "Catch signal, dodge noise.",
+    name: "senior-frontend-dev",
+    role: "Senior Frontend Developer",
     description:
-      "Steer a live AI agent through a falling data stream — collect DATA, KNOWLEDGE, and EXPERIENCE, and dodge NOISE, ERROR, and BIAS before the clock runs out.",
-    accentHex: "#f14a30",
+      "Builds responsive, accessible, maintainable UI components for the Next.js application, integrates REST APIs, implements JWT-based authentication, and optimizes frontend performance.",
+    tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"],
+    accessLabel: "Full read/write · may install packages",
+    accentHex: "#fd6a50",
   },
   {
-    id: "signal-hunt",
+    id: "senior-qa",
     index: 2,
-    title: "AI Signal Hunt",
-    tagline: "Find the true signal in the noise.",
+    name: "senior-qa",
+    role: "Senior Frontend QA Engineer",
     description:
-      "A field of transmissions just came online. Tag every genuine AI signal racing toward the core and leave the noise/error transmissions untouched.",
+      "Writes and maintains unit, integration, and end-to-end tests. Validates UI behaviour, API integration, authentication flows, responsiveness, accessibility, cross-browser compatibility, and edge cases.",
+    tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"],
+    accessLabel: "Full read/write to test files",
     accentHex: "#22d3ee",
   },
   {
-    id: "neural-path",
+    id: "senior-security-engineer",
     index: 3,
-    title: "Neural Path",
-    tagline: "Route the network to full activation.",
+    name: "senior-security-engineer",
+    role: "Senior Security Engineer",
     description:
-      "Choose the strongest connection at every junction of a live neural network and build one unbroken, intelligent path from input to decision.",
+      "Reviews the git diff for OWASP risks, XSS, injection vulnerabilities, authentication/authorization weaknesses, secrets exposure, and insecure configuration. Returns a severity-rated report.",
+    tools: ["Read", "Grep", "Glob", "Bash"],
+    accessLabel: "Review-only · never edits or commits",
+    accentHex: "#fb7185",
+  },
+  {
+    id: "report-manager",
+    index: 4,
+    name: "report-manager",
+    role: "Report Manager",
+    description:
+      "Compiles a structured report from the other agents' work using git log and git diff, module by module.",
+    tools: ["Read", "Bash", "Grep", "Glob"],
+    accessLabel: "Read-only · no build or install commands",
+    accentHex: "#a78bfa",
+  },
+];
+
+/**
+ * Chapter 06 — the real, fixed-order stages of `scripts/ai_workflow.sh`
+ * (`STAGE_ORDER=(implement qa build commit-message commit push pr
+ * report-manager security)`). Single source of truth read by
+ * `WorkflowRunExperience`, `BuildTestExperience`, and `ReviewShipExperience`.
+ */
+export const WORKFLOW_STAGES: WorkflowStageDefinition[] = [
+  {
+    id: "implement",
+    index: 1,
+    label: "Implement",
+    description: "Creates/switches to branch ai/<feature-name> and invokes senior-frontend-dev to build the feature.",
+    agentId: "senior-frontend-dev",
+    command: 'scripts/ai_workflow.sh "feature-name" "feature description"',
+    flowLabel: "AI AGENT",
+  },
+  {
+    id: "qa",
+    index: 2,
+    label: "QA",
+    description: "Invokes senior-qa against the current diff. A FAIL in its output aborts the pipeline.",
+    agentId: "senior-qa",
+    command: null,
+    flowLabel: "AI AGENT",
+  },
+  {
+    id: "build",
+    index: 3,
+    label: "Build",
+    description:
+      "Runs npm i && npm run build, npm run lint, npm run test -- --watchAll=false --passWithNoTests. Build/test failures abort; lint only warns.",
+    agentId: null,
+    command: "npm run build",
+    flowLabel: "WORKFLOW",
+  },
+  {
+    id: "commit-message",
+    index: 4,
+    label: "Commit Message",
+    description: "Generates a conventional commit message and a markdown PR description.",
+    agentId: "senior-frontend-dev",
+    command: null,
+    flowLabel: "WORKFLOW",
+  },
+  {
+    id: "commit",
+    index: 5,
+    label: "Commit",
+    description: "git commit — pauses for human y/n confirmation before acting.",
+    agentId: null,
+    command: "git commit",
+    flowLabel: "IMPLEMENTATION",
+  },
+  {
+    id: "push",
+    index: 6,
+    label: "Push",
+    description: "git push — pauses for human y/n confirmation before acting.",
+    agentId: null,
+    command: "git push",
+    flowLabel: "IMPLEMENTATION",
+  },
+  {
+    id: "pr",
+    index: 7,
+    label: "Pull Request",
+    description: "gh pr create, or comments on an existing open PR for the branch — pauses for human y/n confirmation.",
+    agentId: null,
+    command: "gh pr create",
+    flowLabel: "IMPLEMENTATION",
+  },
+  {
+    id: "report-manager",
+    index: 8,
+    label: "Report",
+    description: "Compiles a structured report from git history/diff.",
+    agentId: "report-manager",
+    command: null,
+    flowLabel: "VALIDATION",
+  },
+  {
+    id: "security",
+    index: 9,
+    label: "Security Review",
+    description: "senior-security-engineer reviews the diff for OWASP risks. A FAIL aborts.",
+    agentId: "senior-security-engineer",
+    command: null,
+    flowLabel: "VALIDATION",
+  },
+];
+
+/**
+ * Chapter 06 — "AI ENGINEERING PLAYGROUND". Four cohesive experiences that
+ * visualise this repo's real AI agents (`AGENTS` above) and real
+ * `ai_workflow.sh` pipeline (`WORKFLOW_STAGES` above) — real project data,
+ * not invented game mechanics, so no /docs sourcing is needed beyond
+ * `.claude/agents/*.md` and `scripts/ai_workflow.sh` themselves. Each
+ * `accentHex` also drives that experience's own glow and the shared ambience
+ * particle field behind the whole chapter (see
+ * three/scenes/GameAmbienceScene.tsx + lib/motion/playgroundState.ts).
+ */
+export const playgroundExperiences: PlaygroundExperienceDefinition[] = [
+  {
+    id: "choose-agent",
+    index: 1,
+    title: "Choose Your AI Agent",
+    tagline: "Select the specialist for the job.",
+    description:
+      "Meet the 4 real AI agents behind this repo's own pipeline — select one to see its real responsibility and where it fits the workflow.",
+    accentHex: "#fd6a50",
+  },
+  {
+    id: "run-workflow",
+    index: 2,
+    title: "Run the AI Workflow",
+    tagline: "A request becomes a pipeline run.",
+    description:
+      "Start the real 9-stage ai_workflow.sh pipeline and watch each stage execute, from implementation through to security review.",
+    accentHex: "#22d3ee",
+  },
+  {
+    id: "build-test",
+    index: 3,
+    title: "Build & Test",
+    tagline: "Inside a real dev workstation.",
+    description:
+      "Watch code, terminal, and test output move through the same analyze → implement → test → fix → verify loop the build stage runs for real.",
     accentHex: "#a78bfa",
   },
   {
-    id: "data-sort",
+    id: "review-ship",
     index: 4,
-    title: "Data Sort",
-    tagline: "Classify the data universe.",
+    title: "Review & Ship",
+    tagline: "From reviewed diff to shippable PR.",
     description:
-      "Objects drift through the pipeline. Route DATA, KNOWLEDGE, and SIGNAL into Process, and reject NOISE and ERROR into Discard.",
-    accentHex: "#fbbf24",
+      "Watch security review and reporting close the loop as the workflow reaches implemented, tested, reviewed, ready to ship.",
+    accentHex: "#34d399",
   },
 ];
 

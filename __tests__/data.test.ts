@@ -15,8 +15,9 @@ import {
   universeStats,
   universeStatRanges,
   universeStations,
-  gameItemDefinitions,
-  playgroundGames,
+  AGENTS,
+  WORKFLOW_STAGES,
+  playgroundExperiences,
   visionPillars,
 } from "@/data/journey";
 import { STAGE_IDS } from "@/types";
@@ -121,26 +122,57 @@ describe("content data integrity", () => {
     expect(variants.size).toBe(universeStations.length);
   });
 
-  it("defines exactly the brief's TRAIN YOUR AI vocabulary (3 positive, 3 negative)", () => {
-    const positive = gameItemDefinitions.filter((item) => item.polarity === "positive");
-    const negative = gameItemDefinitions.filter((item) => item.polarity === "negative");
-    expect(positive.map((item) => item.label)).toEqual(["DATA", "KNOWLEDGE", "EXPERIENCE"]);
-    expect(negative.map((item) => item.label)).toEqual(["NOISE", "ERROR", "BIAS"]);
+  it("defines exactly the 4 real subagents from .claude/agents/*.md, each uniquely identified and accented", () => {
+    expect(AGENTS.map((agent) => agent.id)).toEqual([
+      "senior-frontend-dev",
+      "senior-qa",
+      "senior-security-engineer",
+      "report-manager",
+    ]);
+    const accents = new Set(AGENTS.map((agent) => agent.accentHex));
+    expect(accents.size).toBe(AGENTS.length);
+    AGENTS.forEach((agent) => {
+      expect(agent.description.length).toBeGreaterThan(0);
+      expect(agent.tools.length).toBeGreaterThan(0);
+    });
+  });
+
+  it("defines exactly the real 9-stage ai_workflow.sh pipeline, in STAGE_ORDER", () => {
+    expect(WORKFLOW_STAGES.map((stage) => stage.id)).toEqual([
+      "implement",
+      "qa",
+      "build",
+      "commit-message",
+      "commit",
+      "push",
+      "pr",
+      "report-manager",
+      "security",
+    ]);
+    WORKFLOW_STAGES.forEach((stage, index) => {
+      expect(stage.index).toBe(index + 1);
+      expect(stage.description.length).toBeGreaterThan(0);
+    });
   });
 
   it("reframes the real capability pillars as the cinematic future's vision statements", () => {
     expect(visionPillars).toHaveLength(capabilities.length);
   });
 
-  it("defines exactly the 4 cohesive AI Playground experiences, each uniquely identified and accented", () => {
-    expect(playgroundGames.map((game) => game.id)).toEqual(["train", "signal-hunt", "neural-path", "data-sort"]);
-    expect(playgroundGames.map((game) => game.index)).toEqual([1, 2, 3, 4]);
-    const accents = new Set(playgroundGames.map((game) => game.accentHex));
-    expect(accents.size).toBe(playgroundGames.length);
-    playgroundGames.forEach((game) => {
-      expect(game.title.length).toBeGreaterThan(0);
-      expect(game.tagline.length).toBeGreaterThan(0);
-      expect(game.description.length).toBeGreaterThan(0);
+  it("defines exactly the 4 cohesive AI Engineering Playground experiences, each uniquely identified and accented", () => {
+    expect(playgroundExperiences.map((experience) => experience.id)).toEqual([
+      "choose-agent",
+      "run-workflow",
+      "build-test",
+      "review-ship",
+    ]);
+    expect(playgroundExperiences.map((experience) => experience.index)).toEqual([1, 2, 3, 4]);
+    const accents = new Set(playgroundExperiences.map((experience) => experience.accentHex));
+    expect(accents.size).toBe(playgroundExperiences.length);
+    playgroundExperiences.forEach((experience) => {
+      expect(experience.title.length).toBeGreaterThan(0);
+      expect(experience.tagline.length).toBeGreaterThan(0);
+      expect(experience.description.length).toBeGreaterThan(0);
     });
   });
 
