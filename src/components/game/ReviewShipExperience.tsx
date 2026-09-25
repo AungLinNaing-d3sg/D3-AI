@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/Button";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { useDeviceCapability } from "@/hooks/useDeviceCapability";
 import { useWebglSupported } from "@/hooks/useWebglSupported";
+import { usePlaygroundRunSignal } from "@/hooks/usePlaygroundSignals";
+import { useSiteAudio } from "@/hooks/useSiteAudio";
 import { WORKFLOW_STAGES } from "@/data/journey";
 
 type Phase = "ready" | "running" | "complete";
@@ -43,6 +45,9 @@ const TICK_MS = 900;
 
 interface ReviewShipExperienceProps {
   onExit: () => void;
+  /** Resets the whole playground back to its entry chapter — distinct from
+   * `runAgain` below, which only replays this one chapter. */
+  onRestart: () => void;
 }
 
 /**
@@ -52,11 +57,13 @@ interface ReviewShipExperienceProps {
  * deployment beacon igniting, ending on the brief's exact final state —
  * ✓ IMPLEMENTED ✓ TESTED ✓ REVIEWED ✓ READY TO SHIP.
  */
-export function ReviewShipExperience({ onExit }: ReviewShipExperienceProps) {
+export function ReviewShipExperience({ onExit, onRestart }: ReviewShipExperienceProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
   const webglSupported = useWebglSupported();
   const { isCompact } = useDeviceCapability();
+  const { play } = useSiteAudio();
   const [phase, setPhase] = useState<Phase>("ready");
+  usePlaygroundRunSignal(phase);
   const [revealCount, setRevealCount] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -68,6 +75,10 @@ export function ReviewShipExperience({ onExit }: ReviewShipExperienceProps) {
   }, []);
 
   useEffect(() => clearTimer, [clearTimer]);
+
+  useEffect(() => {
+    if (phase === "complete") play("complete");
+  }, [phase, play]);
 
   const completeInstantly = useCallback(() => {
     clearTimer();
@@ -140,6 +151,9 @@ export function ReviewShipExperience({ onExit }: ReviewShipExperienceProps) {
           </>
         ) : (
           <>
+            <Button variant="secondary" onClick={onRestart}>
+              Restart Experience
+            </Button>
             <Button variant="secondary" onClick={runAgain}>
               Run Again
             </Button>
@@ -197,6 +211,10 @@ export function ReviewShipExperience({ onExit }: ReviewShipExperienceProps) {
             );
           })}
         </ul>
+
+        {ready ? (
+          <p className="text-center text-sm font-semibold uppercase tracking-[0.32em] text-emerald-300">System ready</p>
+        ) : null}
       </div>
     </GameFrame>
   );

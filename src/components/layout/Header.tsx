@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { Logo } from "@/components/ui/Logo";
 import { LinkButton } from "@/components/ui/Button";
+import { SoundToggle } from "@/components/ui/SoundToggle";
 import { primaryNav } from "@/data/nav";
 import { useJourneyFrame } from "@/hooks/useJourneyFrame";
 import { useDeviceCapability } from "@/hooks/useDeviceCapability";
+import { useSiteAudio } from "@/hooks/useSiteAudio";
 import { gsap } from "@/lib/motion/gsap";
 import { handleInPageNavClick } from "@/lib/motion/scrollNav";
 
@@ -36,6 +38,7 @@ export function Header() {
   const mobileLinkRefs = useRef<Array<HTMLAnchorElement | null>>([]);
   const lastActiveStage = useRef<string | null>(null);
   const { hasCoarsePointer } = useDeviceCapability();
+  const { play } = useSiteAudio();
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 12);
@@ -115,7 +118,13 @@ export function Header() {
               href={item.href}
               data-active="false"
               onPointerMove={handlePointerMove}
-              onClick={(event) => handleInPageNavClick(event, item.href)}
+              onPointerEnter={() => {
+                if (!hasCoarsePointer) play("hover");
+              }}
+              onClick={(event) => {
+                play("select");
+                handleInPageNavClick(event, item.href);
+              }}
               className="nav-link-glow type-nav-link relative rounded-full px-3.5 py-2 text-sm text-ink-200 transition-colors duration-300 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950 data-[active=true]:font-semibold data-[active=true]:text-white"
             >
               {item.label}
@@ -123,15 +132,25 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="hidden md:block">
-          <LinkButton href="#cta" variant="primary" className="px-5 py-2.5 text-xs">
+        <div className="hidden items-center gap-2 md:flex">
+          <SoundToggle />
+          <LinkButton
+            href="#cta"
+            variant="primary"
+            className="px-5 py-2.5 text-xs"
+            onMouseEnter={() => play("hover")}
+            onClick={() => play("select")}
+          >
             Contact Us
           </LinkButton>
         </div>
 
         <button
           type="button"
-          onClick={() => setIsMenuOpen((open) => !open)}
+          onClick={() => {
+            play(isMenuOpen ? "menu-close" : "menu-open");
+            setIsMenuOpen((open) => !open);
+          }}
           aria-expanded={isMenuOpen}
           aria-controls="mobile-nav"
           className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 text-ink-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950 md:hidden"
@@ -164,6 +183,7 @@ export function Header() {
                 href={item.href}
                 data-active="false"
                 onClick={(event) => {
+                  play("select");
                   setIsMenuOpen(false);
                   handleInPageNavClick(event, item.href);
                 }}
@@ -172,9 +192,12 @@ export function Header() {
                 {item.label}
               </a>
             ))}
-            <LinkButton href="#cta" variant="primary" className="mt-3 w-full">
-              Contact Us
-            </LinkButton>
+            <div className="mt-3 flex items-center gap-2">
+              <LinkButton href="#cta" variant="primary" className="flex-1" onClick={() => play("select")}>
+                Contact Us
+              </LinkButton>
+              <SoundToggle />
+            </div>
           </nav>
         </div>
       </div>

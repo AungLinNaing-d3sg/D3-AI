@@ -21,7 +21,11 @@ const cameraKeyframes: CameraKeyframe[] = [
   { x: 0, y: 0, z: 5.4, lookX: 0, lookY: 0, lookZ: 0, fov: 46 }, // 5 — universe end / game start
   { x: 0, y: 0.4, z: 6.8, lookX: 0, lookY: 0, lookZ: -1, fov: 40 }, // 6 — game end / future start
   { x: 0, y: 0.15, z: 5.6, lookX: 0, lookY: 0, lookZ: 0, fov: 38 }, // 7 — future end / cta start
-  { x: 0, y: 0, z: 5, lookX: 0, lookY: 0, lookZ: 0, fov: 36 }, // 8 — cta end
+  // 8 — cta end: from keyframe 7's slightly wider view, a slow push in with
+  // a small orbit to the left, so the intelligence core's depth and layered
+  // glass read as the section scrolls (see three/scenes/CtaScene.tsx) —
+  // felt as perspective, never as an obvious camera move.
+  { x: -0.3, y: 0.2, z: 4.9, lookX: 0, lookY: 0.02, lookZ: 0, fov: 36 },
 ];
 
 const lightKeyframes: LightKeyframe[] = [
@@ -33,14 +37,11 @@ const lightKeyframes: LightKeyframe[] = [
   { ambient: 0.55, key: 1.3, rim: 0.5, colorHex: "#e5e9f2" },
   { ambient: 0.35, key: 1.1, rim: 0.75, colorHex: "#7c8cff" },
   { ambient: 0.4, key: 1.35, rim: 0.6, colorHex: "#f14a30" },
-  // cta — was `key: 1.8` (the brightest point light of the whole journey),
-  // which combined with the CTA scene's large, saturated-orange emissive
-  // core (see three/scenes/CtaScene.tsx) to wash out the final CTA's
-  // heading/body copy. Brought back in line with every other stage's key
-  // intensity (1.1–1.5) and ambient nudged up slightly so the scene reads
-  // as an even, contained glow behind the text rather than one harsh,
-  // directional hot-spot competing with it.
-  { ambient: 0.38, key: 1.3, rim: 0.5, colorHex: "#f14a30" },
+  // cta — kept low: the intelligence core carries its own warm key, cool
+  // fill, rim and internal orange emission (see three/scenes/CtaScene.tsx),
+  // so the shared rig only adds a faint, warm-neutral base that never
+  // washes out the closing copy.
+  { ambient: 0.22, key: 0.8, rim: 0.45, colorHex: "#e6d8cc" },
 ];
 
 /**
@@ -132,6 +133,17 @@ export function initJourneyTimeline(
       bound.height = Math.max(el.offsetHeight, 1);
     });
     total = Math.max(wrapperEl.offsetHeight, 1);
+
+    // Stage boundaries in whole-page `globalProgress` space — recomputed
+    // here (not per scroll tick) since they only change when layout does,
+    // exactly like `bounds`/`total` above. Consumed by the global scroll
+    // progress rail (components/layout/ScrollProgressRail.tsx).
+    bounds.forEach((bound) => {
+      journeyState.stageBounds[bound.id] = {
+        start: bound.top / total,
+        end: (bound.top + bound.height) / total,
+      };
+    });
   }
 
   measure();

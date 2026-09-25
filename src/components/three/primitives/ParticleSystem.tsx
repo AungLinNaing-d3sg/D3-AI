@@ -21,7 +21,7 @@ import {
  */
 let sharedParticleSprite: Texture | null = null;
 
-function getParticleSprite(): Texture | undefined {
+export function getParticleSprite(): Texture | undefined {
   if (typeof document === "undefined") return undefined;
   if (sharedParticleSprite) return sharedParticleSprite;
 

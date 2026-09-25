@@ -11,8 +11,8 @@ import { disciplineFocus } from "@/lib/motion/disciplineFocus";
 import { services } from "@/data/services";
 
 /** One accent per discipline — order matches `services` (Data, Dynamics,
- * Digital). Applied consistently everywhere: active card border/glow/badge,
- * hover state, and (see `DISCIPLINE_ACCENTS` in
+ * Digital). Applied consistently everywhere: active card border/glow/badge
+ * and (see `DISCIPLINE_ACCENTS` in
  * three/scenes/TypographyScene.tsx, kept in sync with this exact triad) the
  * matching sphere cluster's highlight colour. */
 const DISCIPLINE_ACCENTS = ["#00d2ff", "#ff4d2d", "#00e676"] as const;
@@ -27,10 +27,11 @@ const DISCIPLINE_ACCENTS = ["#00d2ff", "#ff4d2d", "#00e676"] as const;
  * clusters joined by a neutral lattice, with a 3D label per discipline, not
  * particle-formed text or a separate wireframe "core"); this layer supplies
  * three real, always-readable glass cards (src/data/services.ts, every
- * bullet preserved in full — not truncated) that both scroll and a direct
- * hover/click can bring forward — via `disciplineFocus`, read by the 3D
- * scene every frame — so the active card, its sphere label, and its
- * cluster's highlight never fall out of sync.
+ * bullet preserved in full — not truncated) that scroll or a direct click
+ * can bring forward — via `disciplineFocus`, read by the 3D scene every
+ * frame — so the active card, its sphere label, and its cluster's highlight
+ * never fall out of sync. The cards are deliberately calm: hovering one
+ * changes nothing, visually or in the sphere.
  */
 export function TypographySection() {
   const cardRefs = useRef<Array<HTMLButtonElement | null>>([]);
@@ -41,11 +42,10 @@ export function TypographySection() {
       services.length - 1,
       Math.max(0, Math.floor(local * services.length)),
     );
-    // Hover previews instantly; a click's pin persists until released by
-    // scroll (see TypographyScene.tsx); scroll drives it the rest of the
-    // time — see disciplineFocus.ts for the full priority rationale.
-    const activeIndex =
-      disciplineFocus.hovered ?? disciplineFocus.pinned ?? scrollIndex;
+    // A click's pin persists until released by scroll (see
+    // TypographyScene.tsx); scroll drives it the rest of the time — see
+    // disciplineFocus.ts.
+    const activeIndex = disciplineFocus.pinned ?? scrollIndex;
 
     cardRefs.current.forEach((card, index) => {
       if (!card) return;
@@ -61,15 +61,6 @@ export function TypographySection() {
    * without fighting each other. */
   const selectDiscipline = useCallback((index: number) => {
     disciplineFocus.pinned = index;
-  }, []);
-
-  /** Hover/focus preview — immediate, and cleared the instant the pointer
-   * leaves (or focus moves away) rather than needing to be "released". */
-  const hoverDiscipline = useCallback((index: number) => {
-    disciplineFocus.hovered = index;
-  }, []);
-  const unhoverDiscipline = useCallback((index: number) => {
-    if (disciplineFocus.hovered === index) disciplineFocus.hovered = null;
   }, []);
 
   return (
@@ -132,16 +123,12 @@ export function TypographySection() {
                     }}
                     data-active="false"
                     onClick={() => selectDiscipline(index)}
-                    onMouseEnter={() => hoverDiscipline(index)}
-                    onMouseLeave={() => unhoverDiscipline(index)}
-                    onFocus={() => hoverDiscipline(index)}
-                    onBlur={() => unhoverDiscipline(index)}
                     aria-label={`Focus ${service.title} in the connected system`}
                     style={{ "--accent": accent } as CSSProperties}
-                    className="discipline-card group flex h-full w-full flex-col gap-4 p-6 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+                    className="discipline-card flex h-full w-full flex-col gap-4 p-6 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
                   >
                     {/* Active pill/badge — only shown once this card is the
-                        active discipline (hover, click, or scroll). */}
+                        active discipline (click or scroll). */}
                     <span aria-hidden="true" className="discipline-card-badge">
                       Active
                     </span>

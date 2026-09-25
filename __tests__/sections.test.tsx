@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { IntroSection } from "@/components/sections/IntroSection";
 import { AboutSection } from "@/components/sections/AboutSection";
 import { TypographySection } from "@/components/sections/TypographySection";
@@ -18,6 +18,7 @@ import {
 } from "@/data/journey";
 import { teamMembers } from "@/data/team";
 import { services } from "@/data/services";
+import { disciplineFocus, resetDisciplineFocus } from "@/lib/motion/disciplineFocus";
 
 describe("homepage chapters", () => {
   it("renders the intro hero headline and tagline as the page's h1", () => {
@@ -76,6 +77,20 @@ describe("homepage chapters", () => {
     });
   });
 
+  it("never changes the active discipline on hover — only a click selects one", () => {
+    render(<TypographySection />);
+    const [first, second] = services.map((service) =>
+      screen.getByRole("button", { name: new RegExp(`focus ${service.title}`, "i") })
+    );
+    fireEvent.mouseEnter(first!);
+    fireEvent.mouseOver(first!);
+    fireEvent.focus(first!);
+    expect(disciplineFocus.pinned).toBeNull();
+    fireEvent.click(second!);
+    expect(disciplineFocus.pinned).toBe(1);
+    resetDisciplineFocus();
+  });
+
   it("starts every discipline card inactive", () => {
     render(<TypographySection />);
     services.forEach((service) => {
@@ -125,12 +140,14 @@ describe("homepage chapters", () => {
     });
   });
 
-  it("renders the AI Engineering Playground chapter with all 4 cohesive experience entry points", () => {
+  it("renders the AI Engineering Playground chapter as live system modules, one per real experience", () => {
     render(<GameSection />);
     expect(document.getElementById("game")).toHaveAttribute("data-stage", "game");
     expect(screen.getByRole("heading", { level: 2, name: /ai engineering playground/i })).toBeInTheDocument();
+    expect(screen.getByText("06 — AI Playground")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /play experience — choose your ai agent/i })).toBeInTheDocument();
     playgroundExperiences.forEach((experience) => {
-      expect(screen.getByRole("button", { name: new RegExp(`open ${experience.title}`, "i") })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { level: 3, name: experience.title })).toBeInTheDocument();
     });
   });
 
@@ -150,5 +167,24 @@ describe("homepage chapters", () => {
     expect(
       screen.getByRole("link", { name: (accessibleName) => accessibleName.includes(siteConfig.phone) })
     ).toHaveAttribute("href", `tel:${siteConfig.phoneHref}`);
+  });
+
+  it("closes the journey with the standard section header system", () => {
+    render(<CtaSection />);
+    expect(screen.getByText("08 — Let’s talk")).toHaveClass("type-eyebrow");
+    const heading = screen.getByRole("heading", { level: 2, name: "Let’s build what’s next." });
+    expect(heading).toHaveClass("type-display-section");
+    expect(screen.getByText(/have an idea, a challenge, or a vision/i)).toBeInTheDocument();
+  });
+
+  it("shows the compact message form open by default — no click needed", () => {
+    render(<CtaSection />);
+    expect(screen.queryByRole("button", { name: /start a conversation/i })).not.toBeInTheDocument();
+    const form = screen.getByRole("form", { name: /send us a message/i });
+    expect(form).toBeVisible();
+    expect(screen.getByLabelText(/^name/i)).toBeVisible();
+    expect(screen.getByLabelText(/^email/i)).toBeVisible();
+    expect(screen.getByLabelText(/^message/i)).toBeVisible();
+    expect(screen.getByRole("button", { name: /send message/i })).toBeInTheDocument();
   });
 });

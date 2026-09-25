@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, type CSSProperties } from "react";
+import {
+  Fragment,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { ensureGsapRegistered, gsap } from "@/lib/motion/gsap";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { useDeviceCapability } from "@/hooks/useDeviceCapability";
@@ -47,6 +54,42 @@ function round(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
+/** One visual line of the (possibly wrapped) tagline, in the `<h1>`'s own
+ * layout coordinates — where its hover filament sits and how wide it is. */
+interface FilamentLine {
+  left: number;
+  top: number;
+  width: number;
+}
+
+/** Groups the inline-block words into visual lines using `offset*` layout
+ * values rather than `getBoundingClientRect()`: those ignore CSS
+ * transforms, so neither the GSAP entrance, the idle float nor the cursor
+ * tilt skews the measurement. Returns `null` when there's no real layout
+ * yet (e.g. jsdom, or before the words mount). */
+function measureFilamentLines(wordEls: Array<HTMLSpanElement | null>): FilamentLine[] | null {
+  const lines: Array<FilamentLine & { rowTop: number }> = [];
+
+  for (const el of wordEls) {
+    if (!el) return null;
+    const left = el.offsetLeft;
+    const rowTop = el.offsetTop;
+    let line = lines[lines.length - 1];
+    if (!line || Math.abs(rowTop - line.rowTop) > 1) {
+      line = { rowTop, left, top: rowTop + el.offsetHeight, width: 0 };
+      lines.push(line);
+    }
+    line.width = left + el.offsetWidth - line.left;
+  }
+
+  if (lines.length === 0 || lines.every((line) => line.width <= 0)) return null;
+  return lines.map(({ left, top, width }) => ({ left, top, width }));
+}
+
+function sameFilamentLines(a: FilamentLine[] | null, b: FilamentLine[] | null): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
 /** Particles scatter around the text block and converge toward a loose band
  * across its centre — not per-letter precision (which would need fragile
  * layout measurement that breaks on every reflow/breakpoint), but enough to
@@ -81,12 +124,12 @@ function buildParticles(count: number): ParticleLayout[] {
  * see `prefersReducedMotion` below — and independent of whether the shared
  * WebGL background is available at all, since this is pure DOM/CSS/GSAP.
  *
- * A desktop-only hover state (`hoverAmount`, damped like the tilt above,
- * never a snap) adds a touch more forward depth and scale on top of the
- * existing tilt transform, while `.hero-title-hover` in globals.css layers a
- * soft glow and a repeatable light sweep purely in CSS — kept out of the JS
- * transform pipeline since text-shadow/pseudo-element opacity never
- * conflict with the inline `transform` this component sets every frame.
+ * Hovering the words reveals a thin "light filament" under each visual line
+ * (`.hero-filament` in globals.css) — pure CSS `:hover`, and the text itself
+ * never changes. A plain `::after` on the heading can't follow wrapped
+ * lines (it would span the whole column), so the one bit of JS measures
+ * where each line's words sit — on resize/font load only, never per frame
+ * or on hover — and renders one decorative filament per line.
  */
 export function HeroGreeting({ text, id, className = "" }: HeroGreetingProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -96,8 +139,7 @@ export function HeroGreeting({ text, id, className = "" }: HeroGreetingProps) {
   const tilt = useRef({ x: 0, y: 0 });
   const lastFrameTime = useRef<number | null>(null);
   const startTime = useRef<number | null>(null);
-  const isHovered = useRef(false);
-  const hoverAmount = useRef(0);
+  const [filamentLines, setFilamentLines] = useState<FilamentLine[] | null>(null);
 
   const prefersReducedMotion = usePrefersReducedMotion();
   const { isCompact, isTablet, hasCoarsePointer } = useDeviceCapability();
@@ -182,26 +224,30 @@ export function HeroGreeting({ text, id, className = "" }: HeroGreetingProps) {
     const floatAmplitude = isCompact ? 1.5 : isTablet ? 2.5 : 4;
     const floatY = Math.sin(elapsed * 0.55) * floatAmplitude;
 
-    // Damped toward the hover ref rather than snapping — same spring feel as
-    // the pointer tilt above, so the extra depth/lift never reads as a jump.
-    // Skipped on coarse pointers, where "hover" is really just a tap.
-    const targetHover = !hasCoarsePointer && isHovered.current ? 1 : 0;
-    hoverAmount.current = damp(hoverAmount.current, targetHover, 5, delta);
-    const hover = hoverAmount.current;
-
-    heading.style.transform = `perspective(1200px) rotateX(${tilt.current.x}deg) rotateY(${tilt.current.y}deg) translateY(${floatY - hover * 3}px) translateZ(${hover * 16}px) scale(${1 + hover * 0.016})`;
+    heading.style.transform = `perspective(1200px) rotateX(${tilt.current.x}deg) rotateY(${tilt.current.y}deg) translateY(${floatY}px)`;
   });
 
-  const handleHoverStart = () => {
-    isHovered.current = true;
-  };
-  const handleHoverEnd = () => {
-    isHovered.current = false;
-  };
+  // Re-measure the wrapped lines whenever the heading's width or any word's
+  // size changes (breakpoints, font swap). ResizeObserver also fires once
+  // on `observe()`, which covers the initial measurement.
+  useEffect(() => {
+    const heading = headingRef.current;
+    if (!heading || typeof ResizeObserver === "undefined") return;
+
+    const observer = new ResizeObserver(() => {
+      const next = measureFilamentLines(wordRefs.current.slice(0, words.length));
+      setFilamentLines((prev) => (sameFilamentLines(prev, next) ? prev : next));
+    });
+    observer.observe(heading);
+    wordRefs.current.slice(0, words.length).forEach((el) => el && observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [words]);
 
   const classes = [
     className,
-    prefersReducedMotion ? "" : "motion-reveal hero-title-sweep hero-title-hover",
+    "relative",
+    prefersReducedMotion ? "" : "motion-reveal hero-title-sweep",
   ]
     .filter(Boolean)
     .join(" ");
@@ -233,17 +279,37 @@ export function HeroGreeting({ text, id, className = "" }: HeroGreetingProps) {
         id={id}
         className={classes}
         style={{ willChange: "transform" }}
-        onMouseEnter={handleHoverStart}
-        onMouseLeave={handleHoverEnd}
       >
-        {words.map((word, index) => (
-          <span key={`${word}-${index}`} className="inline-block" style={{ willChange: "transform, filter" }} ref={(el) => {
-            wordRefs.current[index] = el;
-          }}>
-            {word}
-            {index < words.length - 1 ? " " : ""}
-          </span>
-        ))}
+        <span className="hero-filament">
+          {/* A plain space between the inline-block words (not a non-breaking
+              one inside them) collapses at each line end, so each filament
+              stops at the last glyph instead of overhanging by a space. */}
+          {words.map((word, index) => (
+            <Fragment key={`${word}-${index}`}>
+              <span className="inline-block" style={{ willChange: "transform, filter" }} ref={(el) => {
+                wordRefs.current[index] = el;
+              }}>
+                {word}
+              </span>
+              {index < words.length - 1 ? " " : null}
+            </Fragment>
+          ))}
+          {filamentLines?.map((line, index) => (
+            <span
+              key={`filament-line-${index}`}
+              aria-hidden="true"
+              className="hero-filament-line"
+              style={
+                {
+                  left: `${line.left}px`,
+                  top: `${line.top}px`,
+                  width: `${line.width}px`,
+                  "--line-index": index,
+                } as CSSProperties
+              }
+            />
+          ))}
+        </span>
       </h1>
     </div>
   );

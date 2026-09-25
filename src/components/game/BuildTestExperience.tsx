@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { useDeviceCapability } from "@/hooks/useDeviceCapability";
 import { useWebglSupported } from "@/hooks/useWebglSupported";
+import { usePlaygroundFailureSignal, usePlaygroundRunSignal } from "@/hooks/usePlaygroundSignals";
 import type { BuildTestStatus } from "@/components/game/BuildTestExperience.types";
 
 type Phase = "ready" | "running" | "complete";
@@ -79,6 +80,7 @@ export function BuildTestExperience({ onAdvance, onExit }: BuildTestExperiencePr
   const webglSupported = useWebglSupported();
   const { isCompact } = useDeviceCapability();
   const [phase, setPhase] = useState<Phase>("ready");
+  usePlaygroundRunSignal(phase);
   const [revealCount, setRevealCount] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -127,6 +129,7 @@ export function BuildTestExperience({ onAdvance, onExit }: BuildTestExperiencePr
 
   const revealed = BEATS.slice(0, revealCount);
   const status: BuildTestStatus = revealed[revealed.length - 1]?.status ?? "idle";
+  usePlaygroundFailureSignal(status === "fixing");
   const assistantLines = useMemo(() => revealed.filter((beat) => beat.kind === "assistant"), [revealed]);
   const fileLines = useMemo(() => revealed.filter((beat) => beat.kind === "file"), [revealed]);
   const codeLines = useMemo(() => revealed.filter((beat) => beat.kind === "code"), [revealed]);

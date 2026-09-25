@@ -1,5 +1,7 @@
 import { SceneCanvas } from "@/components/three/SceneCanvas";
 import { ScrollChoreographer } from "@/components/motion/ScrollChoreographer";
+import { SiteAudioController } from "@/components/motion/SiteAudioController";
+import { ScrollProgressRail } from "@/components/layout/ScrollProgressRail";
 import { IntroSection } from "@/components/sections/IntroSection";
 import { AboutSection } from "@/components/sections/AboutSection";
 import { TypographySection } from "@/components/sections/TypographySection";
@@ -31,6 +33,8 @@ export default function Home() {
     <>
       <SceneCanvas />
       <ScrollChoreographer />
+      <SiteAudioController />
+      <ScrollProgressRail />
       <div id="experience-wrapper">
         <IntroSection />
         <AboutSection />

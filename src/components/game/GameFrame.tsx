@@ -38,10 +38,10 @@ export function GameFrame({
   borderClassName = "border-white/10",
 }: GameFrameProps) {
   return (
-    <div className={`flex w-full flex-col items-center gap-6 rounded-3xl border ${borderClassName} bg-white/[0.03] p-6 sm:p-8`}>
-      <div className="flex flex-col items-center gap-2 text-center">
+    <div className={`flex w-full flex-col items-center gap-4 rounded-3xl border ${borderClassName} bg-white/[0.03] p-5 backdrop-blur-sm sm:p-6`}>
+      <div className="flex flex-col items-center gap-1.5 text-center">
         <p className={`text-xs font-semibold uppercase tracking-[0.28em] ${accentClassName}`}>{eyebrow}</p>
-        <h3 className="font-display text-2xl font-semibold text-ink-50 sm:text-3xl">{title}</h3>
+        <h3 className="font-display text-xl font-semibold text-ink-50 sm:text-2xl">{title}</h3>
         <p className="max-w-md text-sm leading-relaxed text-ink-300">{description}</p>
       </div>
 

@@ -2,6 +2,7 @@ import type {
   AgentDefinition,
   ConceptNode,
   PlaygroundExperienceDefinition,
+  PlaygroundExperienceId,
   UniverseStat,
   UniverseStation,
   UniverseStationVariant,
@@ -286,6 +287,17 @@ export const WORKFLOW_STAGES: WorkflowStageDefinition[] = [
 ];
 
 /**
+ * Chapter 06 — "AI ENGINEERING PLAYGROUND" hero/entry copy, shared verbatim
+ * between `GameSection`'s always-visible heading and `PlaygroundEntry`'s
+ * cinematic entry chapter so both describe the same experience identically.
+ */
+export const playgroundHeroCopy = {
+  title: "AI Engineering Playground",
+  description: "Explore how intelligent systems are built, tested, reviewed, and connected.",
+  cta: "Play experience",
+} as const;
+
+/**
  * Chapter 06 — "AI ENGINEERING PLAYGROUND". Four cohesive experiences that
  * visualise this repo's real AI agents (`AGENTS` above) and real
  * `ai_workflow.sh` pipeline (`WORKFLOW_STAGES` above) — real project data,
@@ -333,6 +345,31 @@ export const playgroundExperiences: PlaygroundExperienceDefinition[] = [
     accentHex: "#34d399",
   },
 ];
+
+/**
+ * Card-level copy for the playground's entry modules
+ * (components/game/PlaygroundEntry.tsx): a short "system" label naming what
+ * each experience actually is, and a concise one-line summary of the same
+ * real experience its full `description` explains — no invented mechanics.
+ */
+export const playgroundCardMeta: Record<PlaygroundExperienceId, { system: string; summary: string }> = {
+  "choose-agent": {
+    system: "Agent network",
+    summary: "Meet the 4 real AI agents behind this site's pipeline and pick the right specialist for the task.",
+  },
+  "run-workflow": {
+    system: "Workflow engine",
+    summary: "Start the real 9-stage ai_workflow.sh pipeline and watch every stage execute.",
+  },
+  "build-test": {
+    system: "Build system",
+    summary: "Follow code, terminal and tests through the analyze → fix → verify loop.",
+  },
+  "review-ship": {
+    system: "Release gate",
+    summary: "Close the loop with security review and reporting — from diff to shippable PR.",
+  },
+};
 
 /**
  * Chapter 07 — Cinematic AI Future. The three delivery capabilities

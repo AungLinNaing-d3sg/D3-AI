@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { useDeviceCapability } from "@/hooks/useDeviceCapability";
 import { useWebglSupported } from "@/hooks/useWebglSupported";
+import { usePlaygroundRunSignal } from "@/hooks/usePlaygroundSignals";
 import { WORKFLOW_STAGES } from "@/data/journey";
 import type { WorkflowFlowLabel, WorkflowStageId } from "@/types";
 
@@ -84,6 +85,7 @@ export function WorkflowRunExperience({ onAdvance, onExit }: WorkflowRunExperien
   const webglSupported = useWebglSupported();
   const { isCompact } = useDeviceCapability();
   const [phase, setPhase] = useState<Phase>("ready");
+  usePlaygroundRunSignal(phase);
   const [lineCount, setLineCount] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 

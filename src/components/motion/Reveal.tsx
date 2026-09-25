@@ -45,6 +45,11 @@ interface RevealProps {
   /** Animation treatment — see `RevealVariant` above. Defaults to `"fade"`
    * so every existing call site keeps its current behaviour unchanged. */
   variant?: RevealVariant;
+  /** Starting blur (px) for the `"blur"` variant — lower for a gentler,
+   * more restrained settle. */
+  blur?: number;
+  /** Overrides the `"blur"` variant's duration (seconds). */
+  duration?: number;
 }
 
 /**
@@ -68,6 +73,8 @@ export function Reveal({
   y = 28,
   id,
   variant = "fade",
+  blur = 14,
+  duration,
 }: RevealProps) {
   const Tag = as;
   const ref = useRef<HTMLElement | null>(null);
@@ -170,12 +177,12 @@ export function Reveal({
       if (variant === "blur") {
         gsap.fromTo(
           el,
-          { autoAlpha: 0, y, filter: "blur(14px)" },
+          { autoAlpha: 0, y, filter: `blur(${blur}px)` },
           {
             autoAlpha: 1,
             y: 0,
             filter: "blur(0px)",
-            duration: 1,
+            duration: duration ?? 1,
             delay,
             ease: "power3.out",
             scrollTrigger,
@@ -202,7 +209,7 @@ export function Reveal({
       ctx.revert();
       split?.revert();
     };
-  }, [prefersReducedMotion, delay, y, variant, isCompact]);
+  }, [prefersReducedMotion, delay, y, variant, isCompact, blur, duration]);
 
   const classes = [className, prefersReducedMotion ? "" : "motion-reveal"]
     .filter(Boolean)

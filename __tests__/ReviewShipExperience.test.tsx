@@ -9,22 +9,22 @@ import { ReviewShipExperience } from "@/components/game/ReviewShipExperience";
  */
 describe("ReviewShipExperience", () => {
   it("starts in the ready phase with Run and Back available", () => {
-    render(<ReviewShipExperience onExit={jest.fn()} />);
+    render(<ReviewShipExperience onExit={jest.fn()} onRestart={jest.fn()} />);
     expect(screen.getByRole("button", { name: /^run$/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /back to ai playground/i })).toBeInTheDocument();
   });
 
   it("moves to the running phase on Run, offering Skip and Back", () => {
-    render(<ReviewShipExperience onExit={jest.fn()} />);
+    render(<ReviewShipExperience onExit={jest.fn()} onRestart={jest.fn()} />);
     fireEvent.click(screen.getByRole("button", { name: /^run$/i }));
 
     expect(screen.getByRole("button", { name: /^skip$/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /back to ai playground/i })).toBeInTheDocument();
   });
 
-  it("Skip confirms every checklist item (Implemented, Tested, Reviewed, Ready to ship) and never dead-ends", () => {
+  it("Skip confirms every checklist item (Implemented, Tested, Reviewed, Ready to ship), shows System ready, and never dead-ends", () => {
     const onExit = jest.fn();
-    render(<ReviewShipExperience onExit={onExit} />);
+    render(<ReviewShipExperience onExit={onExit} onRestart={jest.fn()} />);
     fireEvent.click(screen.getByRole("button", { name: /^run$/i }));
     fireEvent.click(screen.getByRole("button", { name: /^skip$/i }));
 
@@ -32,11 +32,13 @@ describe("ReviewShipExperience", () => {
       expect(screen.getByText(label)).toBeInTheDocument();
     });
     expect(screen.getByText(/implemented, tested, reviewed, ready to ship/i)).toBeInTheDocument();
+    expect(screen.getByText(/system ready/i)).toBeInTheDocument();
 
     // No "Next Step"/"View Result" here — this is the last experience in
-    // the chain — but Run Again and Back remain, so the user is never
-    // trapped on the final screen.
+    // the chain — but Restart Experience, Run Again, and Back all remain, so
+    // the user is never trapped on the final screen.
     expect(screen.queryByRole("button", { name: /^next step$/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /restart experience/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /run again/i })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /back to ai playground/i }));
@@ -44,11 +46,21 @@ describe("ReviewShipExperience", () => {
   });
 
   it("Run Again resets back to the ready phase after completion", () => {
-    render(<ReviewShipExperience onExit={jest.fn()} />);
+    render(<ReviewShipExperience onExit={jest.fn()} onRestart={jest.fn()} />);
     fireEvent.click(screen.getByRole("button", { name: /^run$/i }));
     fireEvent.click(screen.getByRole("button", { name: /^skip$/i }));
     fireEvent.click(screen.getByRole("button", { name: /run again/i }));
 
     expect(screen.getByRole("button", { name: /^run$/i })).toBeInTheDocument();
+  });
+
+  it("Restart Experience calls onRestart so the whole playground can reset to its entry chapter", () => {
+    const onRestart = jest.fn();
+    render(<ReviewShipExperience onExit={jest.fn()} onRestart={onRestart} />);
+    fireEvent.click(screen.getByRole("button", { name: /^run$/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^skip$/i }));
+    fireEvent.click(screen.getByRole("button", { name: /restart experience/i }));
+
+    expect(onRestart).toHaveBeenCalledTimes(1);
   });
 });

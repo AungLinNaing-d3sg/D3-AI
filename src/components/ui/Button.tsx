@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { ButtonHTMLAttributes, MouseEvent as ReactMouseEvent, ReactNode } from "react";
 import type { Route } from "next";
 import Link from "next/link";
 import { handleInPageNavClick } from "@/lib/motion/scrollNav";
@@ -24,6 +24,11 @@ interface CommonProps {
 
 interface LinkButtonProps extends CommonProps {
   href: Route | `#${string}` | `mailto:${string}` | `tel:${string}`;
+  /** Called in addition to (never instead of) the in-page scroll/route
+   * navigation this component already handles — e.g. a call site wiring up
+   * a UI sound (see `components/layout/Header.tsx`'s "Contact Us" CTA). */
+  onClick?: () => void;
+  onMouseEnter?: () => void;
 }
 
 type NativeButtonProps = CommonProps & ButtonHTMLAttributes<HTMLButtonElement>;
@@ -41,22 +46,42 @@ function isInPageOrProtocolHref(href: string) {
  * links render as a plain `<a>` (no client-side route transition needed);
  * everything else goes through `next/link`.
  */
-export function LinkButton({ href, variant = "primary", className = "", children }: LinkButtonProps) {
+export function LinkButton({
+  href,
+  variant = "primary",
+  className = "",
+  children,
+  onClick,
+  onMouseEnter,
+}: LinkButtonProps) {
   if (isInPageOrProtocolHref(href)) {
     const isHash = href.startsWith("#");
+    // Only ever attach a *real* handler function when there's actually
+    // something to do (an in-page scroll, or a caller-supplied callback) —
+    // a plain `mailto:`/`tel:` link with neither (e.g. CtaSection's contact
+    // links) must get `onClick={undefined}`, exactly like before this
+    // component supported an optional `onClick` prop at all. This one stays
+    // a fully static anchor renderable from a Server Component; attaching an
+    // unconditional inline closure here — even a no-op one — is exactly what
+    // trips "Event handlers cannot be passed to Client Component props" for
+    // any such Server Component caller.
+    const handleClick =
+      isHash || onClick
+        ? (event: ReactMouseEvent<HTMLAnchorElement>) => {
+            onClick?.();
+            if (isHash) handleInPageNavClick(event, href);
+          }
+        : undefined;
+
     return (
-      <a
-        href={href}
-        onClick={isHash ? (event) => handleInPageNavClick(event, href) : undefined}
-        className={classes(variant, className)}
-      >
+      <a href={href} onClick={handleClick} onMouseEnter={onMouseEnter} className={classes(variant, className)}>
         {children}
       </a>
     );
   }
 
   return (
-    <Link href={href as Route} className={classes(variant, className)}>
+    <Link href={href as Route} onClick={onClick} onMouseEnter={onMouseEnter} className={classes(variant, className)}>
       {children}
     </Link>
   );

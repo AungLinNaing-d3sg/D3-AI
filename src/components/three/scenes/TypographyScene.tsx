@@ -324,9 +324,9 @@ function NeutralLattice({ positions }: { positions: Float32Array }) {
  * the sphere itself, continuously drifting and slowly spinning, *is* the
  * intelligent system.
  *
- * Scroll (three even thirds of `journeyState.progress.typography`), a
- * hover, or a click in the accessible card row (`TypographySection.tsx`,
- * via `disciplineFocus.hovered`/`.pinned`) brings one cluster's nodes,
+ * Scroll (three even thirds of `journeyState.progress.typography`) or a
+ * click in the accessible card row (`TypographySection.tsx`, via
+ * `disciplineFocus.pinned`) — never a mere hover — brings one cluster's nodes,
  * edges, and 3D label to full brightness while the other two dim, tints
  * the ambient glow shell toward that discipline's own accent, and smoothly
  * eases the whole sphere's own rotation so that cluster turns to face the
@@ -484,9 +484,8 @@ export function TypographyScene({ quality }: TypographySceneProps) {
       disciplineFocus.pinned = null;
       pinBaseProgress.current = null;
     }
-    // Hover previews instantly and takes priority over a click's pin (which
-    // in turn takes priority over scroll) — see disciplineFocus.ts.
-    const effectivePin = disciplineFocus.hovered ?? disciplineFocus.pinned;
+    // A click's pin takes priority over scroll — see disciplineFocus.ts.
+    const effectivePin = disciplineFocus.pinned;
 
     // A soft rise/fall envelope per third (not a hard cut at its boundary)
     // so scroll-driven transitions between disciplines cross-fade smoothly.

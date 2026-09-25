@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/Button";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { useDeviceCapability } from "@/hooks/useDeviceCapability";
 import { useWebglSupported } from "@/hooks/useWebglSupported";
+import { useSiteAudio } from "@/hooks/useSiteAudio";
+import { usePlaygroundSelectSignal } from "@/hooks/usePlaygroundSignals";
 import { AGENTS, WORKFLOW_STAGES } from "@/data/journey";
 import type { AgentId } from "@/types";
 
@@ -47,8 +49,10 @@ export function AgentSelectExperience({ onAdvance, onExit }: AgentSelectExperien
   const prefersReducedMotion = usePrefersReducedMotion();
   const webglSupported = useWebglSupported();
   const { isCompact } = useDeviceCapability();
+  const { play } = useSiteAudio();
   const [hoveredId, setHoveredId] = useState<AgentId | null>(null);
   const [selectedId, setSelectedId] = useState<AgentId | null>(null);
+  usePlaygroundSelectSignal(selectedId);
 
   const colors = useMemo(
     () => Object.fromEntries(AGENTS.map((agent) => [agent.id, agent.accentHex])) as Record<AgentId, string>,
@@ -61,7 +65,13 @@ export function AgentSelectExperience({ onAdvance, onExit }: AgentSelectExperien
     [selectedId]
   );
 
-  const selectAgent = useCallback((id: AgentId) => setSelectedId(id), []);
+  const selectAgent = useCallback(
+    (id: AgentId) => {
+      play("select");
+      setSelectedId(id);
+    },
+    [play]
+  );
   const reset = useCallback(() => {
     setSelectedId(null);
     setHoveredId(null);
@@ -99,8 +109,13 @@ export function AgentSelectExperience({ onAdvance, onExit }: AgentSelectExperien
         )
       }
     >
-      <div className="flex w-full max-w-2xl flex-col gap-4">
-        <div className="relative h-80 w-full overflow-hidden rounded-2xl border border-brand-400/15 bg-ink-950/60 sm:h-96">
+      <div className="flex w-full max-w-2xl flex-col gap-3">
+        {/* Sized down from the original h-80/sm:h-96 — with the persistent
+            chapter rail (PlaygroundRail) now sitting above this experience,
+            the full column (rail + this box + the detail panel below) must
+            still fit within GameSection's tight sticky-pin height budget; see
+            the same note on the detail panel below. */}
+        <div className="relative h-56 w-full overflow-hidden rounded-2xl border border-brand-400/15 bg-ink-950/60 sm:h-64">
           {showCanvas ? (
             <Canvas
               aria-hidden="true"
@@ -175,11 +190,23 @@ export function AgentSelectExperience({ onAdvance, onExit }: AgentSelectExperien
         </div>
 
         {selectedAgent ? (
-          <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-left">
+          // `max-h` + `overflow-y-auto` — this panel's content length varies
+          // per agent (description/tool count), and GameSection's sticky-pin
+          // section only reserves a small, fixed height budget for this
+          // whole chapter (see the note on the canvas box above). Capping
+          // this panel's own height and scrolling *inside* it keeps the
+          // page's own scroll position from ever needing to travel far
+          // enough to escape the pin into the next chapter, regardless of
+          // which agent is selected.
+          <div className="flex max-h-48 flex-col gap-2 overflow-y-auto rounded-2xl border border-white/10 bg-white/[0.03] p-3.5 text-left backdrop-blur-sm">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="font-display text-lg font-semibold text-ink-50">
                 {selectedAgent.name} <span className="text-ink-400">· {selectedAgent.role}</span>
               </p>
+              <span className="flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-300">
+                <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                Status · Ready
+              </span>
               <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-ink-300">
                 {selectedAgent.accessLabel}
               </span>
