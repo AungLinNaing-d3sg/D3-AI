@@ -4,7 +4,6 @@ import { AboutSection } from "@/components/sections/AboutSection";
 import { TypographySection } from "@/components/sections/TypographySection";
 import { NeuralSection } from "@/components/sections/NeuralSection";
 import { UniverseSection } from "@/components/sections/UniverseSection";
-import { ProductSection } from "@/components/sections/ProductSection";
 import { GameSection } from "@/components/sections/GameSection";
 import { FutureSection } from "@/components/sections/FutureSection";
 import type { StageId } from "@/types";
@@ -26,7 +25,6 @@ const chapters: { id: StageId; Section: () => React.JSX.Element }[] = [
   { id: "typography", Section: TypographySection },
   { id: "neural", Section: NeuralSection },
   { id: "universe", Section: UniverseSection },
-  { id: "product", Section: ProductSection },
   { id: "game", Section: GameSection },
   { id: "future", Section: FutureSection },
 ];

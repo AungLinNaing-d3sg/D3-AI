@@ -9,19 +9,28 @@ import type { NextConfig } from "next";
  * embedded in a third-party iframe (clickjacking). `script-src`/`style-src`
  * allow `'unsafe-inline'` because Next.js injects inline bootstrap scripts
  * and Tailwind emits inline `<style>` in dev; `connect-src` includes
- * `ws:`/`wss:` for the Next.js dev HMR socket only in development.
+ * `ws:`/`wss:` for the Next.js dev HMR socket only in development. `blob:`
+ * is additionally allowed on `script-src`/`worker-src`/`connect-src` (both
+ * environments) because Tone.js (see `lib/audio/audioManager.ts`) generates
+ * its `Tone.Noise` AudioWorklet processor as a same-origin, browser-created
+ * `blob:` URL at runtime — Chromium's CSP enforcement for
+ * `audioWorklet.addModule()` checks both `script-src` (the worklet module
+ * script itself) and `worker-src` (the underlying worklet construct).
+ * `blob:` here is never attacker-controlled/remote content, so this doesn't
+ * loosen the policy against exfiltration the way allowing an external host
+ * would.
  */
 async function headers() {
   const isDev = process.env.NODE_ENV !== "production";
 
   const csp = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline'" + (isDev ? " 'unsafe-eval'" : ""),
+    "script-src 'self' 'unsafe-inline' blob:" + (isDev ? " 'unsafe-eval'" : ""),
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob:",
     "font-src 'self' data:",
     "worker-src 'self' blob:",
-    `connect-src 'self'${isDev ? " ws: wss:" : ""}`,
+    `connect-src 'self' blob:${isDev ? " ws: wss:" : ""}`,
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -46,6 +55,16 @@ async function headers() {
 
 const nextConfig: NextConfig = {
   typedRoutes: true,
+  // `three/addons/...` (aka `three/examples/jsm/...` — see
+  // three/scenes/CtaScene.tsx's `FontLoader`/`TextGeometry` imports, used to
+  // build the real extruded "D3-SG" wordmark) ships as plain ESM source
+  // with no separate CJS build, unlike the bundled `three` package entry
+  // point itself. Turbopack/webpack already handle this fine at build
+  // time, but `next/jest`'s test transform only compiles packages listed
+  // here (see its own jest.js: "node_modules is not transformed, only
+  // `transpiledPackages`") — without this, importing CtaScene in a test
+  // fails the whole suite with "Must use import to load ES Module".
+  transpilePackages: ["three"],
   images: {
     // No remote images are used yet; add remotePatterns here when a CMS/CDN
     // is introduced (e.g. { protocol: "https", hostname: "cdn.d3-sg.com" }).

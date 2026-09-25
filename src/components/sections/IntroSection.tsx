@@ -60,10 +60,19 @@ export function IntroSection() {
           full-screen hold, per the "mobile scroll experience" requirement;
           the decorative 3D scene (fixed, full-viewport — see SceneCanvas)
           keeps animating behind it either way. */}
-      <div className="relative flex h-auto items-center py-14 md:sticky md:top-0 md:h-[100svh] md:py-0">
+      <div className="relative flex h-auto items-center py-14 md:sticky md:top-0 md:min-h-[100svh] md:py-0">
+        {/* Readability scrim: a soft dark pool anchored under the copy column
+            (left-of-centre, matching `max-w-3xl` below) so the neural mesh
+            behind never fights the title/description for contrast — see
+            `.readability-scrim` in globals.css. Sits behind the text (first
+            in this stacking context) but above the fixed 3D canvas. */}
+        <div
+          aria-hidden="true"
+          className="readability-scrim pointer-events-none absolute -inset-x-16 -inset-y-24 -z-10 blur-2xl"
+        />
         <Container>
-          <div ref={contentRef} className="flex max-w-3xl flex-col gap-6">
-            <Reveal as="p" className="type-eyebrow text-brand-400">
+          <div ref={contentRef} className="flex max-w-4xl flex-col gap-6">
+            <Reveal as="p" className="type-eyebrow text-brand-300">
               {siteConfig.name} · Singapore
             </Reveal>
 

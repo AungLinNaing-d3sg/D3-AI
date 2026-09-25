@@ -11,7 +11,6 @@ export const primaryNav: NavItem[] = [
   { href: "#typography", label: "Our Approach" },
   { href: "#neural", label: "How We Think" },
   { href: "#universe", label: "By the Numbers" },
-  { href: "#product", label: "Product" },
   { href: "#future", label: "Vision" },
   { href: "#cta", label: "Contact" },
 ];

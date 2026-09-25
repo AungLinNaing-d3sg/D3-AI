@@ -14,7 +14,7 @@ const Experience = dynamic(() => import("@/components/three/Experience"), {
  * chapter (`z-0`, `pointer-events-none`, `aria-hidden`) so page content
  * always remains readable, clickable, and reachable above it. Every scene
  * rendered inside (see components/three/scenes/*) is purely visual — any
- * information it conveys (e.g. the AI Product Experience's floating panels)
+ * information it conveys (e.g. the Our Approach chapter's discipline sphere)
  * is duplicated as real, focusable-free, accessible HTML in the matching
  * chapter section, never the other way round.
  *

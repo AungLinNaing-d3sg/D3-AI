@@ -21,11 +21,10 @@ interface GameFrameProps {
 }
 
 /**
- * Shared chrome for the 3 new "AI Playground" mini-games (Signal Hunt,
- * Neural Path, Data Sort) — consistent card, heading rhythm, and
- * `aria-live` status region, so all four playground experiences (this shell
- * + Train Your AI's own matching idle/playing/finished cards) read as one
- * cohesive interactive chapter rather than unrelated widgets. See
+ * Shared chrome for the 4 "AI Engineering Playground" experiences (Choose
+ * Your AI Agent, Run the AI Workflow, Build & Test, Review & Ship) —
+ * consistent card, heading rhythm, and `aria-live` status region, so all four
+ * read as one cohesive interactive chapter rather than unrelated widgets. See
  * CLAUDE.md "do not duplicate animation logic" / reusable component intent.
  */
 export function GameFrame({
@@ -39,10 +38,10 @@ export function GameFrame({
   borderClassName = "border-white/10",
 }: GameFrameProps) {
   return (
-    <div className={`flex w-full flex-col items-center gap-6 rounded-3xl border ${borderClassName} bg-white/[0.03] p-6 sm:p-8`}>
-      <div className="flex flex-col items-center gap-2 text-center">
+    <div className={`flex w-full flex-col items-center gap-4 rounded-3xl border ${borderClassName} bg-white/[0.03] p-5 backdrop-blur-sm sm:p-6`}>
+      <div className="flex flex-col items-center gap-1.5 text-center">
         <p className={`text-xs font-semibold uppercase tracking-[0.28em] ${accentClassName}`}>{eyebrow}</p>
-        <h3 className="font-display text-2xl font-semibold text-ink-50 sm:text-3xl">{title}</h3>
+        <h3 className="font-display text-xl font-semibold text-ink-50 sm:text-2xl">{title}</h3>
         <p className="max-w-md text-sm leading-relaxed text-ink-300">{description}</p>
       </div>
 

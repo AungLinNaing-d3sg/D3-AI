@@ -25,13 +25,14 @@ export function NeuralSection() {
     >
       {/* Pinned only from tablet up — see IntroSection for why mobile flows
           normally instead of holding a full-screen pin. */}
-      <div className="relative flex h-auto flex-col justify-center gap-8 py-12 md:sticky md:top-0 md:h-[100svh] md:gap-10 md:py-20 lg:gap-12 lg:py-24">
+      <div className="relative flex h-auto flex-col justify-center gap-8 py-12 md:sticky md:top-0 md:min-h-[100svh] md:gap-10 md:py-20 lg:gap-12 lg:py-24">
         <Container className="flex flex-col gap-10">
           <SectionHeading
             headingId="neural-heading"
             eyebrow="04 — How we build"
             title="A network built on real capability"
             description="The real technology stack behind every engagement — visualised behind this section as a live, camera-traversed network around a central hub."
+            scrim
           />
 
           <Reveal as="div" delay={0.05} className="flex flex-wrap gap-2.5">

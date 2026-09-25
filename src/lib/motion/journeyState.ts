@@ -15,6 +15,15 @@ export interface JourneyPointer {
   y: number;
 }
 
+/** A stage's real document position, expressed in the same 0..1
+ * `globalProgress` space — used by the global scroll-progress rail
+ * (components/layout/ScrollProgressRail.tsx) to place its tick marks/labels
+ * accurately without re-measuring the DOM itself. */
+export interface StageBounds {
+  start: number;
+  end: number;
+}
+
 export interface JourneyState {
   /** 0..1 across the entire experience. Drives the top progress rail. */
   globalProgress: number;
@@ -26,6 +35,9 @@ export interface JourneyState {
   /** Crossfade visibility per stage, 0..1, with soft overlap at the edges so
    * one scene visually dissolves into the next rather than cutting. */
   weight: Record<StageId, number>;
+  /** Each stage's real `[start, end]` in whole-page `globalProgress` space —
+   * see `StageBounds` above. */
+  stageBounds: Record<StageId, StageBounds>;
   /** The single continuous camera, flown through every stage in sequence. */
   camera: CameraKeyframe;
   /** The single continuous lighting rig. */
@@ -40,6 +52,20 @@ function zeroRecord(): Record<StageId, number> {
       return acc;
     },
     {} as Record<StageId, number>
+  );
+}
+
+/** Evenly-spaced placeholder bounds, used until the real scroll timeline's
+ * first `measure()` pass (see lib/motion/scrollTimeline.ts) overwrites these
+ * with each stage's real document position. */
+function evenStageBounds(): Record<StageId, StageBounds> {
+  const count = STAGE_IDS.length;
+  return STAGE_IDS.reduce(
+    (acc, id, index) => {
+      acc[id] = { start: index / count, end: (index + 1) / count };
+      return acc;
+    },
+    {} as Record<StageId, StageBounds>
   );
 }
 
@@ -65,6 +91,7 @@ export const journeyState: JourneyState = {
   activeStage: "intro",
   progress: zeroRecord(),
   weight: { ...zeroRecord(), intro: 1 },
+  stageBounds: evenStageBounds(),
   camera: { ...restCamera },
   light: { ...restLight },
   pointer: { x: 0, y: 0 },
@@ -78,6 +105,7 @@ export function resetJourneyState() {
   journeyState.activeStage = "intro";
   journeyState.progress = zeroRecord();
   journeyState.weight = { ...zeroRecord(), intro: 1 };
+  journeyState.stageBounds = evenStageBounds();
   Object.assign(journeyState.camera, restCamera);
   Object.assign(journeyState.light, restLight);
 }

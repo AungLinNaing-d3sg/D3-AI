@@ -1,62 +1,59 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { TrainYourAI } from "@/components/game/TrainYourAI";
-import { SignalHuntGame } from "@/components/game/SignalHuntGame";
-import { NeuralPathGame } from "@/components/game/NeuralPathGame";
-import { DataSortGame } from "@/components/game/DataSortGame";
-import { playgroundGames } from "@/data/journey";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { AgentSelectExperience } from "@/components/game/AgentSelectExperience";
+import { WorkflowRunExperience } from "@/components/game/WorkflowRunExperience";
+import { BuildTestExperience } from "@/components/game/BuildTestExperience";
+import { ReviewShipExperience } from "@/components/game/ReviewShipExperience";
+import { PlaygroundEntry } from "@/components/game/PlaygroundEntry";
+import { PlaygroundRail } from "@/components/game/PlaygroundRail";
+import { playgroundExperiences } from "@/data/journey";
 import { resetPlaygroundAccent, setPlaygroundAccent } from "@/lib/motion/playgroundState";
-import type { PlaygroundGameId } from "@/types";
+import { useSiteAudio } from "@/hooks/useSiteAudio";
+import type { PlaygroundExperienceId } from "@/types";
 
-type CompletionMap = Partial<Record<PlaygroundGameId, number>>;
+type Chapter = "entry" | PlaygroundExperienceId;
 
-const accentTextClass: Record<PlaygroundGameId, string> = {
-  train: "text-brand-400",
-  "signal-hunt": "text-cyan-300",
-  "neural-path": "text-violet-300",
-  "data-sort": "text-amber-300",
-};
-
-const accentBorderClass: Record<PlaygroundGameId, string> = {
-  train: "border-brand-400/40 hover:border-brand-400/70",
-  "signal-hunt": "border-cyan-400/30 hover:border-cyan-400/70",
-  "neural-path": "border-violet-400/30 hover:border-violet-400/70",
-  "data-sort": "border-amber-400/30 hover:border-amber-400/70",
-};
-
-const accentGlowHex: Record<PlaygroundGameId, string> = {
-  train: "#fd6a50",
-  "signal-hunt": "#22d3ee",
-  "neural-path": "#a78bfa",
-  "data-sort": "#fbbf24",
-};
+interface AiPlaygroundProps {
+  /** Lets `GameSection` shrink its own always-visible heading once the
+   * visitor is inside a chapter — see the note above `PlaygroundRail` below
+   * about this chapter's tight sticky-pin height budget. */
+  onEntryChange?: (isEntry: boolean) => void;
+}
 
 /**
- * Chapter 07 — "THE AI PLAYGROUND". One cohesive interactive chapter built
- * from 4 experiences: the existing "Train Your AI" catcher plus 3 new,
- * self-contained 3D mini-games (Signal Hunt, Neural Path, Data Sort). A
- * cinematic menu introduces all four as one continuous idea rather than
- * unrelated widgets; picking one hands off into that game's own
- * ready → playing → result flow (each with explicit Play/Replay/Skip
- * controls, so the user is never trapped), then hands back to this menu,
- * which doubles as the natural on-ramp back into the scrollytelling journey.
+ * Chapter 06 — "AI ENGINEERING PLAYGROUND". Visualises this repo's own real
+ * AI development pipeline: the 4 subagents in `.claude/agents/*.md` and the
+ * 9-stage `scripts/ai_workflow.sh` (see data/journey.ts `AGENTS` /
+ * `WORKFLOW_STAGES`). The entry (`PlaygroundEntry`) presents the 4
+ * experiences as live "system modules" — 01 Choose Your AI Agent as the
+ * primary one, 02–04 as supporting modules — each opening its experience
+ * directly. From there the experiences still chain as one connected
+ * pipeline (Run the AI Workflow → Build & Test → Review & Ship) via each
+ * one's own "Next Step"/"View Result" control, and the persistent chapter
+ * stepper (`PlaygroundRail`) shows where the visitor is in it.
  *
- * Each game owns its own small, self-contained `@react-three/fiber` canvas
- * (see components/game/*Game.tsx) rather than the shared, fixed background
- * canvas (components/three/SceneCanvas.tsx) — the shared canvas stays purely
- * decorative/`aria-hidden` and cannot itself carry click-driven gameplay
- * (see three/scenes/GameAmbienceScene.tsx), so each game gets a real,
- * self-contained 3D scene it can safely raycast/interact with, while its
- * accessible HTML button grid carries the actual interaction.
+ * Each experience still owns its own small, self-contained `@react-three/
+ * fiber` canvas (see components/three/experiences/*Scene.tsx) rather than the
+ * shared, fixed background canvas (components/three/SceneCanvas.tsx) — the
+ * shared canvas's own decorative "AI core" (three/scenes/GameAmbienceScene.tsx)
+ * stays visually present behind the whole chapter throughout, colour-reactive
+ * to whichever chapter is currently focused (lib/motion/playgroundState.ts),
+ * which is what keeps a persistent core "in view" across chapter changes
+ * without needing to unify the 4 experiences' independent cameras/lights into
+ * one scene. Switching `activeChapter` unmounts the previous experience's
+ * entire component tree (including its `<Canvas>`), which tears down that
+ * experience's Three.js resources, animation loops, timers, and listeners
+ * automatically.
  */
-export function AiPlayground() {
-  const [activeGame, setActiveGame] = useState<PlaygroundGameId | null>(null);
-  const [completed, setCompleted] = useState<CompletionMap>({});
+export function AiPlayground({ onEntryChange }: AiPlaygroundProps) {
+  const [activeChapter, setActiveChapter] = useState<Chapter>("entry");
+  const [visited, setVisited] = useState<Set<PlaygroundExperienceId>>(() => new Set());
+  const { play } = useSiteAudio();
 
   const activeDefinition = useMemo(
-    () => playgroundGames.find((game) => game.id === activeGame) ?? null,
-    [activeGame]
+    () => playgroundExperiences.find((experience) => experience.id === activeChapter) ?? null,
+    [activeChapter]
   );
 
   useEffect(() => {
@@ -65,109 +62,62 @@ export function AiPlayground() {
     return () => resetPlaygroundAccent();
   }, [activeDefinition]);
 
-  const selectGame = useCallback((id: PlaygroundGameId) => setActiveGame(id), []);
-  const backToMenu = useCallback(() => setActiveGame(null), []);
-  const recordCompletion = useCallback((id: PlaygroundGameId, accuracy: number) => {
-    setCompleted((previous) => ({ ...previous, [id]: accuracy }));
+  useEffect(() => {
+    onEntryChange?.(activeChapter === "entry");
+  }, [activeChapter, onEntryChange]);
+
+  const openExperience = useCallback(
+    (id: PlaygroundExperienceId) => {
+      play("select");
+      setActiveChapter(id);
+      setVisited((previous) => {
+        if (previous.has(id)) return previous;
+        const next = new Set(previous);
+        next.add(id);
+        return next;
+      });
+    },
+    [play]
+  );
+
+  const backToEntry = useCallback(() => setActiveChapter("entry"), []);
+
+  const restartExperience = useCallback(() => {
+    setActiveChapter("entry");
+    setVisited(new Set());
   }, []);
 
-  const completedCount = Object.keys(completed).length;
+  let content: ReactNode;
 
-  if (activeGame === "train") {
-    return (
-      <div className="flex w-full flex-col items-center gap-4">
-        <TrainYourAI />
-        <button
-          type="button"
-          onClick={backToMenu}
-          className="text-xs font-semibold uppercase tracking-[0.2em] text-ink-400 underline-offset-4 hover:text-ink-100 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-        >
-          ← Back to the AI Playground
-        </button>
+  if (activeChapter === "entry") {
+    content = <PlaygroundEntry onOpen={openExperience} />;
+  } else {
+    let experience: ReactNode;
+    if (activeChapter === "choose-agent") {
+      experience = <AgentSelectExperience onAdvance={() => openExperience("run-workflow")} onExit={backToEntry} />;
+    } else if (activeChapter === "run-workflow") {
+      experience = <WorkflowRunExperience onAdvance={() => openExperience("build-test")} onExit={backToEntry} />;
+    } else if (activeChapter === "build-test") {
+      experience = <BuildTestExperience onAdvance={() => openExperience("review-ship")} onExit={backToEntry} />;
+    } else {
+      experience = <ReviewShipExperience onExit={backToEntry} onRestart={restartExperience} />;
+    }
+
+    content = (
+      <div className="flex w-full flex-col items-center gap-3">
+        <PlaygroundRail activeId={activeChapter} visited={visited} onSelect={openExperience} />
+        {experience}
       </div>
     );
   }
 
-  if (activeGame === "signal-hunt") {
-    return (
-      <SignalHuntGame
-        onFinish={(accuracy) => recordCompletion("signal-hunt", accuracy)}
-        onExit={backToMenu}
-      />
-    );
-  }
-
-  if (activeGame === "neural-path") {
-    return (
-      <NeuralPathGame
-        onFinish={(accuracy) => recordCompletion("neural-path", accuracy)}
-        onExit={backToMenu}
-      />
-    );
-  }
-
-  if (activeGame === "data-sort") {
-    return (
-      <DataSortGame onFinish={(accuracy) => recordCompletion("data-sort", accuracy)} onExit={backToMenu} />
-    );
-  }
+  const visitedCount = visited.size;
 
   return (
-    <div className="flex w-full flex-col items-center gap-8">
-      <p className="max-w-xl text-balance text-center text-sm leading-relaxed text-ink-300 sm:text-base">
-        Four ways to think like an AI. Hunt real signal, route a neural network, sort a data universe, or train an
-        agent from scratch — play one, or play them all.
-      </p>
-
-      <ul className="grid w-full max-w-3xl gap-4 sm:grid-cols-2">
-        {playgroundGames.map((game) => {
-          const accuracy = completed[game.id];
-          return (
-            <li key={game.id}>
-              {/* Floating, elevated tile (lift + glow on hover) rather than
-                  a flat card — these are the chapter's primary actions, so
-                  they get the most emphatic treatment of any card grid on
-                  the site. */}
-              <button
-                type="button"
-                onClick={() => selectGame(game.id)}
-                aria-label={`Play ${game.title}`}
-                className={`group relative flex h-full w-full flex-col items-start gap-2 overflow-hidden rounded-2xl border bg-white/[0.03] p-6 text-left shadow-[0_20px_50px_-30px_rgba(0,0,0,0.9)] transition-all duration-300 pointer-fine:hover:-translate-y-1 hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 ${accentBorderClass[game.id]}`}
-              >
-                <span
-                  className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-25"
-                  style={{ backgroundColor: accentGlowHex[game.id] }}
-                  aria-hidden="true"
-                />
-                <div className="relative flex w-full items-center justify-between">
-                  <span className={`text-xs font-semibold uppercase tracking-[0.24em] ${accentTextClass[game.id]}`}>
-                    {String(game.index).padStart(2, "0")}
-                  </span>
-                  {accuracy !== undefined ? (
-                    <span className="rounded-full border border-emerald-400/40 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-300">
-                      {accuracy}% cleared
-                    </span>
-                  ) : null}
-                </div>
-                <p className="font-display text-lg font-semibold text-ink-50">{game.title}</p>
-                <p className="text-xs font-medium uppercase tracking-wide text-ink-400">{game.tagline}</p>
-                <p className="text-sm leading-relaxed text-ink-300">{game.description}</p>
-                <span
-                  className={`mt-auto inline-flex items-center gap-1 pt-2 text-xs font-semibold uppercase tracking-[0.2em] ${accentTextClass[game.id]}`}
-                >
-                  Play
-                  <span aria-hidden="true" className="transition-transform duration-300 group-hover:translate-x-1">
-                    →
-                  </span>
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-
+    <div className="flex w-full flex-col items-center gap-6">
+      {content}
       <p aria-live="polite" className="sr-only">
-        {completedCount > 0 ? `${completedCount} of ${playgroundGames.length} playground experiences completed.` : ""}
+        {visitedCount > 0 ? `${visitedCount} of ${playgroundExperiences.length} playground chapters visited.` : ""}
       </p>
     </div>
   );

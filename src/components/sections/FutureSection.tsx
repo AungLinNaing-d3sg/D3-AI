@@ -6,7 +6,7 @@ import { visionPillars } from "@/data/journey";
 import { siteConfig } from "@/data/site";
 
 /**
- * Chapter 08 — Cinematic AI Future. The mini-game hands off into a calmer,
+ * Chapter 07 — Cinematic AI Future. The mini-game hands off into a calmer,
  * atmospheric 3D vista (three/scenes/FutureScene.tsx); this layer carries
  * the company's own forward-looking narration, grounded in the real
  * delivery capabilities (src/data/capabilities.ts) rather than invented
@@ -21,21 +21,25 @@ export function FutureSection() {
     >
       {/* Pinned only from tablet up — see IntroSection for why mobile flows
           normally instead of holding a full-screen pin. */}
-      <div className="relative flex h-auto flex-col justify-center gap-8 py-10 md:sticky md:top-0 md:h-[100svh] md:gap-10 md:py-16 lg:py-20">
+      <div className="relative flex h-auto flex-col justify-center gap-8 py-10 md:sticky md:top-0 md:min-h-[100svh] md:gap-10 md:py-16 lg:py-20">
         <Container className="flex flex-col gap-10">
           <SectionHeading
             headingId="future-heading"
-            eyebrow="08 — Our vision"
+            eyebrow="07 — Our vision"
             title={siteConfig.tagline}
             description="Not a distant promise — the same three disciplines you just walked through, carried forward."
+            scrim
           />
 
           {/* Deliberately not a card grid — a circular number badge plus a
               thin accent rule instead of a bordered box, so this chapter
-              reads as its own composition rather than another rectangle. */}
+              reads as its own composition rather than another rectangle. A
+              soft local blur (not a full panel) still keeps each line
+              readable over the calmer but still-lit atmospheric vista
+              behind this chapter (see three/scenes/FutureScene.tsx). */}
           <ul className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {visionPillars.map((pillar, index) => (
-              <li key={pillar.title} className="flex gap-4">
+              <li key={pillar.title} className="flex gap-4 rounded-2xl p-3 backdrop-blur-sm">
                 <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full border border-brand-400/30 bg-brand-500/5 font-mono text-xs font-bold text-brand-300">
                   {String(index + 1).padStart(2, "0")}
                 </span>

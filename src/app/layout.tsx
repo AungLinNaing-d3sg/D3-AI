@@ -136,6 +136,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             {children}
           </main>
           <Footer />
+          {/* Mobile-only spacer, sized to the fixed bottom site-progress bar
+              (components/layout/ScrollProgressRail.tsx) — without it, that
+              bar (fixed, so always floating over whatever is at the bottom
+              of the viewport) would sit on top of the Footer's own final
+              content once the page is scrolled all the way down. */}
+          <div aria-hidden="true" className="h-14 shrink-0 md:hidden" />
         </SmoothScrollProvider>
       </body>
     </html>

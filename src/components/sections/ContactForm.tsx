@@ -3,7 +3,6 @@
 import { useActionState, useRef, useState, type FormEvent } from "react";
 import { useFormStatus } from "react-dom";
 import { initialContactFormState, submitContactMessage } from "@/app/actions/contact";
-import { Button } from "@/components/ui/Button";
 import {
   CONTACT_FIELD_LABELS,
   CONTACT_FIELD_NAMES,
@@ -17,31 +16,45 @@ import {
   type ContactFormValues,
 } from "@/lib/validation/contactForm";
 
-const inputClasses =
-  "w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-ink-50 placeholder:text-ink-500 backdrop-blur transition-colors focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-400 aria-[invalid=true]:border-brand-500 aria-[invalid=true]:ring-1 aria-[invalid=true]:ring-brand-500/60";
+/** Glass inputs and focus light — see `.contact-field`/`.contact-input` in
+ * globals.css. */
+const inputClasses = "contact-input";
 
 const fieldInputProps: Record<ContactFieldName, { type: string; autoComplete: string }> = {
   name: { type: "text", autoComplete: "name" },
   email: { type: "email", autoComplete: "email" },
-  phone: { type: "tel", autoComplete: "tel" },
   message: { type: "text", autoComplete: "off" },
 };
 
 /** Submit button. Split out so `useFormStatus` (which only works inside a
- * `<form>`) can drive its own pending label/disabled state. */
+ * `<form>`) can drive its own pending label/disabled state. The same glass
+ * pill as the rest of Chapter 08 (`.cta-pill`), with its arrow. */
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending} className="w-full sm:w-auto">
-      {pending ? "Sending…" : "Send message"}
-    </Button>
+    <button type="submit" disabled={pending} className="cta-pill w-full justify-center sm:w-auto">
+      <span>{pending ? "Sending…" : "Send message"}</span>
+      <svg
+        aria-hidden="true"
+        className="cta-pill-arrow"
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M3 8h9.5M8.5 4l4 4-4 4" />
+      </svg>
+    </button>
   );
 }
 
 /**
- * "Send us a message" contact form (Chapter 09 — Final CTA). Field set
- * mirrors the legacy D3-SG Contact Us page 1:1 — see `/docs/ContactUs.png`:
- * Name, Email, Phone Number, Message.
+ * "Send us a message" contact form (Chapter 08 — Final CTA): Name, Email,
+ * Message — see CONTACT_FIELD_NAMES for why it's this compact.
  *
  * Client-side validation (`validateContactField`/`validateContactForm`,
  * shared with the Server Action) gives immediate inline feedback on blur
@@ -97,7 +110,7 @@ export function ContactForm() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     const formErrors = validateContactForm(values);
     setClientErrors(formErrors);
-    setTouched({ name: true, email: true, phone: true, message: true });
+    setTouched({ name: true, email: true, message: true });
 
     const firstInvalidField = CONTACT_FIELD_NAMES.find((field) => formErrors[field]);
     if (firstInvalidField) {
@@ -123,10 +136,10 @@ export function ContactForm() {
         <input id="contact-company" name={CONTACT_HONEYPOT_FIELD} type="text" tabIndex={-1} autoComplete="off" />
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        {(["name", "email", "phone"] as const).map((field) => (
-          <div key={field} className={field === "phone" ? "sm:col-span-2" : ""}>
-            <label htmlFor={`contact-${field}`} className="mb-1.5 block text-sm font-medium text-ink-200">
+      <div className="grid gap-4 sm:grid-cols-2">
+        {(["name", "email"] as const).map((field) => (
+          <div key={field} className="contact-field">
+            <label htmlFor={`contact-${field}`} className="contact-label">
               {CONTACT_FIELD_LABELS[field]}{" "}
               <span aria-hidden="true" className="text-brand-400">
                 *
@@ -155,8 +168,8 @@ export function ContactForm() {
         ))}
       </div>
 
-      <div className="mt-5">
-        <label htmlFor="contact-message" className="mb-1.5 block text-sm font-medium text-ink-200">
+      <div className="contact-field mt-4">
+        <label htmlFor="contact-message" className="contact-label">
           {CONTACT_FIELD_LABELS.message}{" "}
           <span aria-hidden="true" className="text-brand-400">
             *
@@ -165,7 +178,7 @@ export function ContactForm() {
         <textarea
           id="contact-message"
           name="message"
-          rows={5}
+          rows={4}
           required
           aria-required="true"
           aria-invalid={Boolean(errors.message)}
@@ -183,7 +196,7 @@ export function ContactForm() {
         ) : null}
       </div>
 
-      <div className="mt-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mt-5 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
         <SubmitButton />
         <p
           id="contact-form-status"

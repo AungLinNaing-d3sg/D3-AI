@@ -12,7 +12,6 @@ function validValues(overrides: Partial<ContactFormValues> = {}): ContactFormVal
   return {
     name: "Ada Lovelace",
     email: "ada@example.com",
-    phone: "+65 8772 8128",
     message: "Hello, I'd like to learn more about your services.",
     ...overrides,
   };
@@ -23,7 +22,6 @@ describe("validateContactField", () => {
     const values = validValues();
     expect(validateContactField("name", values.name)).toBeUndefined();
     expect(validateContactField("email", values.email)).toBeUndefined();
-    expect(validateContactField("phone", values.phone)).toBeUndefined();
     expect(validateContactField("message", values.message)).toBeUndefined();
   });
 
@@ -44,19 +42,6 @@ describe("validateContactField", () => {
   it("rejects a malformed email", () => {
     expect(validateContactField("email", "not-an-email")).toMatch(/valid email/i);
     expect(validateContactField("email", "missing@domain")).toMatch(/valid email/i);
-  });
-
-  it("requires a phone number", () => {
-    expect(validateContactField("phone", "")).toMatch(/enter your phone number/i);
-  });
-
-  it("rejects a phone number with disallowed characters", () => {
-    expect(validateContactField("phone", "call-me-maybe")).toMatch(/digits, spaces/i);
-  });
-
-  it("rejects a phone number that is too short or too long", () => {
-    expect(validateContactField("phone", "123")).toMatch(/between 7 and 20 digits/i);
-    expect(validateContactField("phone", "1".repeat(21))).toMatch(/between 7 and 20 digits/i);
   });
 
   it("requires a message", () => {
@@ -85,7 +70,7 @@ describe("validateContactForm", () => {
 
   it("collects one error per invalid field, keyed by field name", () => {
     const errors = validateContactForm(emptyContactFormValues());
-    expect(Object.keys(errors).sort()).toEqual(["email", "message", "name", "phone"]);
+    expect(Object.keys(errors).sort()).toEqual(["email", "message", "name"]);
   });
 
   it("only reports errors for the fields that are actually invalid", () => {
