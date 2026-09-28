@@ -37,6 +37,13 @@ function classes(variant: Variant, className: string) {
   return `${baseClasses} ${variantClasses[variant]} ${className}`.trim();
 }
 
+/** Primary CTAs draw the custom cursor in, in the brand accent
+ * (components/cursor/CustomCursor.tsx); other variants use its default
+ * hover state. */
+function cursorAttributes(variant: Variant) {
+  return variant === "primary" ? ({ "data-cursor": "magnetic", "data-cursor-tone": "accent" } as const) : {};
+}
+
 function isInPageOrProtocolHref(href: string) {
   return href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:");
 }
@@ -74,14 +81,14 @@ export function LinkButton({
         : undefined;
 
     return (
-      <a href={href} onClick={handleClick} onMouseEnter={onMouseEnter} className={classes(variant, className)}>
+      <a href={href} onClick={handleClick} onMouseEnter={onMouseEnter} className={classes(variant, className)} {...cursorAttributes(variant)}>
         {children}
       </a>
     );
   }
 
   return (
-    <Link href={href as Route} onClick={onClick} onMouseEnter={onMouseEnter} className={classes(variant, className)}>
+    <Link href={href as Route} onClick={onClick} onMouseEnter={onMouseEnter} className={classes(variant, className)} {...cursorAttributes(variant)}>
       {children}
     </Link>
   );
@@ -90,7 +97,7 @@ export function LinkButton({
 /** Native <button> flavoured CTA — use for form submits/actions. */
 export function Button({ variant = "primary", className = "", children, type = "button", ...rest }: NativeButtonProps) {
   return (
-    <button type={type} className={classes(variant, className)} {...rest}>
+    <button type={type} className={classes(variant, className)} {...cursorAttributes(variant)} {...rest}>
       {children}
     </button>
   );

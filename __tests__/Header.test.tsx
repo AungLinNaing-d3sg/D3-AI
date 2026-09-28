@@ -34,4 +34,29 @@ describe("Header", () => {
     await user.click(toggle);
     expect(toggle).toHaveAttribute("aria-expanded", "true");
   });
+
+  it("keeps the closed mobile panel out of the tab order, and Escape closes it back to the toggle", async () => {
+    const user = userEvent.setup();
+    render(<Header />);
+    const panel = document.getElementById("mobile-nav")!;
+    expect(panel).toHaveAttribute("inert");
+
+    const toggle = screen.getByRole("button", { name: /open menu/i });
+    await user.click(toggle);
+    expect(panel).not.toHaveAttribute("inert");
+    expect(panel).toHaveAttribute("data-open", "true");
+
+    await user.keyboard("{Escape}");
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(panel).toHaveAttribute("inert");
+    expect(toggle).toHaveFocus();
+  });
+
+  it("keeps every mobile link pointing at the same chapter anchors as the desktop nav", () => {
+    render(<Header />);
+    const desktop = screen.getByRole("navigation", { name: /primary/i });
+    const mobile = document.querySelector('nav[aria-label="Mobile"]')!;
+    const hrefs = (root: Element) => [...root.querySelectorAll("a")].map((a) => a.getAttribute("href"));
+    expect(hrefs(mobile).slice(0, hrefs(desktop).length)).toEqual(hrefs(desktop));
+  });
 });

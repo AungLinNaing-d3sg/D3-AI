@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Sora } from "next/font/google";
+import { CustomCursor } from "@/components/cursor/CustomCursor";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { MusicPlayer } from "@/components/music/MusicPlayer";
@@ -147,6 +148,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               content once the page is scrolled all the way down. */}
           <div aria-hidden="true" className="h-14 shrink-0 md:hidden" />
         </SmoothScrollProvider>
+        {/* The one site-wide cursor overlay (fine pointers only). */}
+        <CustomCursor />
       </body>
     </html>
   );
