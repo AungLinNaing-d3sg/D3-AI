@@ -43,7 +43,7 @@ export function CtaSection() {
     >
       <CtaStage />
 
-      <div className="relative pb-14 pt-[16.5rem] sm:pt-[19.5rem] md:pb-16 md:pt-[10rem] lg:pb-24 lg:pt-0">
+      <div className="relative pb-14 pt-[16.5rem] sm:pt-[19.5rem] md:pb-16 md:pt-[8.5rem] lg:pb-24 lg:pt-0">
         <Container className="relative">
           <div
             data-cta-content

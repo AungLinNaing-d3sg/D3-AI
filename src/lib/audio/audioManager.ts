@@ -1,8 +1,11 @@
+import { ensureAudioEngine, type ToneModule } from "@/lib/audio/audioEngine";
+
 /**
- * Centralized, procedural site-wide audio engine — Tone.js is dynamically
- * imported (only inside `initSiteAudio`, only ever called after a real user
- * gesture) so it never enters the initial JS bundle and never touches the
- * Web Audio API before the browser's autoplay policy allows it to. Every
+ * Audio system A — the site's procedural UI / interaction sounds. Built on
+ * the shared audio engine (lib/audio/audioEngine.ts: one Tone.js module, one
+ * AudioContext, dynamically imported only after a real user gesture) and
+ * routed to its `sfx` bus, entirely separate from the background music
+ * (lib/audio/musicManager.ts), which has its own on/off. Every
  * synth/effect node below is constructed exactly once and reused for every
  * subsequent trigger — see `playVoice` — rather than a new Tone.js node per
  * interaction, per the "no duplicate instances" requirement.
@@ -15,7 +18,6 @@
  * need per-subtree scoping.
  */
 
-type ToneModule = typeof import("tone");
 type Synth = InstanceType<ToneModule["Synth"]>;
 type NoiseSynth = InstanceType<ToneModule["NoiseSynth"]>;
 type PolySynth = InstanceType<ToneModule["PolySynth"]>;
@@ -23,9 +25,6 @@ type PolySynth = InstanceType<ToneModule["PolySynth"]>;
 export type SiteSoundEvent =
   | "hover"
   | "select"
-  | "menu-open"
-  | "menu-close"
-  | "stage-enter"
   | "complete";
 
 interface Voices {
@@ -42,9 +41,6 @@ const ENABLED_STORAGE_KEY = "d3sg-site-audio-enabled";
 const THROTTLE_MS: Record<SiteSoundEvent, number> = {
   hover: 140,
   select: 90,
-  "menu-open": 150,
-  "menu-close": 150,
-  "stage-enter": 500,
   complete: 250,
 };
 
@@ -110,11 +106,11 @@ export function initSiteAudio(): Promise<void> {
 
   initPromise = (async () => {
     try {
-      const Tone = await import("tone");
-      await Tone.start();
+      const engine = await ensureAudioEngine();
+      if (!engine) throw new Error("Web Audio unavailable");
+      const { Tone } = engine;
 
-      const master = new Tone.Volume(-14).toDestination();
-      const bus = new Tone.Freeverb({ roomSize: 0.22, dampening: 3500, wet: 0.16 }).connect(master);
+      const bus = new Tone.Freeverb({ roomSize: 0.22, dampening: 3500, wet: 0.16 }).connect(engine.sfx);
 
       const hoverFilter = new Tone.Filter({ type: "highpass", frequency: 5200 }).connect(bus);
       const hoverSynth = new Tone.NoiseSynth({
@@ -167,17 +163,6 @@ function playVoice(event: SiteSoundEvent): void {
       break;
     case "select":
       voices.synth.triggerAttackRelease("A5", "16n", now);
-      break;
-    case "menu-open":
-      voices.synth.triggerAttackRelease("C5", "32n", now);
-      voices.synth.triggerAttackRelease("E5", "32n", now + 0.07);
-      break;
-    case "menu-close":
-      voices.synth.triggerAttackRelease("E5", "32n", now);
-      voices.synth.triggerAttackRelease("C5", "32n", now + 0.07);
-      break;
-    case "stage-enter":
-      voices.polySynth.triggerAttackRelease(["C4", "G4"], "8n", now);
       break;
     case "complete":
       voices.polySynth.triggerAttackRelease(["C5", "E5", "G5"], "4n", now);

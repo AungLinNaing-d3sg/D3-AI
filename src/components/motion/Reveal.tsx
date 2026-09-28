@@ -61,9 +61,14 @@ interface RevealProps {
  * Fully inert when the user prefers reduced motion: content renders at full
  * opacity immediately, no animation is scheduled. Every variant animates
  * *to* fully visible/readable text and never leaves content permanently
- * hidden — if a variant's setup throws for any reason, the element still
- * starts from the same CSS-only `.motion-reveal` state the `<noscript>`
- * fallback in src/app/layout.tsx already un-hides for no-JS users.
+ * hidden:
+ * - waiting content is hidden with opacity only (never `visibility`), so it
+ *   stays in the accessibility tree and in the tab order, and focusing
+ *   anything inside finishes the reveal at once (`revealNow`);
+ * - no JS: the `<noscript>` override in src/app/layout.tsx un-hides it;
+ * - JS that never takes over (a failed/slow hydration): a CSS failsafe in
+ *   globals.css un-hides `.motion-reveal` after a few seconds, until the
+ *   first `<Reveal>` marks `data-motion-ready` on <html>.
  */
 export function Reveal({
   children,
@@ -100,12 +105,18 @@ export function Reveal({
     // `ctx.revert()` (which only kills the tweens/ScrollTriggers created
     // inside the context, not SplitText's own DOM mutation).
     let split: SplitText | undefined;
+    /** What the entrance animates — `el`, or its split chars/words. */
+    let revealTargets: gsap.TweenTarget = el;
 
     const scrollTrigger = {
       trigger: el,
       start: "top 85%",
       toggleActions: "play none none reverse",
     } as const;
+
+    // Marks that JS has taken over, which switches off the CSS failsafe
+    // that otherwise un-hides `.motion-reveal` content (see globals.css).
+    document.documentElement.dataset.motionReady = "";
 
     const ctx = gsap.context(() => {
       if (variant === "chars" || variant === "words") {
@@ -125,6 +136,7 @@ export function Reveal({
         gsap.set(el, { autoAlpha: 1 });
         split = SplitText.create(el, { type: variant });
         const targets = variant === "chars" ? split.chars : split.words;
+        revealTargets = targets;
         // Skip the per-character Z-depth/rotation transform on compact
         // (mobile) devices — a plain fade/slide is far cheaper to composite
         // per-frame across dozens of split spans on a low-end mobile GPU,
@@ -159,9 +171,9 @@ export function Reveal({
       if (variant === "mask") {
         gsap.fromTo(
           el,
-          { autoAlpha: 0, y: y * 0.5, clipPath: "inset(0% 100% 0% 0%)", filter: "blur(6px)" },
+          { opacity: 0, y: y * 0.5, clipPath: "inset(0% 100% 0% 0%)", filter: "blur(6px)" },
           {
-            autoAlpha: 1,
+            opacity: 1,
             y: 0,
             clipPath: "inset(0% 0% 0% 0%)",
             filter: "blur(0px)",
@@ -177,9 +189,9 @@ export function Reveal({
       if (variant === "blur") {
         gsap.fromTo(
           el,
-          { autoAlpha: 0, y, filter: `blur(${blur}px)` },
+          { opacity: 0, y, filter: `blur(${blur}px)` },
           {
-            autoAlpha: 1,
+            opacity: 1,
             y: 0,
             filter: "blur(0px)",
             duration: duration ?? 1,
@@ -193,9 +205,9 @@ export function Reveal({
 
       gsap.fromTo(
         el,
-        { autoAlpha: 0, y },
+        { opacity: 0, y },
         {
-          autoAlpha: 1,
+          opacity: 1,
           y: 0,
           duration: 0.9,
           delay,
@@ -205,7 +217,22 @@ export function Reveal({
       );
     });
 
+    // Keyboard and assistive-tech users can reach content before it has
+    // scrolled far enough to reveal — the moment anything inside takes focus,
+    // finish the entrance and hand control back to the page (no reverse on
+    // scroll-up afterwards), so focused content is never invisible.
+    const revealNow = () => {
+      gsap.getTweensOf(revealTargets).forEach((tween) => {
+        tween.progress(1);
+        // Kill only the trigger — `kill(false, true)` leaves the finished
+        // tween in place (a plain `kill()` would take it down with it).
+        tween.scrollTrigger?.kill(false, true);
+      });
+    };
+    el.addEventListener("focusin", revealNow);
+
     return () => {
+      el.removeEventListener("focusin", revealNow);
       ctx.revert();
       split?.revert();
     };

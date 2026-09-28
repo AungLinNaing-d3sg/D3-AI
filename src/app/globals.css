@@ -665,16 +665,32 @@ body {
  * element into view; this class only hides content before that happens so
  * there's no flash of fully-visible, unpositioned text.
  */
+/*
+ * Waiting-to-reveal content (components/motion/Reveal.tsx) is hidden with
+ * opacity only — never `visibility` — so it stays readable by assistive tech
+ * and reachable by keyboard before it has scrolled into view.
+ */
 .motion-reveal {
-  visibility: hidden;
+  opacity: 0;
 }
 
 /*
- * Progressive-enhancement fallback: if JavaScript is unavailable, GSAP never
- * runs, so nothing would ever un-hide `.motion-reveal` content. A matching
- * <noscript><style> override in src/app/layout.tsx forces visibility back on
- * when JS is disabled, so the page still reads correctly.
+ * Progressive-enhancement fallbacks, so content can never stay hidden:
+ * - no JS: a <noscript><style> override in src/app/layout.tsx;
+ * - JS that never takes over (hydration failed or stalled): this failsafe
+ *   fades content in after 3s. The first mounted <Reveal> sets
+ *   `data-motion-ready` on <html>, which switches it off and leaves the
+ *   scroll-triggered entrances in control.
  */
+html:not([data-motion-ready]) .motion-reveal {
+  animation: motion-reveal-failsafe 0.6s ease-out 3s forwards;
+}
+
+@keyframes motion-reveal-failsafe {
+  to {
+    opacity: 1;
+  }
+}
 
 /*
  * ---------------------------------------------------------------------
@@ -856,6 +872,590 @@ body {
 
 .discipline-card[data-active="true"] .discipline-card-badge {
   opacity: 1;
+}
+
+/*
+ * ---------------------------------------------------------------------
+ * Background music player (components/music/MusicPlayer.tsx)
+ * ---------------------------------------------------------------------
+ * The site's own language — dark glass, hairline border, small mono type,
+ * the D3-SG orange as the accent with a trace of cyan. One compact bar,
+ * anchored just below the header's right edge (tablet/desktop) and docked
+ * into the right end of the mobile progress bar (phones). Every control
+ * acts in place; the volume button widens the same bar (leftwards) to show
+ * volume, time and Music On/Off — no popup panel.
+ */
+.music-player {
+  position: fixed;
+  z-index: 45;
+  top: 5.25rem;
+  right: max(2rem, calc((100vw - 80rem) / 2 + 2.5rem));
+  font-family: var(--font-mono-technical), ui-monospace, monospace;
+}
+
+.music-shell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  height: 2.75rem;
+  max-width: calc(100vw - 1rem);
+  padding: 0 0.3rem;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 9999px;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.05), rgb(255 255 255 / 0)),
+    rgb(8 9 13 / 0.62);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  backdrop-filter: blur(14px) saturate(1.2);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.06),
+    0 14px 34px -20px rgb(0 0 0 / 0.85);
+  color: var(--color-ink-100);
+  transition:
+    border-color 0.4s ease,
+    box-shadow 0.4s ease;
+}
+
+.music-player[data-playing="true"] .music-shell {
+  border-color: color-mix(in srgb, var(--color-brand-400) 30%, rgb(255 255 255 / 0.1));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.06),
+    0 14px 34px -20px rgb(0 0 0 / 0.85),
+    0 0 26px -14px color-mix(in srgb, var(--color-brand-500) 70%, transparent);
+}
+
+.music-badge {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--color-brand-500) 16%, rgb(255 255 255 / 0.03));
+  color: var(--color-brand-300);
+}
+
+.music-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Track name over a one-word state / change note. */
+.music-meta {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2rem;
+  width: 9.5rem;
+  min-width: 0;
+  margin: 0 0.35rem 0 0.45rem;
+}
+
+/* Fixed-width title slot: the player never grows with the title. */
+.music-track {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  white-space: nowrap;
+}
+
+.music-track-text {
+  display: block;
+  animation: music-track-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.music-track-strip {
+  display: flex;
+  width: max-content;
+}
+
+.music-track-item {
+  flex: none;
+}
+
+/* Too long to fit: soft fades at both edges, and — while music plays — a
+ * slow right-to-left loop. The title is followed by a copy one gap later,
+ * and the strip moves by exactly (title + gap), so the loop's last frame is
+ * identical to its first: no jump. */
+.music-track[data-overflow="true"] {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 0.6rem, #000 calc(100% - 0.9rem), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 0.6rem, #000 calc(100% - 0.9rem), transparent 100%);
+}
+
+.music-track[data-overflow="true"] .music-track-strip {
+  gap: var(--marquee-gap, 40px);
+  padding-left: 0.4rem;
+  animation: music-marquee var(--marquee-duration, 12s) linear 1.2s infinite;
+  animation-play-state: paused;
+}
+
+/* Moves only while music plays; pausing holds it where it is. */
+.music-track[data-moving="true"] .music-track-strip {
+  animation-play-state: running;
+}
+
+@keyframes music-marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(calc(-1 * var(--marquee-distance, 0px)));
+  }
+}
+
+@keyframes music-track-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.music-track-number {
+  color: var(--color-ink-50);
+}
+
+.music-track-dash {
+  color: var(--color-ink-500);
+}
+
+.music-track-title {
+  color: var(--color-brand-300);
+}
+
+.music-status {
+  overflow: hidden;
+  font-size: 0.52rem;
+  letter-spacing: 0.22em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--color-ink-400);
+  transition: color 0.3s ease;
+}
+
+.music-player[data-playing="true"] .music-status {
+  color: color-mix(in srgb, var(--color-brand-300) 80%, var(--color-ink-300));
+}
+
+.music-status[data-note="true"] {
+  color: var(--color-cyan-300, #67e8f9);
+  animation: music-track-in 0.3s ease both;
+}
+
+/* The playing indicator: four hairline bars (inside the badge). */
+.music-bars {
+  display: inline-flex;
+  flex: none;
+  align-items: flex-end;
+  gap: 2px;
+  height: 0.8rem;
+}
+
+.music-bar {
+  width: 2px;
+  height: 100%;
+  border-radius: 1px;
+  background: linear-gradient(180deg, var(--color-cyan-300, #67e8f9), var(--color-brand-400));
+  transform-origin: bottom;
+  transform: scaleY(var(--level, 0.3));
+  opacity: 0.45;
+  transition: opacity 0.4s ease;
+}
+
+.music-bars[data-active="true"] .music-bar {
+  opacity: 0.95;
+}
+
+/* Round icon buttons, directly in the bar. */
+.music-button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.15rem;
+  height: 2.15rem;
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--color-ink-200);
+  cursor: pointer;
+  transition:
+    color 0.25s ease,
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.2s ease;
+}
+
+.music-button:hover {
+  color: var(--color-ink-50);
+  background: rgb(255 255 255 / 0.06);
+}
+
+.music-button:active {
+  transform: scale(0.94);
+}
+
+.music-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.music-button:disabled:hover {
+  background: transparent;
+}
+
+.music-button-primary {
+  border-color: color-mix(in srgb, var(--color-brand-400) 40%, transparent);
+  background: color-mix(in srgb, var(--color-brand-500) 18%, transparent);
+  color: var(--color-ink-50);
+}
+
+.music-button-primary:hover {
+  background: color-mix(in srgb, var(--color-brand-500) 28%, transparent);
+}
+
+.music-button[data-active="true"] {
+  color: var(--color-brand-300);
+  background: rgb(255 255 255 / 0.06);
+}
+
+.music-button:focus-visible,
+.music-switch:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-brand-400) 75%, transparent);
+  outline-offset: -2px;
+}
+
+/* Volume · time · Music On/Off — the bar widens to reveal them. */
+.music-settings {
+  display: grid;
+  grid-template-columns: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-columns 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.25s ease;
+}
+
+.music-player[data-expanded="true"] .music-settings {
+  grid-template-columns: 1fr;
+  opacity: 1;
+}
+
+.music-settings-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.music-player[data-expanded="true"] .music-settings-inner {
+  padding: 0 0.3rem 0 0.6rem;
+  border-left: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.music-volume {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.music-volume-output {
+  width: 2.1rem;
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-brand-300);
+}
+
+.music-volume-range {
+  width: 6.5rem;
+  height: 1.5rem;
+  background: transparent;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.music-volume-range::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, var(--color-brand-400) 0 var(--fill), rgb(255 255 255 / 0.14) var(--fill) 100%);
+}
+
+.music-volume-range::-moz-range-track {
+  height: 3px;
+  border-radius: 9999px;
+  background: rgb(255 255 255 / 0.14);
+}
+
+.music-volume-range::-moz-range-progress {
+  height: 3px;
+  border-radius: 9999px;
+  background: var(--color-brand-400);
+}
+
+.music-volume-range::-webkit-slider-thumb {
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-top: calc(-0.425rem + 1.5px);
+  border: 2px solid var(--background);
+  border-radius: 9999px;
+  background: var(--color-brand-300);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand-400) 22%, transparent);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.music-volume-range::-moz-range-thumb {
+  width: 0.85rem;
+  height: 0.85rem;
+  border: 2px solid var(--background);
+  border-radius: 9999px;
+  background: var(--color-brand-300);
+}
+
+.music-volume-range:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-brand-400) 75%, transparent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.music-time {
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink-400);
+}
+
+.music-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.15rem;
+  padding: 0 0.35rem;
+  border-radius: 9999px;
+  font-size: 0.54rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--color-ink-200);
+  cursor: pointer;
+}
+
+.music-switch-track {
+  position: relative;
+  flex: none;
+  width: 1.9rem;
+  height: 1.05rem;
+  border: 1px solid rgb(255 255 255 / 0.16);
+  border-radius: 9999px;
+  background: rgb(255 255 255 / 0.05);
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.music-switch-thumb {
+  position: absolute;
+  top: 50%;
+  left: 0.15rem;
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 9999px;
+  background: var(--color-ink-300);
+  transform: translateY(-50%);
+  transition:
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.3s ease;
+}
+
+.music-switch[aria-checked="true"] .music-switch-track {
+  border-color: color-mix(in srgb, var(--color-brand-400) 55%, transparent);
+  background: color-mix(in srgb, var(--color-brand-500) 30%, transparent);
+}
+
+.music-switch[aria-checked="true"] .music-switch-thumb {
+  background: var(--color-brand-300);
+  transform: translate(0.82rem, -50%);
+}
+
+/* Real playback progress — a hairline along the bar's bottom edge, only
+ * once real audio has loaded. */
+.music-line {
+  position: absolute;
+  right: 1.1rem;
+  bottom: 0;
+  left: 1.1rem;
+  height: 1px;
+  overflow: hidden;
+  background: rgb(255 255 255 / 0.06);
+}
+
+.music-line-fill {
+  position: absolute;
+  inset: 0;
+  transform-origin: left;
+  transform: scaleX(var(--progress, 0));
+  background: linear-gradient(90deg, var(--color-cyan-300, #67e8f9), var(--color-brand-400));
+  transition: transform 0.25s linear;
+}
+
+/* A track that can't play right now: said quietly, never as an error. */
+.music-player[data-status="unavailable"]:not([data-playing="true"]) .music-track,
+.music-player[data-status="error"]:not([data-playing="true"]) .music-track {
+  opacity: 0.6;
+}
+
+.music-player[data-status="loading"] .music-status {
+  animation: music-loading 1.6s ease-in-out infinite;
+}
+
+@keyframes music-loading {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* The change note as a tag above the bar — phones only (no room for the
+ * track name in the bar there). */
+.music-note {
+  display: none;
+}
+
+/* Phones: docked into the right end of the fixed bottom progress bar
+ * (components/layout/ScrollProgressRail.tsx) — transport and volume only;
+ * the bar widens leftwards, over the progress line, while settings show. */
+@media (max-width: 767px) {
+  .music-player {
+    top: auto;
+    right: 0.5rem;
+    bottom: calc(0.3rem + env(safe-area-inset-bottom));
+  }
+
+  .music-shell {
+    gap: 0.1rem;
+    height: 2.5rem;
+    padding: 0 0.15rem;
+  }
+
+  .music-badge,
+  .music-meta,
+  .music-time,
+  .music-volume-output,
+  .music-switch-label {
+    display: none;
+  }
+
+  .music-volume-range {
+    width: 4.75rem;
+  }
+
+  .music-player[data-expanded="true"] .music-settings-inner {
+    gap: 0.4rem;
+    padding: 0 0.1rem 0 0.45rem;
+  }
+
+  .music-note {
+    position: absolute;
+    right: 0.25rem;
+    bottom: calc(100% + 0.5rem);
+    display: block;
+    max-width: calc(100vw - 1.5rem);
+    padding: 0.35rem 0.65rem;
+    overflow: hidden;
+    border: 1px solid rgb(255 255 255 / 0.1);
+    border-radius: 9999px;
+    background: rgb(8 9 13 / 0.82);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    font-size: 0.56rem;
+    letter-spacing: 0.18em;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--color-ink-100);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(4px);
+    transition:
+      opacity 0.25s ease,
+      transform 0.25s ease;
+  }
+
+  .music-note[data-visible="true"] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Touch: every control at least 44px tall. */
+@media (pointer: coarse) {
+  .music-shell {
+    height: 3rem;
+  }
+
+  .music-button,
+  .music-switch {
+    width: 2.6rem;
+    height: 2.75rem;
+  }
+
+  .music-switch {
+    width: auto;
+  }
+
+  .music-volume-range {
+    height: 2.75rem;
+  }
+}
+
+@media (pointer: coarse) and (max-width: 767px) {
+  .music-player {
+    bottom: calc(0.1rem + env(safe-area-inset-bottom));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .music-track-text,
+  .music-track[data-overflow="true"] .music-track-strip,
+  .music-status[data-note="true"] {
+    animation: none;
+  }
+
+  /* No marquee: a still title, truncated. */
+  .music-track-repeat {
+    display: none;
+  }
+
+  .music-track-item {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .music-track[data-overflow="true"] .music-track-strip {
+    width: 100%;
+  }
+
+  .music-settings,
+  .music-note {
+    transition: opacity 0.15s ease;
+  }
+
+  .music-bar,
+  .music-line-fill,
+  .music-switch-thumb,
+  .music-button {
+    transition: none;
+  }
 }
 
 /*

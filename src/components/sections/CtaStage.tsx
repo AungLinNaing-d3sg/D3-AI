@@ -236,7 +236,7 @@ export function CtaStage() {
       {webglSupported ? null : <div className="cta-static-studio absolute inset-0" />}
       <div
         data-cta-anchor
-        className="absolute right-[-12%] top-[4.25rem] h-[15rem] w-[74%] will-change-transform sm:right-[-2%] sm:top-[5rem] sm:h-[18rem] sm:w-[58%] md:right-[15%] md:top-[7.5rem] md:h-[24rem] md:w-[44%] lg:left-[47%] lg:right-[13%] lg:top-[max(5.5rem,9svh)] lg:h-[min(80svh,52rem)] lg:w-auto"
+        className="absolute right-[-12%] top-[4.25rem] h-[15rem] w-[74%] will-change-transform sm:right-[-2%] sm:top-[5rem] sm:h-[18rem] sm:w-[58%] md:right-[15%] md:top-[6rem] md:h-[24rem] md:w-[44%] lg:left-[47%] lg:right-[13%] lg:top-[max(5.5rem,9svh)] lg:h-[min(80svh,52rem)] lg:w-auto"
       >
         {webglSupported ? null : <StaticCore />}
         <CoreAnnotations />

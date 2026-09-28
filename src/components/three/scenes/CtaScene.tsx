@@ -268,6 +268,8 @@ function markDirty(points: Points | null) {
 export function CtaScene({ quality, still = false }: CtaSceneProps) {
   const tier = CTA_TIERS[quality];
   const gl = useThree((state) => state.gl) as WebGLRenderer | undefined;
+  const scene = useThree((state) => state.scene);
+  const camera = useThree((state) => state.camera);
   const theme = useMemo(() => getThemeColors(), []);
 
   const rootRef = useRef<Group>(null);
@@ -463,6 +465,21 @@ export function CtaScene({ quality, still = false }: CtaSceneProps) {
     });
     return () => envTarget?.dispose();
   }, [envTarget, reflective]);
+
+  /* ---- GPU cost ---- */
+
+  // The shell's refraction is soft by nature, so its transmission pass (a
+  // second render of the scene) runs at half resolution — a large saving on
+  // Retina screens with no visible difference. No other chapter uses
+  // transmission.
+  useEffect(() => {
+    if (!gl || !tier.transmission) return;
+    const previous = gl.transmissionResolutionScale;
+    gl.transmissionResolutionScale = 0.5;
+    return () => {
+      gl.transmissionResolutionScale = previous;
+    };
+  }, [gl, tier]);
 
   /* ---- geometry ---- */
 
@@ -708,6 +725,52 @@ export function CtaScene({ quality, still = false }: CtaSceneProps) {
     },
     [instanced]
   );
+
+  /* ---- shader warm-up ---- */
+
+  // Compile this scene's programs ahead of time, in idle time after load —
+  // otherwise its ~20 materials all compile on the first frame the section
+  // scrolls into view (a ~2s main-thread freeze, measured on an Apple M3).
+  // The hidden parts are made visible only for the synchronous part of the
+  // call, which is when three collects what to compile; the light set then
+  // matches the section's first real frame (every other chapter's own lights
+  // sit under hidden roots at that point).
+  useEffect(() => {
+    if (!gl || typeof gl.compile !== "function") return;
+    let cancelled = false;
+    const warm = () => {
+      if (cancelled) return;
+      const parts = [rootRef.current, environmentRef.current, backdropRef.current, hazeRef.current].filter(
+        (part): part is NonNullable<typeof part> => part !== null
+      );
+      const wasVisible = parts.map((part) => part.visible);
+      parts.forEach((part) => {
+        part.visible = true;
+      });
+      // Parallel (non-blocking) compilation where the GPU driver offers it;
+      // otherwise a plain compile, still in idle time rather than mid-scroll.
+      if (gl.extensions.has("KHR_parallel_shader_compile")) {
+        gl.compileAsync(scene, camera).catch(() => undefined);
+      } else {
+        gl.compile(scene, camera);
+      }
+      parts.forEach((part, i) => {
+        part.visible = wasVisible[i] ?? false;
+      });
+    };
+    if (typeof window.requestIdleCallback === "function") {
+      const handle = window.requestIdleCallback(warm, { timeout: 4000 });
+      return () => {
+        cancelled = true;
+        window.cancelIdleCallback(handle);
+      };
+    }
+    const handle = window.setTimeout(warm, 1500);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(handle);
+    };
+  }, [gl, scene, camera, materials, shaders, envTarget, instanced, lattice, reflective]);
 
   /* ---- per frame ---- */
 

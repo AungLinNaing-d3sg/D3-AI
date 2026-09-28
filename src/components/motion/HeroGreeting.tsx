@@ -182,11 +182,15 @@ export function HeroGreeting({ text, id, className = "" }: HeroGreetingProps) {
         );
       }
 
+      // `opacity`, not `autoAlpha`: autoAlpha also sets `visibility: hidden`,
+      // which drops the waiting words out of the <h1>'s accessible name
+      // until the entrance finishes — an empty/partial heading for screen
+      // readers in the first moments. Visually identical.
       tl.fromTo(
         wordEls,
-        { autoAlpha: 0, y: 16, scale: 0.96, filter: "blur(10px)" },
+        { opacity: 0, y: 16, scale: 0.96, filter: "blur(10px)" },
         {
-          autoAlpha: 1,
+          opacity: 1,
           y: 0,
           scale: 1,
           filter: "blur(0px)",

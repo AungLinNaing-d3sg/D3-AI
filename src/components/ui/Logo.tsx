@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { handleInPageNavClick } from "@/lib/motion/scrollNav";
-import { useSiteAudio } from "@/hooks/useSiteAudio";
 
 interface LogoProps {
   className?: string;
@@ -18,15 +17,10 @@ interface LogoProps {
  * returns to the Hero from anywhere on the page, without a page reload.
  */
 export function Logo({ className = "" }: LogoProps) {
-  const { play } = useSiteAudio();
-
   return (
     <a
       href="#intro"
-      onClick={(event) => {
-        play("select");
-        handleInPageNavClick(event, "#intro");
-      }}
+      onClick={(event) => handleInPageNavClick(event, "#intro")}
       className={`inline-flex items-center ${className}`.trim()}
       aria-label="D3-SG home"
     >

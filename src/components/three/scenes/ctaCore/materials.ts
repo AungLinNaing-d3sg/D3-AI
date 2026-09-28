@@ -546,7 +546,9 @@ export function createEnvironment(
         col += uViolet * (exp(-dot(vp, vp) / 0.45) * 0.016 + exp(-dot(vq, vq) / 0.3) * 0.009);
 
         float haze = ctaFbm(q * 1.15 + vec2(uTime * 0.006, -uTime * 0.003));
-        float hazeFine = ctaFbm(q * 3.4 + vec2(-uTime * 0.005, uTime * 0.004) + 3.7);
+        // Single-octave detail layers: this pass covers every pixel of a
+        // Retina screen, so only the main haze uses the full fbm.
+        float hazeFine = ctaNoise(q * 3.4 + vec2(-uTime * 0.005, uTime * 0.004) + 3.7);
         float hz = smoothstep(0.3, 0.92, haze * 0.7 + hazeFine * 0.3);
         hz = mix(hz, 0.3, shield);
 
@@ -558,11 +560,11 @@ export function createEnvironment(
         col += uAmber * inner * (0.6 + 0.4 * hz) * 0.03 * presence * glow;
         col += mix(uCyan * 0.3, uWarm * 0.7, atmosphere) * hz * 0.024 * presence;
 
-        float rays = smoothstep(0.55, 0.95, ctaFbm(vec2(atan(f.y, f.x) * 7.0, uTime * 0.015)));
+        float rays = smoothstep(0.55, 0.95, ctaNoise(vec2(atan(f.y, f.x) * 7.0, uTime * 0.015)));
         col += uAmber * rays * atmosphere * (1.0 - inner) * 0.018 * presence * uEnergy;
 
         vec2 k = vec2((uv.x - uFocus.x + 0.35) * aspect, uv.y - 1.25);
-        float shaft = exp(-dot(k, k) / 0.9) * smoothstep(0.35, 0.85, ctaFbm(vec2(atan(k.x, -k.y) * 5.0, uTime * 0.01)));
+        float shaft = exp(-dot(k, k) / 0.9) * smoothstep(0.35, 0.85, ctaNoise(vec2(atan(k.x, -k.y) * 5.0, uTime * 0.01)));
         col += uKey * shaft * 0.018 * presence;
 
         float horizonY = uFocus.y - uFocusSize.y * 0.98;

@@ -147,19 +147,21 @@ export function ScrollProgressRail() {
 
       {/* Mobile — compact bottom bar, no per-section list (avoids horizontal
           overflow), matching the brief's own "03/08 · label + thin line +
-          percent" example exactly. */}
+          percent" example exactly. Its right end is kept clear for the
+          music player, which docks there on phones
+          (components/music/MusicPlayer.tsx). */}
       <nav
         aria-label="Site progress"
-        className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-white/10 bg-ink-950/85 px-4 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2 backdrop-blur-lg md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-white/10 bg-ink-950/85 py-2 pl-4 pr-[12rem] pb-[calc(0.5rem+env(safe-area-inset-bottom))] backdrop-blur-lg md:hidden"
       >
         <span
           aria-hidden="true"
           ref={mobileStatusRef}
-          className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-200"
+          className="min-w-0 truncate text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-200"
         >
           01/{siteSections.length} · Hero
         </span>
-        <span className="relative h-1 flex-1 overflow-hidden rounded-full bg-white/10">
+        <span className="relative h-1 min-w-6 flex-1 overflow-hidden rounded-full bg-white/10">
           <span
             ref={mobileLineRef}
             aria-hidden="true"

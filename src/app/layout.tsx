@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Sora } from "next/font/google";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { MusicPlayer } from "@/components/music/MusicPlayer";
 import { SmoothScrollProvider } from "@/components/motion/SmoothScrollProvider";
 import { siteConfig } from "@/data/site";
 import "./globals.css";
@@ -94,7 +95,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {/* Progressive-enhancement fallback for the scroll-reveal animations
             in components/motion/Reveal.tsx — see globals.css `.motion-reveal`. */}
         <noscript>
-          <style>{".motion-reveal{visibility:visible !important;}"}</style>
+          <style>{".motion-reveal{opacity:1 !important;visibility:visible !important;}"}</style>
         </noscript>
       </head>
       {/*
@@ -132,6 +133,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
         <SmoothScrollProvider>
           <Header />
+          {/* The one global background-music player (fixed; see
+              components/music/MusicPlayer.tsx). */}
+          <MusicPlayer />
           <main id="main-content" className="flex-1">
             {children}
           </main>

@@ -3,11 +3,9 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { Logo } from "@/components/ui/Logo";
 import { LinkButton } from "@/components/ui/Button";
-import { SoundToggle } from "@/components/ui/SoundToggle";
 import { primaryNav } from "@/data/nav";
 import { useJourneyFrame } from "@/hooks/useJourneyFrame";
 import { useDeviceCapability } from "@/hooks/useDeviceCapability";
-import { useSiteAudio } from "@/hooks/useSiteAudio";
 import { gsap } from "@/lib/motion/gsap";
 import { handleInPageNavClick } from "@/lib/motion/scrollNav";
 
@@ -38,7 +36,6 @@ export function Header() {
   const mobileLinkRefs = useRef<Array<HTMLAnchorElement | null>>([]);
   const lastActiveStage = useRef<string | null>(null);
   const { hasCoarsePointer } = useDeviceCapability();
-  const { play } = useSiteAudio();
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 12);
@@ -107,7 +104,7 @@ export function Header() {
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4 sm:px-8 lg:px-10">
         <Logo />
 
-        <nav ref={navRef} aria-label="Primary" className="relative hidden items-center gap-2 md:flex">
+        <nav ref={navRef} aria-label="Primary" className="relative hidden items-center gap-1 lg:flex xl:gap-2">
           <span ref={indicatorRef} data-visible="false" className="nav-active-pill" aria-hidden="true" />
           {primaryNav.map((item, index) => (
             <a
@@ -118,28 +115,19 @@ export function Header() {
               href={item.href}
               data-active="false"
               onPointerMove={handlePointerMove}
-              onPointerEnter={() => {
-                if (!hasCoarsePointer) play("hover");
-              }}
-              onClick={(event) => {
-                play("select");
-                handleInPageNavClick(event, item.href);
-              }}
-              className="nav-link-glow type-nav-link relative rounded-full px-3.5 py-2 text-sm text-ink-200 transition-colors duration-300 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950 data-[active=true]:font-semibold data-[active=true]:text-white"
+              onClick={(event) => handleInPageNavClick(event, item.href)}
+              className="nav-link-glow type-nav-link relative whitespace-nowrap rounded-full px-2.5 py-2 text-sm xl:px-3.5 text-ink-200 transition-colors duration-300 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950 data-[active=true]:font-semibold data-[active=true]:text-white"
             >
               {item.label}
             </a>
           ))}
         </nav>
 
-        <div className="hidden items-center gap-2 md:flex">
-          <SoundToggle />
+        <div className="hidden items-center gap-2 lg:flex">
           <LinkButton
             href="#cta"
             variant="primary"
             className="px-5 py-2.5 text-xs"
-            onMouseEnter={() => play("hover")}
-            onClick={() => play("select")}
           >
             Contact Us
           </LinkButton>
@@ -147,13 +135,10 @@ export function Header() {
 
         <button
           type="button"
-          onClick={() => {
-            play(isMenuOpen ? "menu-close" : "menu-open");
-            setIsMenuOpen((open) => !open);
-          }}
+          onClick={() => setIsMenuOpen((open) => !open)}
           aria-expanded={isMenuOpen}
           aria-controls="mobile-nav"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 text-ink-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950 md:hidden"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 text-ink-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950 lg:hidden"
         >
           <span className="sr-only">{isMenuOpen ? "Close menu" : "Open menu"}</span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-5 w-5" aria-hidden="true">
@@ -168,7 +153,7 @@ export function Header() {
 
       <div
         id="mobile-nav"
-        className={`grid overflow-hidden transition-[grid-template-rows] duration-300 ease-in-out md:hidden ${
+        className={`grid overflow-hidden transition-[grid-template-rows] duration-300 ease-in-out lg:hidden ${
           isMenuOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
         }`}
       >
@@ -183,7 +168,6 @@ export function Header() {
                 href={item.href}
                 data-active="false"
                 onClick={(event) => {
-                  play("select");
                   setIsMenuOpen(false);
                   handleInPageNavClick(event, item.href);
                 }}
@@ -193,10 +177,9 @@ export function Header() {
               </a>
             ))}
             <div className="mt-3 flex items-center gap-2">
-              <LinkButton href="#cta" variant="primary" className="flex-1" onClick={() => play("select")}>
+              <LinkButton href="#cta" variant="primary" className="flex-1">
                 Contact Us
               </LinkButton>
-              <SoundToggle />
             </div>
           </nav>
         </div>
