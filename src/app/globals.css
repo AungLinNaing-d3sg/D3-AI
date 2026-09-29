@@ -1936,6 +1936,172 @@ html:not([data-motion-ready]) .motion-reveal {
 }
 
 /*
+ * Chapter 01 — the Hero copy (components/sections/IntroSection.tsx), beside
+ * the living D3-SG mark (three/scenes/IntroScene.tsx).
+ */
+.hero-live-dot {
+  position: relative;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--color-brand-400);
+  box-shadow: 0 0 8px rgb(253 106 80 / 0.7);
+}
+
+.hero-live-dot::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  border: 1px solid var(--color-brand-400);
+  animation: hero-live-ping 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+@keyframes hero-live-ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+
+  70%,
+  100% {
+    transform: scale(3);
+    opacity: 0;
+  }
+}
+
+/* Discipline chips: each lights up in its orbit's colour. */
+.hero-discipline {
+  --discipline: #67e8f9;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 2.5rem;
+  padding: 0.4rem 0.9rem 0.4rem 0.75rem;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 9999px;
+  background: rgb(5 7 13 / 0.45);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  transition:
+    border-color 0.35s ease,
+    background-color 0.35s ease,
+    box-shadow 0.35s ease,
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hero-discipline-dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 9999px;
+  background: var(--discipline);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--discipline) 70%, transparent);
+}
+
+.hero-discipline-name {
+  font-family: var(--font-sans-display), sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-ink-50);
+}
+
+.hero-discipline-detail {
+  font-size: 0.75rem;
+  color: var(--color-ink-400);
+  transition: color 0.35s ease;
+}
+
+.hero-discipline:hover,
+.hero-discipline:focus-visible {
+  border-color: color-mix(in srgb, var(--discipline) 45%, transparent);
+  background: color-mix(in srgb, var(--discipline) 8%, rgb(5 7 13 / 0.55));
+  box-shadow: 0 0 22px -8px color-mix(in srgb, var(--discipline) 60%, transparent);
+  transform: translateY(-1px);
+}
+
+.hero-discipline:hover .hero-discipline-detail,
+.hero-discipline:focus-visible .hero-discipline-detail {
+  color: var(--color-ink-200);
+}
+
+.hero-discipline:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--discipline) 70%, transparent);
+  outline-offset: 2px;
+}
+
+/* Proof strip: real facts, hairline-separated. */
+.hero-proof {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem 0;
+  padding-top: 1.2rem;
+  border-top: 1px solid rgb(255 255 255 / 0.07);
+}
+
+.hero-proof-item {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.2rem;
+  padding: 0 1.4rem;
+  border-left: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.hero-proof-item:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+/* The still mark when the 3D scene isn't running. */
+.hero-static-mark {
+  position: absolute;
+  top: 50%;
+  right: max(2rem, calc((100vw - 80rem) / 2 + 3rem));
+  width: min(34vw, 30rem);
+  transform: translateY(-55%);
+  filter: drop-shadow(0 0 40px rgb(241 74 48 / 0.35));
+}
+
+.hero-static-mark img {
+  width: 100%;
+  height: auto;
+}
+
+/* Portrait screens: the mark sits above the copy. */
+@media (orientation: portrait) {
+  .hero-copy {
+    padding-top: 30svh;
+  }
+
+  @media (max-width: 767px) {
+    .hero-copy {
+      padding-top: 34svh;
+    }
+  }
+
+  .hero-static-mark {
+    top: 5.5rem;
+    left: 50%;
+    right: auto;
+    width: min(70vw, 22rem);
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-live-dot::after {
+    animation: none;
+    display: none;
+  }
+
+  .hero-discipline,
+  .hero-discipline:hover,
+  .hero-discipline:focus-visible {
+    transform: none;
+  }
+}
+
+/*
  * Chapter 07 content — the vision roadmap (components/sections/
  * FutureSection.tsx): three pillars on a thin rail, in the site's shared
  * glass-panel / orange-halo vocabulary. `data-active` and `--pillar-fill`

@@ -3,6 +3,7 @@
 import { Canvas } from "@react-three/fiber";
 import { Lighting } from "@/components/three/Lighting";
 import { CameraRig } from "@/components/three/CameraRig";
+import { AmbientScene } from "@/components/three/AmbientScene";
 import { IntroScene } from "@/components/three/scenes/IntroScene";
 import { AboutScene } from "@/components/three/scenes/AboutScene";
 import { TypographyScene } from "@/components/three/scenes/TypographyScene";
@@ -49,6 +50,10 @@ export function Experience({ quality, enableParallax }: ExperienceProps) {
     >
       <color attach="background" args={["#05070d"]} />
       <Lighting />
+
+      {/* The continuous world under every chapter: nebula sky, stars,
+          bokeh, light streaks (see three/AmbientScene.tsx). */}
+      <AmbientScene quality={quality} />
 
       <IntroScene quality={quality} />
       <AboutScene quality={quality} />

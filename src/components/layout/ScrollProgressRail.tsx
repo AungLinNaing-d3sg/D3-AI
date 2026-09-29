@@ -90,17 +90,21 @@ export function ScrollProgressRail() {
   return (
     <>
       {/* Tablet + desktop — vertical rail, right edge, clear of the fixed-top
-          Header. */}
+          Header. At rest it's just the column of dots, which fits in the page
+          margin at every width; the labels, system line and status are laid
+          out beside it (taking no space, never intercepting clicks on the
+          content under them) and appear when the rail is hovered or
+          keyboard-focused. */}
       <nav
         aria-label="Site progress"
-        className="pointer-events-none fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 flex-col items-end gap-3 md:flex xl:right-6"
+        className="group/rail pointer-events-none fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 flex-col items-end md:flex xl:right-6"
       >
-        <span aria-hidden="true" className="pointer-events-auto text-[9px] font-semibold uppercase tracking-[0.28em] text-ink-500">
+        <span aria-hidden="true" className="pointer-events-none absolute -top-7 right-0 whitespace-nowrap rounded-full bg-ink-950/70 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.28em] text-ink-500 backdrop-blur-sm opacity-0 transition-opacity duration-300 group-hover/rail:opacity-100 group-focus-within/rail:opacity-100">
           AI System <span className="text-emerald-400">· Online</span>
         </span>
 
         <div className="pointer-events-auto flex items-stretch gap-3">
-          <ol className="flex flex-col items-end gap-2.5">
+          <ol className="flex flex-col items-end gap-1.5">
             {siteSections.map((section, i) => (
               <li key={section.id}>
                 <button
@@ -111,9 +115,9 @@ export function ScrollProgressRail() {
                   data-state={i === 0 ? "current" : "upcoming"}
                   onClick={() => scrollToSection(`#${section.id}`)}
                   aria-label={`${section.shortLabel} — section ${section.index} of ${siteSections.length}`}
-                  className="group flex items-center gap-2 rounded-full px-1 py-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                  className="group relative flex items-center rounded-full p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
                 >
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-data-[state=current]:text-ink-100 group-data-[state=current]:opacity-100 group-data-[state=done]:opacity-70">
+                  <span className="pointer-events-none absolute right-full top-1/2 mr-1.5 -translate-y-1/2 whitespace-nowrap rounded-full bg-ink-950/70 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400 backdrop-blur-sm group-data-[state=current]:text-ink-100 opacity-0 transition-opacity duration-300 group-hover/rail:opacity-100 group-focus-within/rail:opacity-100">
                     {section.shortLabel}
                   </span>
                   <span
@@ -135,7 +139,7 @@ export function ScrollProgressRail() {
           </div>
         </div>
 
-        <span aria-hidden="true" className="pointer-events-auto flex items-center gap-1.5 text-[10px] font-semibold text-ink-500">
+        <span aria-hidden="true" className="pointer-events-none absolute -bottom-7 right-0 flex items-center gap-1.5 whitespace-nowrap rounded-full bg-ink-950/70 px-2 py-0.5 text-[10px] font-semibold text-ink-500 backdrop-blur-sm opacity-0 transition-opacity duration-300 group-hover/rail:opacity-100 group-focus-within/rail:opacity-100">
           <span ref={desktopStatusRef} className="uppercase tracking-[0.14em]">
             01/{siteSections.length} · Hero
           </span>
