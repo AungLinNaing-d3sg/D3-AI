@@ -113,7 +113,7 @@ export function AgentSelectExperience({ onAdvance, onExit }: AgentSelectExperien
         {/* Sized down from the original h-80/sm:h-96 — with the persistent
             chapter rail (PlaygroundRail) now sitting above this experience,
             the full column (rail + this box + the detail panel below) must
-            still fit within GameSection's tight sticky-pin height budget; see
+            still fit within GameSection's tight height budget; see
             the same note on the detail panel below. */}
         <div className="relative h-56 w-full overflow-hidden rounded-2xl border border-brand-400/15 bg-ink-950/60 sm:h-64">
           {showCanvas ? (
@@ -191,7 +191,7 @@ export function AgentSelectExperience({ onAdvance, onExit }: AgentSelectExperien
 
         {selectedAgent ? (
           // `max-h` + `overflow-y-auto` — this panel's content length varies
-          // per agent (description/tool count), and GameSection's sticky-pin
+          // per agent (description/tool count), and GameSection's height
           // section only reserves a small, fixed height budget for this
           // whole chapter (see the note on the canvas box above). Capping
           // this panel's own height and scrolling *inside* it keeps the

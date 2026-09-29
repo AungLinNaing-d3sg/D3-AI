@@ -17,7 +17,7 @@ type Chapter = "entry" | PlaygroundExperienceId;
 interface AiPlaygroundProps {
   /** Lets `GameSection` shrink its own always-visible heading once the
    * visitor is inside a chapter — see the note above `PlaygroundRail` below
-   * about this chapter's tight sticky-pin height budget. */
+   * about this chapter's tight height budget. */
   onEntryChange?: (isEntry: boolean) => void;
 }
 

@@ -47,15 +47,15 @@ export function UniverseSection() {
       ariaLabelledBy="universe-heading"
       className="min-h-[90vh] md:min-h-[110vh] lg:min-h-[125vh]"
     >
-      {/* Pinned only from tablet up — on mobile the 4 real statistic cards
-          are the primary, always-fully-visible layer and simply flow with
-          the page (never squeezed/clipped inside a fixed-height pin), with
+      {/* Flows with the page at every size (no pin) — the 4 real statistic
+          cards are the primary, always-fully-visible layer (never
+          squeezed/clipped inside a fixed-height pin), with
           the smaller, decorative 3D data universe (see UniverseScene.tsx,
           scaled down via objectScale) animating behind them the whole time —
           see the "By the numbers" mobile requirement. A little more runway
           than the single-beat chapters since 4 stations cycle through here
           (see universeStatRanges). */}
-      <div className="relative flex h-auto flex-col justify-center gap-8 py-10 md:sticky md:top-0 md:min-h-[100svh] md:gap-8 md:py-16 lg:gap-10 lg:py-20">
+      <div className="relative flex h-auto flex-col justify-center gap-8 py-10 md:min-h-[100svh] md:gap-8 md:py-16 lg:gap-10 lg:py-20">
         <Container className="flex flex-col gap-10">
           <SectionHeading
             headingId="universe-heading"

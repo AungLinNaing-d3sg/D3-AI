@@ -9,15 +9,15 @@ import { FutureSection } from "@/components/sections/FutureSection";
 import type { StageId } from "@/types";
 
 /**
- * Regression coverage for the mobile-responsive / compact-pin fix (see
- * components/sections/*.tsx + components/ui/Section.tsx): every chapter
- * that used to force a fixed, unconditional `sticky top-0 h-[100svh]` pin
- * (and a multi-viewport `min-h`, e.g. Typography's old 440vh) must instead
- * only pin from the tablet breakpoint up (`md:sticky`) — flowing normally
- * on mobile so scrolling reads as a normal website, not a full-screen
- * scroll-jack — and keep its own `min-h` within the compact ranges this
- * feature specifies (mobile ~70-100vh, tablet ~90-120vh, desktop ~100-140vh)
- * rather than multiple stacked viewport heights.
+ * Regression coverage for the chapters' scroll behaviour (see
+ * components/sections/*.tsx + components/ui/Section.tsx): no chapter may
+ * pin its content (`sticky` / `md:sticky`) at any breakpoint — the page
+ * always scrolls naturally, with each chapter's 3D scene kept in step with
+ * its content by the scroll timeline's mid-screen reading point
+ * (lib/motion/scrollTimeline.ts) rather than by holding the content still —
+ * and each chapter keeps its own `min-h` within the compact ranges this
+ * feature specifies (mobile ~70-100vh, tablet ~90-120vh, desktop
+ * ~100-140vh) rather than multiple stacked viewport heights.
  */
 const chapters: { id: StageId; Section: () => React.JSX.Element }[] = [
   { id: "intro", Section: IntroSection },
@@ -49,16 +49,11 @@ describe("chapter section responsiveness", () => {
     });
   });
 
-  it.each(chapters)("only pins the '$id' chapter's hero content from the tablet breakpoint up, not unconditionally on mobile", ({ Section }) => {
+  it.each(chapters)("never pins the '$id' chapter's content — it scrolls with the page at every breakpoint", ({ Section }) => {
     const { container } = render(<Section />);
-    const pinnedCandidates = Array.from(container.querySelectorAll<HTMLElement>("div"));
-
-    // At least one wrapper must opt into the tablet+ pin...
-    expect(pinnedCandidates.some((el) => el.className.includes("md:sticky"))).toBe(true);
-    // ...and none may force the old unconditional mobile-included pin.
-    pinnedCandidates.forEach((el) => {
-      const classes = el.className.split(/\s+/);
-      expect(classes).not.toContain("sticky");
+    Array.from(container.querySelectorAll<HTMLElement>("*")).forEach((el) => {
+      const classes = (el.getAttribute("class") ?? "").split(/\s+/);
+      expect(classes.some((c) => c === "sticky" || c.endsWith(":sticky"))).toBe(false);
     });
   });
 });

@@ -18,12 +18,10 @@ import { useWebglSupported } from "@/hooks/useWebglSupported";
  * controls at every step, so the journey never forces interaction to
  * continue and no one is ever trapped in an experience.
  *
- * This chapter's sticky-pin only reserves a small, fixed height budget (see
- * the `min-h` note below), so once the visitor is inside a chapter (past the
- * entry hero) the always-visible description line is dropped — freeing space
- * for that chapter's own eyebrow/heading and content to stay within budget
- * without the page's scroll needing to travel far enough to escape the pin
- * into chapter 07.
+ * The chapter keeps a compact height budget (see the `min-h` note below),
+ * so once the visitor is inside a chapter (past the entry hero) the
+ * always-visible description line is dropped — freeing space for that
+ * chapter's own eyebrow/heading and content to stay within budget.
  */
 /**
  * Chapter 06's environment when the shared 3D canvas isn't running (reduced
@@ -50,18 +48,16 @@ export function GameSection() {
       className="min-h-[80vh] md:min-h-[95vh] lg:min-h-[105vh]"
     >
       <GameStaticStudio />
-      {/* Pinned only from tablet up — on mobile the playground menu/games
-          flow normally instead of being held in a full-screen pin.
+      {/* Flows with the page at every size (no pin).
           `md:min-h-[100svh]` (not a fixed `h-[100svh]`) on tablet/desktop
           too, since the playground menu/games can genuinely exceed one
           viewport of content — a fixed height would let that overflow
           clip/overlap the next chapter and shortchange this stage's own
           scroll distance, which is what let the page reach the Future/CTA
           chapters' scroll range before this one's content had actually
-          finished. `min-h` lets the section grow to fit real content while
-          still pinning for the rest. */}
+          finished. `min-h` lets the section grow to fit real content. */}
       <div
-        className={`relative flex h-auto flex-col items-center justify-center gap-4 py-6 md:sticky md:top-0 md:min-h-[100svh] md:gap-4 ${isEntry ? "md:py-10 lg:py-12" : "md:py-6 lg:py-6"}`}
+        className={`relative flex h-auto flex-col items-center justify-center gap-4 py-6 md:min-h-[100svh] md:gap-4 ${isEntry ? "md:py-10 lg:py-12" : "md:py-6 lg:py-6"}`}
       >
         {/* `data-game-content`: the UI the background environment stays
             soft behind (see three/scenes/GameAmbienceScene.tsx). */}

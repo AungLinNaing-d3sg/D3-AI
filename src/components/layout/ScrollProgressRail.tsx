@@ -90,16 +90,17 @@ export function ScrollProgressRail() {
   return (
     <>
       {/* Tablet + desktop — vertical rail, right edge, clear of the fixed-top
-          Header. At rest it's just the column of dots, which fits in the page
-          margin at every width; the labels, system line and status are laid
-          out beside it (taking no space, never intercepting clicks on the
-          content under them) and appear when the rail is hovered or
-          keyboard-focused. */}
+          Header. Always showing: the "AI System · Online" line, the current
+          chapter's title beside its dot, and the "07/8 · Vision  79%" status
+          with the overall percent. The other chapters' titles appear when the
+          rail is hovered or keyboard-focused. Labels are laid out beside the
+          dots on small dark pills (taking no space, never intercepting
+          clicks on the content under them). */}
       <nav
         aria-label="Site progress"
         className="group/rail pointer-events-none fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 flex-col items-end md:flex xl:right-6"
       >
-        <span aria-hidden="true" className="pointer-events-none absolute -top-7 right-0 whitespace-nowrap rounded-full bg-ink-950/70 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.28em] text-ink-500 backdrop-blur-sm opacity-0 transition-opacity duration-300 group-hover/rail:opacity-100 group-focus-within/rail:opacity-100">
+        <span aria-hidden="true" className="pointer-events-none absolute -top-7 right-0 whitespace-nowrap rounded-full bg-ink-950/70 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.28em] text-ink-500 backdrop-blur-sm">
           AI System <span className="text-emerald-400">· Online</span>
         </span>
 
@@ -117,7 +118,7 @@ export function ScrollProgressRail() {
                   aria-label={`${section.shortLabel} — section ${section.index} of ${siteSections.length}`}
                   className="group relative flex items-center rounded-full p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
                 >
-                  <span className="pointer-events-none absolute right-full top-1/2 mr-1.5 -translate-y-1/2 whitespace-nowrap rounded-full bg-ink-950/70 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400 backdrop-blur-sm group-data-[state=current]:text-ink-100 opacity-0 transition-opacity duration-300 group-hover/rail:opacity-100 group-focus-within/rail:opacity-100">
+                  <span className="pointer-events-none absolute right-full top-1/2 mr-1.5 -translate-y-1/2 whitespace-nowrap rounded-full bg-ink-950/70 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400 backdrop-blur-sm group-data-[state=current]:text-ink-100 opacity-0 transition-opacity duration-300 group-data-[state=current]:opacity-100 group-hover/rail:opacity-100 group-focus-within/rail:opacity-100">
                     {section.shortLabel}
                   </span>
                   <span
@@ -139,11 +140,11 @@ export function ScrollProgressRail() {
           </div>
         </div>
 
-        <span aria-hidden="true" className="pointer-events-none absolute -bottom-7 right-0 flex items-center gap-1.5 whitespace-nowrap rounded-full bg-ink-950/70 px-2 py-0.5 text-[10px] font-semibold text-ink-500 backdrop-blur-sm opacity-0 transition-opacity duration-300 group-hover/rail:opacity-100 group-focus-within/rail:opacity-100">
+        <span aria-hidden="true" className="pointer-events-none absolute -bottom-7 right-0 flex items-center gap-1.5 whitespace-nowrap rounded-full bg-ink-950/70 px-2 py-0.5 text-[10px] font-semibold text-ink-500 backdrop-blur-sm">
           <span ref={desktopStatusRef} className="uppercase tracking-[0.14em]">
             01/{siteSections.length} · Hero
           </span>
-          <span ref={desktopPercentRef} className="text-ink-400">
+          <span ref={desktopPercentRef} className="text-ink-300">
             0%
           </span>
         </span>

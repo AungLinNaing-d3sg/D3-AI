@@ -198,7 +198,7 @@ export function BuildTestExperience({ onAdvance, onExit }: BuildTestExperiencePr
 
         {/* All panel heights below are fixed and deliberately small — every
             control in GameFrame's `controls` slot must stay within reach of
-            GameSection's very short `min-h-[100svh]` sticky-pin budget. A
+            GameSection's very short `min-h-[100svh]` height budget. A
             panel tall enough that reaching a control requires scrolling
             further genuinely scrolls the page into the next chapter's
             territory before the click registers (see

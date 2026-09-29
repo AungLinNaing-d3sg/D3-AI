@@ -69,9 +69,10 @@ export function TypographySection() {
       ariaLabelledBy="typography-heading"
       className="min-h-[85vh] md:min-h-[100vh] lg:min-h-[110vh]"
     >
-      {/* Pinned only from tablet up — see IntroSection for why mobile flows
-          normally instead of holding a full-screen pin. */}
-      <div className="relative flex h-auto flex-col justify-center gap-8 py-10 md:sticky md:top-0 md:min-h-[100svh] md:py-16 lg:py-20">
+      {/* Flows with the page at every size (no pin) — the chapter's 3D
+          scene follows it via the scroll timeline's mid-screen reading
+          point (lib/motion/scrollTimeline.ts). */}
+      <div className="relative flex h-auto flex-col justify-center gap-8 py-10 md:min-h-[100svh] md:py-16 lg:py-20">
         <Container className="flex flex-col gap-18">
           <div className="relative max-w-2xl">
             {/* Soft, off-centre readability pool — not a solid rectangle —

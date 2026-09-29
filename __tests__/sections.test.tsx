@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { IntroSection } from "@/components/sections/IntroSection";
 import { AboutSection } from "@/components/sections/AboutSection";
 import { TypographySection } from "@/components/sections/TypographySection";
@@ -27,18 +27,10 @@ describe("homepage chapters", () => {
     expect(document.getElementById("intro")).toHaveAttribute("data-stage", "intro");
   });
 
-  it("renders the hero's disciplines, next steps and real proof points", () => {
+  it("renders the hero's next steps", () => {
     render(<IntroSection />);
-    const disciplines = screen.getByRole("list", { name: /our three disciplines/i });
-    expect(within(disciplines).getAllByRole("link")).toHaveLength(3);
-    ["Data", "Dynamics", "Digital"].forEach((name) => {
-      expect(within(disciplines).getByRole("link", { name: new RegExp(`^${name}:`) })).toHaveAttribute("href", "#typography");
-    });
     expect(screen.getByRole("link", { name: /start a project/i })).toHaveAttribute("href", "#cta");
     expect(screen.getByRole("link", { name: /explore the journey/i })).toHaveAttribute("href", "#about");
-    ["20+ years", "Microsoft", "Singapore"].forEach((value) => {
-      expect(screen.getAllByText(value).length).toBeGreaterThan(0);
-    });
   });
 
   it("never renders the hero pipeline stages in the neural network chapter", () => {

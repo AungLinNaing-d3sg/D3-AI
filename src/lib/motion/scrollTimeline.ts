@@ -64,6 +64,10 @@ function scaleCameraKeyframes(depthScale: number): CameraKeyframe[] {
   }));
 }
 
+/** How far down the viewport (0..1) each stage's progress is measured at —
+ * see the `scrollY` note in `initJourneyTimeline`. */
+const READING_POINT = 0.5;
+
 /** Soft crossfade envelope: ramps 0→1 over the first `edge` of local
  * progress and 1→0 over the last `edge`, flat at 1 in between. The very
  * first/last stage never fades to 0 at the outer page boundary since
@@ -113,6 +117,10 @@ export function initJourneyTimeline(
 
   const bounds: StageBounds[] = stageEls.map(({ id }) => ({ id, top: 0, height: 1 }));
   let total = 1;
+  /** Where the first stage ends and the last begins, in whole-page
+   * progress (see `scrollY`). */
+  let firstStageEnd = 0.1;
+  let lastStageStart = 1;
 
   /**
    * Re-measures every stage's document-flow top/height (and the wrapper's
@@ -133,6 +141,10 @@ export function initJourneyTimeline(
       bound.height = Math.max(el.offsetHeight, 1);
     });
     total = Math.max(wrapperEl.offsetHeight, 1);
+    const first = bounds[0];
+    const last = bounds[bounds.length - 1];
+    firstStageEnd = first ? Math.max(0.001, (first.top + first.height) / total) : 0.1;
+    lastStageStart = last ? Math.min(0.999, last.top / total) : 1;
 
     // Stage boundaries in whole-page `globalProgress` space — recomputed
     // here (not per scroll tick) since they only change when layout does,
@@ -156,7 +168,20 @@ export function initJourneyTimeline(
     invalidateOnRefresh: true,
     onRefresh: measure,
     onUpdate(self) {
-      const scrollY = self.progress * total;
+      // The "reading point" each stage's progress is measured at — where a
+      // chapter's own 3D scene is in step with its content: the middle of
+      // the screen (READING_POINT). It eases in from the top of the screen
+      // across the first stage (so the page opens exactly as before), holds
+      // at the middle, and eases down to the bottom across the last stage
+      // so that stage still completes exactly at the end of the page.
+      // (Previously it drifted from top to bottom over the whole page, so
+      // late chapters' scenes ran ahead of — and faded before — their copy.)
+      const p = self.progress;
+      const viewport = window.innerHeight;
+      const realScroll = p * Math.max(total - viewport, 1);
+      const readingPoint = READING_POINT * smoothstep(0, firstStageEnd, p);
+      const toEnd = smoothstep(lastStageStart, 1, p);
+      const scrollY = realScroll + viewport * (readingPoint + (1 - readingPoint) * toEnd);
       journeyState.globalProgress = self.progress;
 
       let activeStage: StageId = bounds[0]?.id ?? STAGE_IDS[0];

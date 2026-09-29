@@ -199,7 +199,7 @@ export function WorkflowRunExperience({ onAdvance, onExit }: WorkflowRunExperien
         {/* Kept deliberately compact — every one of this panel's own
             controls (Skip / View Result / Run Again / Back to AI
             Playground, GameFrame's `controls` slot below) must stay within
-            reach of GameSection's very short `min-h-[100svh]` sticky-pin
+            reach of GameSection's very short `min-h-[100svh]` height
             budget. A control positioned far enough below the fold that
             reaching it requires scrolling substantially further genuinely
             scrolls the page into the next chapter's territory before the

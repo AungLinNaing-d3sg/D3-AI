@@ -19,9 +19,9 @@ import {
 } from "three";
 import { journeyState } from "@/lib/motion/journeyState";
 import { damp } from "@/lib/motion/mathUtils";
-import { DISCIPLINE_COLORS, heroFocus } from "@/lib/motion/heroFocus";
+import { DISCIPLINE_COLORS } from "@/lib/motion/heroFocus";
 import { SCENE_TIER_CONFIG, type SceneQuality } from "@/lib/three/deviceTiers";
-import { HeroBackdrop } from "@/components/three/scenes/intro/HeroBackdrop";
+import { HeroAtmosphere } from "@/components/three/scenes/intro/HeroAtmosphere";
 
 interface IntroSceneProps {
   quality: SceneQuality;
@@ -41,22 +41,22 @@ interface IntroSceneProps {
  * The pointer disturbs it — particles near the cursor scatter away in depth
  * and re-form behind it. Three light trails orbit the mark on tilted paths,
  * passing in front of and behind it: the three disciplines, Data (cyan),
- * Dynamics (amber) and Digital (violet); hovering a discipline in the Hero
- * copy (`heroFocus`) brightens its orbit. Scrolling out of the Hero
+ * Dynamics (amber) and Digital (violet). Scrolling out of the Hero
  * dissolves the mark back into a cloud as the journey begins. A calm
  * starfield and soft nebula glow sit behind it all.
  *
  * All particle motion is in shaders (one draw call for the mark, one per
- * orbit, one for the stars); this frame loop only writes uniforms. The mark
+ * orbit); this frame loop only writes uniforms. The mark
  * sits right of the copy on landscape screens and above it on portrait ones.
- * Behind it, three/scenes/intro/HeroBackdrop.tsx adds the nebula, the
- * wireframe intelligence sphere, the data horizon and depth dust.
+ * Behind it, three/scenes/intro/HeroAtmosphere.tsx paints a realistic
+ * deep-space plate (galactic band, starfield, a planet with the sun rising
+ * over its limb).
  */
 
 const TIER = {
-  high: { logo: 24000, stars: 1800, trail: 90 },
-  medium: { logo: 14000, stars: 1100, trail: 64 },
-  low: { logo: 8000, stars: 650, trail: 44 },
+  high: { logo: 24000, trail: 90 },
+  medium: { logo: 14000, trail: 64 },
+  low: { logo: 8000, trail: 44 },
 } as const;
 
 /** Logo width in world units, and where it sits. */
@@ -153,7 +153,6 @@ const trailVertex = /* glsl */ `
   uniform float uHead;
   uniform float uA;
   uniform float uB;
-  uniform float uHighlight;
   uniform float uOpacity;
   uniform float uPixelRatio;
   uniform mat4 uOrbit;
@@ -163,8 +162,8 @@ const trailVertex = /* glsl */ `
     vec3 p = (uOrbit * vec4(cos(theta) * uA, sin(theta) * uB, 0.0, 1.0)).xyz;
     vec4 mv = modelViewMatrix * vec4(p, 1.0);
     float fade = pow(1.0 - aT, 2.2);
-    vAlpha = fade * uOpacity * (0.75 + 0.25 * uHighlight);
-    gl_PointSize = (1.6 + 4.2 * fade) * (1.0 + uHighlight * 0.5) * uPixelRatio * (9.5 / max(-mv.z, 1.0));
+    vAlpha = fade * uOpacity * 0.75;
+    gl_PointSize = (1.6 + 4.2 * fade) * uPixelRatio * (9.5 / max(-mv.z, 1.0));
     gl_Position = projectionMatrix * mv;
   }
 `;
@@ -177,30 +176,6 @@ const trailFragment = /* glsl */ `
     float r = length(uv) * 2.0;
     float a = exp(-r * r * 3.5) * vAlpha;
     gl_FragColor = vec4(mix(uColor, vec3(1.0), 0.25) * a, a);
-  }
-`;
-
-const starVertex = /* glsl */ `
-  attribute float aSeed;
-  uniform float uTime;
-  uniform float uOpacity;
-  uniform float uPixelRatio;
-  varying float vAlpha;
-  void main() {
-    vec4 mv = modelViewMatrix * vec4(position, 1.0);
-    float twinkle = 0.55 + 0.45 * sin(uTime * (0.6 + aSeed * 1.8) + aSeed * 90.0);
-    vAlpha = uOpacity * twinkle * (0.25 + aSeed * 0.6);
-    gl_PointSize = (0.8 + aSeed * 1.8) * uPixelRatio;
-    gl_Position = projectionMatrix * mv;
-  }
-`;
-
-const starFragment = /* glsl */ `
-  varying float vAlpha;
-  void main() {
-    vec2 uv = gl_PointCoord - 0.5;
-    float a = exp(-dot(uv, uv) * 18.0) * vAlpha;
-    gl_FragColor = vec4(vec3(0.85, 0.9, 1.0) * a, a);
   }
 `;
 
@@ -367,7 +342,6 @@ export function IntroScene({ quality }: IntroSceneProps) {
           uHead: { value: spec.phase },
           uA: { value: spec.a },
           uB: { value: spec.b },
-          uHighlight: { value: 0 },
           uOpacity: { value: 0 },
           uPixelRatio: { value: 1 },
           uOrbit: { value: matrix },
@@ -388,34 +362,9 @@ export function IntroScene({ quality }: IntroSceneProps) {
       pathGeometry.setAttribute("position", new BufferAttribute(path, 3));
       const pathMaterial = new LineBasicMaterial({ color: DISCIPLINE_COLORS[i], transparent: true, opacity: 0, depthWrite: false, blending: AdditiveBlending });
       const line = new LineLoop(pathGeometry, pathMaterial);
-      return { spec, trailGeometry, trailMaterial, pathGeometry, pathMaterial, line, highlight: 0 };
+      return { spec, trailGeometry, trailMaterial, pathGeometry, pathMaterial, line };
     });
   }, [tier.trail]);
-
-  const stars = useMemo(() => {
-    const rand = mulberry32(7);
-    const positions = new Float32Array(tier.stars * 3);
-    const seeds = new Float32Array(tier.stars);
-    for (let i = 0; i < tier.stars; i += 1) {
-      const theta = rand() * Math.PI * 2;
-      const phi = Math.acos(2 * rand() - 1);
-      const radius = 6 + rand() * 9;
-      positions.set([Math.sin(phi) * Math.cos(theta) * radius, Math.sin(phi) * Math.sin(theta) * radius, Math.cos(phi) * radius - 6], i * 3);
-      seeds[i] = rand();
-    }
-    const geometry = new BufferGeometry();
-    geometry.setAttribute("position", new BufferAttribute(positions, 3));
-    geometry.setAttribute("aSeed", new BufferAttribute(seeds, 1));
-    const material = new ShaderMaterial({
-      vertexShader: starVertex,
-      fragmentShader: starFragment,
-      uniforms: { uTime: { value: 0 }, uOpacity: { value: 0 }, uPixelRatio: { value: 1 } },
-      transparent: true,
-      depthWrite: false,
-      blending: AdditiveBlending,
-    });
-    return { geometry, material };
-  }, [tier.stars]);
 
   const glows = useMemo(() => {
     const make = (color: string) =>
@@ -439,14 +388,12 @@ export function IntroScene({ quality }: IntroSceneProps) {
         o.pathGeometry.dispose();
         o.pathMaterial.dispose();
       });
-      stars.geometry.dispose();
-      stars.material.dispose();
       glows.plane.dispose();
       glows.warm.dispose();
       glows.cool.dispose();
       glows.deep.dispose();
     },
-    [logoMaterial, orbits, stars, glows]
+    [logoMaterial, orbits, glows]
   );
 
   const clock = useRef({ start: -1 });
@@ -513,21 +460,15 @@ export function IntroScene({ quality }: IntroSceneProps) {
 
     // Discipline orbits.
     const assembled = Math.min(1, Math.max(0, (since - ASSEMBLE_DELAY - 1.2) / 1.6));
-    orbits.forEach((o, i) => {
-      o.highlight = damp(o.highlight, heroFocus.discipline === i ? 1 : 0, 6, delta);
+    orbits.forEach((o) => {
       const ou = o.trailMaterial.uniforms as Record<string, IUniform>;
-      ou.uHead!.value = o.spec.phase + time * o.spec.speed * (1 + o.highlight * 0.6);
-      ou.uHighlight!.value = o.highlight;
-      ou.uOpacity!.value = assembled * weight * (1 - u.uDisperse!.value * 0.8) * (heroFocus.discipline >= 0 && heroFocus.discipline !== i ? 0.45 : 1);
+      ou.uHead!.value = o.spec.phase + time * o.spec.speed;
+      ou.uOpacity!.value = assembled * weight * (1 - u.uDisperse!.value * 0.8);
       ou.uPixelRatio!.value = pr;
-      o.pathMaterial.opacity = assembled * weight * (0.07 + o.highlight * 0.25);
+      o.pathMaterial.opacity = assembled * weight * 0.07;
     });
 
     // Atmosphere.
-    const su = stars.material.uniforms as Record<string, IUniform>;
-    su.uTime!.value = time;
-    su.uOpacity!.value = weight;
-    su.uPixelRatio!.value = pr;
     root.rotation.y = Math.sin(time * 0.03) * 0.04;
     (glows.warm.uniforms.uIntensity as IUniform<number>).value = 0.26 * weight * (0.85 + 0.15 * Math.sin(time * 0.6));
     (glows.cool.uniforms.uIntensity as IUniform<number>).value = 0.13 * weight;
@@ -536,9 +477,8 @@ export function IntroScene({ quality }: IntroSceneProps) {
 
   return (
     <group ref={rootRef} scale={objectScale} visible={false}>
-      {/* The world behind the mark: nebula, intelligence sphere, data horizon, dust. */}
-      <HeroBackdrop quality={quality} anchor={anchor} portrait={portrait} />
-      <points geometry={stars.geometry} material={stars.material} frustumCulled={false} />
+      {/* The world behind the mark: deep space, a planet and its sunrise. */}
+      <HeroAtmosphere quality={quality} anchor={anchor} />
       <mesh geometry={glows.plane} material={glows.deep} position={[-3.5, 1.2, -8]} scale={[16, 11, 1]} />
       <group ref={markRef}>
         <mesh geometry={glows.plane} material={glows.warm} position={[0, 0, -1.4]} scale={[7.5, 4.8, 1]} />

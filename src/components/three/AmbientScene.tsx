@@ -34,7 +34,7 @@ import type { SceneQuality } from "@/lib/three/deviceTiers";
  *
  * It follows the camera (so it's always there, whatever the camera does),
  * stays dim so every chapter's copy remains readable, and fades out under
- * the underwater Vision chapter (which brings its own world). Everything
+ * the Vision chapter (whose studio brings its own backdrop). Everything
  * moves in shaders — this loop only writes a few uniforms.
  */
 
@@ -52,7 +52,7 @@ const PALETTE: Record<StageId, [string, string, string]> = {
   neural: ["#051420", "#0b3a44", "#7fe8f5"],
   universe: ["#080a22", "#1e1f55", "#a6b4ff"],
   game: ["#0a0a1a", "#26194a", "#c3b2ff"],
-  future: ["#03151b", "#07323a", "#9ff0f5"],
+  future: ["#08090f", "#2a1812", "#f0c8a8"],
   cta: ["#0c0710", "#3c1510", "#ff9a78"],
 };
 
@@ -373,9 +373,9 @@ export function AmbientScene({ quality }: { quality: SceneQuality }) {
     su.uScroll!.value = journeyState.globalProgress;
     su.uOpacity!.value = 1;
 
-    // The Vision chapter brings its own underwater world: no stars there.
-    const underwater = journeyState.weight.future ?? 0;
-    built.opacity.value = 1 - underwater;
+    // The Vision chapter brings its own studio backdrop: no stars there.
+    const vision = journeyState.weight.future ?? 0;
+    built.opacity.value = 1 - vision;
     built.time.value = time;
     built.travel.value = journeyState.globalProgress * 6;
     built.pixelRatio.value = gl.getPixelRatio();

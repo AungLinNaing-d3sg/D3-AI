@@ -1,29 +1,43 @@
 "use client";
 
-import { useCallback, useRef, type CSSProperties } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Section } from "@/components/ui/Section";
 import { Container } from "@/components/ui/Container";
 import { LinkButton } from "@/components/ui/Button";
-import { Reveal } from "@/components/motion/Reveal";
-import { HeroGreeting } from "@/components/motion/HeroGreeting";
+import { ensureGsapRegistered, gsap } from "@/lib/motion/gsap";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { useDeviceCapability } from "@/hooks/useDeviceCapability";
 import { useJourneyFrame } from "@/hooks/useJourneyFrame";
 import { useWebglSupported } from "@/hooks/useWebglSupported";
 import type { JourneyState } from "@/lib/motion/journeyState";
-import { DISCIPLINE_COLORS, heroFocus } from "@/lib/motion/heroFocus";
 import { siteConfig } from "@/data/site";
-import { services } from "@/data/services";
-import { brandPillars } from "@/data/pillars";
+import { heroPipelineNodes } from "@/data/journey";
 
-/** Proof points shown in the Hero, in this order (real, from src/data/pillars.ts). */
-const PROOF = ["Leadership experience", "Technology focus", "Based in"]
-  .map((label) => brandPillars.find((pillar) => pillar.label === label))
-  .filter((pillar): pillar is (typeof brandPillars)[number] => Boolean(pillar));
+/** How long each verb stays lit in the verb line (ms). */
+const VERB_INTERVAL = 2400;
 
-/** "Data — Analytics, Machine Learning & AI" → ["Data", "Analytics, Machine Learning & AI"]. */
-function splitService(title: string): [string, string] {
-  const [name = title, detail = ""] = title.split(" — ");
-  return [name, detail];
+/** Tagline words set in the brand accent. */
+const ACCENT_WORDS = new Set(["AI", "infused"]);
+
+/** `useLayoutEffect` on the client (so the timeline's first frame lands
+ * before paint), `useEffect` during SSR. */
+const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
+
+/** THINK → "think", for the fading verb line. */
+const VERBS = heroPipelineNodes.map((node) => node.label.toLowerCase());
+
+/** "a, b, c and d" — the verb line's static, screen-reader sentence. */
+const VERB_SENTENCE = `${VERBS.slice(0, -1).join(", ")} and ${VERBS[VERBS.length - 1] ?? ""}`;
+
+/** Cycles 0..count-1 every `interval` ms while `running`. */
+function useCycle(count: number, interval: number, running: boolean) {
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    if (!running || count < 2) return;
+    const id = window.setInterval(() => setIndex((i) => (i + 1) % count), interval);
+    return () => window.clearInterval(id);
+  }, [count, interval, running]);
+  return index;
 }
 
 /** The mark as a still image when the 3D scene isn't running (reduced
@@ -42,20 +56,73 @@ function HeroStaticMark() {
 
 /**
  * Chapter 01 — the Hero. The living D3-SG mark (three/scenes/IntroScene.tsx:
- * the logo built from glowing particles, orbited by the three disciplines)
- * sits right of the copy on landscape screens and above it on portrait ones;
- * the copy leads with the tagline (assembled from particles — see
- * HeroGreeting), the company description, the three disciplines — hovering
- * or focusing one lights its orbit in the scene (`heroFocus`) — two clear
- * next steps, and a strip of real proof points. Everything after the title
- * enters in sequence once the title has established itself.
+ * the logo built from glowing particles, orbited by three light trails)
+ * floats in a realistic deep-space plate (intro/HeroAtmosphere.tsx), right
+ * of the copy on landscape screens and above it on portrait ones.
  *
- * On scroll the copy fades and drifts in lockstep with the scene's own
+ * The copy enters on one GSAP timeline: the eyebrow slides in, the tagline
+ * rises word by word out of a mask (tilting up from blur), a rule draws
+ * under it, then the verb line, description and actions follow in
+ * sequence. After that a light sweep runs across the tagline every few
+ * seconds, and the verb line cycles the five stages of how we build AI
+ * (`heroPipelineNodes`: "…learns to think", "learn", "understand",
+ * "predict", "create"), each verb crossfading into the next.
+ *
+ * Under reduced motion nothing cycles and everything is shown at rest. On
+ * scroll the copy fades and drifts in lockstep with the scene's own
  * crossfade weight (see IntroSection.textSync.test.tsx).
  */
 export function IntroSection() {
   const contentRef = useRef<HTMLDivElement>(null);
   const cueRef = useRef<HTMLDivElement>(null);
+  const reducedMotion = usePrefersReducedMotion();
+  const verb = useCycle(VERBS.length, VERB_INTERVAL, !reducedMotion);
+
+  // The entrance timeline, then the title's recurring light sweep.
+  useIsomorphicLayoutEffect(() => {
+    const root = contentRef.current;
+    if (!root) return;
+    if (reducedMotion) {
+      root.dataset.timeline = "done";
+      return;
+    }
+    ensureGsapRegistered();
+    const ctx = gsap.context(() => {
+      const titleWords = gsap.utils.toArray<HTMLElement>(".hero-title-word", root);
+      const steps = gsap.utils.toArray<HTMLElement>("[data-hero-step]", root);
+      const intro = gsap.timeline({ delay: 0.25, defaults: { ease: "expo.out" } });
+      intro
+        .set(root, { attr: { "data-timeline": "running" } })
+        .fromTo(
+          '[data-hero-step="eyebrow"]',
+          { opacity: 0, x: -18 },
+          { opacity: 1, x: 0, duration: 0.7 }
+        )
+        .fromTo(
+          titleWords,
+          { opacity: 0, yPercent: 105, rotateX: -75, filter: "blur(12px)" },
+          { opacity: 1, yPercent: 0, rotateX: 0, filter: "blur(0px)", duration: 1.15, stagger: 0.085 },
+          "-=0.35"
+        )
+        .fromTo(".hero-title-rule", { scaleX: 0 }, { scaleX: 1, duration: 1.1, ease: "power3.inOut" }, "-=0.6")
+        .fromTo(
+          steps.filter((el) => el.dataset.heroStep !== "eyebrow"),
+          { opacity: 0, y: 18, filter: "blur(6px)" },
+          { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.9, stagger: 0.12, clearProps: "filter" },
+          "-=0.8"
+        )
+        .set(root, { attr: { "data-timeline": "done" } });
+
+      gsap
+        .timeline({ delay: intro.duration() + 0.6, repeat: -1, repeatDelay: 5.5 })
+        .fromTo(
+          titleWords,
+          { backgroundPosition: "100% 0%" },
+          { backgroundPosition: "0% 0%", duration: 1.6, stagger: 0.07, ease: "sine.inOut" }
+        );
+    }, root);
+    return () => ctx.revert();
+  }, [reducedMotion]);
 
   const onFrame = useCallback((state: JourneyState) => {
     const local = state.progress.intro;
@@ -73,12 +140,7 @@ export function IntroSection() {
 
   useJourneyFrame(onFrame);
 
-  const focus = (index: number) => () => {
-    heroFocus.discipline = index;
-  };
-  const blur = () => {
-    heroFocus.discipline = -1;
-  };
+  const words = siteConfig.tagline.split(" ");
 
   return (
     <Section
@@ -86,54 +148,63 @@ export function IntroSection() {
       ariaLabelledBy="intro-heading"
       className="min-h-[75vh] md:min-h-[100vh] lg:min-h-[110vh]"
     >
-      {/* Pinned/scrubbed only from tablet up (`md:sticky`) — on mobile this
-          flows normally with the page. */}
-      <div className="hero-stage relative flex h-auto items-center py-14 md:sticky md:top-0 md:min-h-[100svh] md:py-0">
+      {/* Flows with the page at every size (no pin) — the chapter's 3D
+          scene follows it via the scroll timeline's mid-screen reading
+          point (lib/motion/scrollTimeline.ts). */}
+      <div className="hero-stage relative flex h-auto items-center py-14 md:min-h-[100svh] md:py-0">
         <div
           aria-hidden="true"
           className="readability-scrim pointer-events-none absolute -inset-x-16 -inset-y-24 -z-10 blur-2xl"
         />
         <HeroStaticMark />
         <Container>
-          <div ref={contentRef} className="hero-copy flex max-w-[40rem] flex-col gap-6">
-            <Reveal as="p" className="type-eyebrow flex items-center gap-3 text-brand-300">
+          <div ref={contentRef} data-timeline="pending" className="hero-copy flex max-w-[40rem] flex-col gap-5">
+            <p data-hero-step="eyebrow" className="type-eyebrow flex items-center gap-3 text-brand-300">
               <span className="hero-live-dot" aria-hidden="true" />
               {siteConfig.name} · Singapore
-            </Reveal>
+            </p>
 
-            <HeroGreeting id="intro-heading" text={siteConfig.tagline} className="type-hero-greeting text-ink-50" />
+            <div>
+              <h1 id="intro-heading" className="type-hero-greeting hero-title text-ink-50">
+                {words.map((word, index) => (
+                  <span key={`${word}-${index}`}>
+                    <span className="hero-title-mask">
+                      <span className="hero-title-word" data-accent={ACCENT_WORDS.has(word) ? "true" : undefined}>
+                        {word}
+                      </span>
+                    </span>
+                    {index < words.length - 1 ? " " : null}
+                  </span>
+                ))}
+              </h1>
+              <span aria-hidden="true" className="hero-title-rule" />
+            </div>
 
-            <Reveal as="p" delay={1.9} variant="mask" className="max-w-xl type-body-lead text-ink-300">
+            {/* The pipeline's five stages, fading one into the next. */}
+            <p data-hero-step="verb" className="hero-verb-line">
+              <span className="sr-only">Where your data learns to {VERB_SENTENCE}.</span>
+              <span aria-hidden="true" className="hero-verb-sentence">
+                Where your data learns to{" "}
+                <span className="hero-verb-stack">
+                  {VERBS.map((word, index) => (
+                    <span key={word} className="hero-verb" data-active={index === verb ? "true" : "false"}>
+                      {word}.
+                    </span>
+                  ))}
+                </span>
+              </span>
+              <span aria-hidden="true" className="hero-verb-ticks">
+                {VERBS.map((word, index) => (
+                  <span key={word} className="hero-verb-tick" data-active={index === verb ? "true" : "false"} />
+                ))}
+              </span>
+            </p>
+
+            <p data-hero-step="description" className="max-w-xl type-body-lead text-ink-300">
               {siteConfig.description}
-            </Reveal>
+            </p>
 
-            {/* The three disciplines — each lights its orbit around the mark. */}
-            <Reveal as="div" delay={2.1} className="hero-disciplines">
-              <ul aria-label="Our three disciplines" className="flex flex-wrap gap-2" onMouseLeave={blur}>
-                {services.map((service, index) => {
-                  const [name, detail] = splitService(service.title);
-                  return (
-                    <li key={service.slug}>
-                      <a
-                        href="#typography"
-                        className="hero-discipline"
-                        style={{ "--discipline": DISCIPLINE_COLORS[index] } as CSSProperties}
-                        onMouseEnter={focus(index)}
-                        onFocus={focus(index)}
-                        onBlur={blur}
-                        aria-label={`${name}: ${detail}`}
-                      >
-                        <span className="hero-discipline-dot" aria-hidden="true" />
-                        <span className="hero-discipline-name">{name}</span>
-                        <span className="hero-discipline-detail">{detail}</span>
-                      </a>
-                    </li>
-                  );
-                })}
-              </ul>
-            </Reveal>
-
-            <Reveal as="div" delay={2.25} className="flex flex-wrap items-center gap-3 pt-1">
+            <div data-hero-step="actions" className="flex flex-wrap items-center gap-3 pt-1">
               <LinkButton href="#cta" variant="primary">
                 Start a project
               </LinkButton>
@@ -143,18 +214,7 @@ export function IntroSection() {
                   →
                 </span>
               </LinkButton>
-            </Reveal>
-
-            <Reveal as="div" delay={2.4}>
-              <dl className="hero-proof">
-                {PROOF.map((pillar) => (
-                  <div key={pillar.label} className="hero-proof-item">
-                    <dt className="type-eyebrow text-[0.62rem] text-ink-400">{pillar.label}</dt>
-                    <dd className="font-display text-lg font-semibold text-ink-50">{pillar.value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </Reveal>
+            </div>
           </div>
         </Container>
 
