@@ -27,7 +27,7 @@ export function NeuralSection() {
           scene follows it via the scroll timeline's mid-screen reading
           point (lib/motion/scrollTimeline.ts). */}
       <div className="relative flex h-auto flex-col justify-center gap-8 py-12 md:min-h-[100svh] md:gap-10 md:py-20 lg:gap-12 lg:py-24">
-        <Container className="flex flex-col gap-10">
+        <Container data-depth-exit className="flex flex-col gap-10">
           <SectionHeading
             headingId="neural-heading"
             eyebrow="04 — How we build"
@@ -36,7 +36,7 @@ export function NeuralSection() {
             scrim
           />
 
-          <Reveal as="div" delay={0.05} className="flex flex-wrap gap-2.5">
+          <Reveal as="div" variant="depth" delay={0.2} className="flex flex-wrap gap-2.5">
             {technologyNetworkNodes.map((node) => (
               <span
                 key={node.id}

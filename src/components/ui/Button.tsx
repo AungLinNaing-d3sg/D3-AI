@@ -39,9 +39,13 @@ function classes(variant: Variant, className: string) {
 
 /** Primary CTAs draw the custom cursor in, in the brand accent
  * (components/cursor/CustomCursor.tsx); other variants use its default
- * hover state. */
+ * hover state. Primary/secondary also drift a few px toward the cursor on
+ * desktop (`data-depth-magnetic` — see lib/motion/depthInteractions.ts). */
 function cursorAttributes(variant: Variant) {
-  return variant === "primary" ? ({ "data-cursor": "magnetic", "data-cursor-tone": "accent" } as const) : {};
+  if (variant === "primary") {
+    return { "data-cursor": "magnetic", "data-cursor-tone": "accent", "data-depth-magnetic": "" } as const;
+  }
+  return variant === "secondary" ? ({ "data-depth-magnetic": "" } as const) : {};
 }
 
 function isInPageOrProtocolHref(href: string) {

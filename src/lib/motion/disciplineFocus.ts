@@ -1,3 +1,5 @@
+import { clamp, smoothstep } from "@/lib/motion/mathUtils";
+
 /**
  * Tiny, section-scoped mutable singleton — which discipline (0=Data,
  * 1=Dynamics, 2=Digital) the user last clicked in the "Built from Real
@@ -21,4 +23,20 @@ export const disciplineFocus: DisciplineFocusState = { pinned: null };
 
 export function resetDisciplineFocus(): void {
   disciplineFocus.pinned = null;
+}
+
+/**
+ * How "in focus" discipline `index` is (0..1) at the chapter's local scroll
+ * progress, with a click pin forcing it to 1 — a soft rise/fall per third
+ * rather than a hard cut at each boundary. The single shared curve read by
+ * both the sphere (three/scenes/TypographyScene.tsx: cluster highlight,
+ * turn and dolly) and the HTML cards (TypographySection.tsx: lift toward
+ * the viewer, prominence), so card and sphere always move together.
+ */
+export function disciplineActivity(local: number, index: number, count: number, pinned: number | null): number {
+  if (pinned === index) return 1;
+  const start = index / count;
+  const span = Math.max(1 / count, 0.0001);
+  const t = clamp((local - start) / span);
+  return smoothstep(0, 0.3, t) * (1 - smoothstep(0.7, 1, t));
 }

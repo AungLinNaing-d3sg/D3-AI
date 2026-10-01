@@ -27,8 +27,18 @@ type RevealTag = "div" | "p" | "span" | "h1" | "h2" | "h3";
  *   subtle blur/depth settle, for premium hero copy that should read as
  *   materialising rather than a plain fade or a literal per-character
  *   typewriter.
+ * - `"depth"` — blur + opacity + Z-depth + position settling together, so
+ *   important content (cards, lead copy) travels toward the camera instead
+ *   of sliding up. Phones get the plain fade/slide (no blur, no Z).
+ * - `"lines"` — major section headings: split into lines (re-split on
+ *   resize), each line emerging from depth with a small X/Y/Z offset and a
+ *   blur reduction, staggered. Ends perfectly sharp (filter cleared).
  */
-type RevealVariant = "fade" | "chars" | "words" | "blur" | "mask";
+type RevealVariant = "fade" | "chars" | "words" | "blur" | "mask" | "depth" | "lines";
+
+/** Starting state of the `"depth"`/`"lines"` treatments (desktop/tablet). */
+const DEPTH_FROM = { z: -140, blur: 8 } as const;
+const LINE_FROM = { x: -10, y: 26, z: -90, blur: 10 } as const;
 
 interface RevealProps {
   children: ReactNode;
@@ -118,7 +128,78 @@ export function Reveal({
     // that otherwise un-hides `.motion-reveal` content (see globals.css).
     document.documentElement.dataset.motionReady = "";
 
+    /** Drops the finished blur entirely so text renders with no filter
+     * layer at all (`blur(0px)` can still soften glyphs in some engines). */
+    const sharpen = (targets: gsap.TweenTarget) => () => gsap.set(targets, { filter: "none" });
+
     const ctx = gsap.context(() => {
+      if (variant === "lines") {
+        gsap.set(el, { autoAlpha: 1 });
+        split = SplitText.create(el, {
+          type: "lines",
+          linesClass: "reveal-line",
+          // Re-splits when the heading's width changes (and once fonts are
+          // ready), so lines always match what is actually rendered; the
+          // returned tween is reverted and rebuilt at the same progress.
+          autoSplit: true,
+          onSplit(self) {
+            revealTargets = self.lines;
+            return gsap.fromTo(
+              self.lines,
+              isCompact
+                ? { autoAlpha: 0, y: LINE_FROM.y * 0.6 }
+                : {
+                    autoAlpha: 0,
+                    x: LINE_FROM.x,
+                    y: LINE_FROM.y,
+                    z: LINE_FROM.z,
+                    filter: `blur(${LINE_FROM.blur}px)`,
+                    transformPerspective: 900,
+                  },
+              {
+                autoAlpha: 1,
+                x: 0,
+                y: 0,
+                ...(isCompact ? {} : { z: 0, filter: "blur(0px)" }),
+                duration: 1.15,
+                delay,
+                ease: "expo.out",
+                stagger: 0.11,
+                onComplete: isCompact ? undefined : sharpen(self.lines),
+                scrollTrigger,
+              }
+            );
+          },
+        });
+        return;
+      }
+
+      if (variant === "depth") {
+        gsap.fromTo(
+          el,
+          isCompact
+            ? { opacity: 0, y }
+            : {
+                opacity: 0,
+                y: y * 0.8,
+                z: DEPTH_FROM.z,
+                filter: `blur(${DEPTH_FROM.blur}px)`,
+                transformPerspective: 1200,
+              },
+          {
+            opacity: 1,
+            y: 0,
+            ...(isCompact ? {} : { z: 0, filter: "blur(0px)" }),
+            duration: isCompact ? 0.9 : 1.25,
+            delay,
+            ease: "expo.out",
+            onComplete: isCompact ? undefined : sharpen(el),
+            scrollTrigger,
+          }
+        );
+        return;
+      }
+
       if (variant === "chars" || variant === "words") {
         // GSAP's `autoAlpha` animates a target's own `visibility` between
         // `"hidden"` and `"inherit"` (never `"visible"`) — see

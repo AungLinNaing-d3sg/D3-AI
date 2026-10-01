@@ -34,7 +34,7 @@ export function CtaStartLink({ href, focusId }: CtaStartLinkProps) {
   }
 
   return (
-    <a href={href} onClick={onClick} className="cta-pill cta-pill--primary">
+    <a href={href} onClick={onClick} data-depth-magnetic className="cta-pill cta-pill--primary">
       <span>Start a conversation</span>
       <svg
         aria-hidden="true"

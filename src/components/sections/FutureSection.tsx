@@ -119,7 +119,7 @@ export function FutureSection() {
               scrim
             />
 
-            <ol className="vision-modules" aria-label="Our vision, in three pillars">
+            <ol className="vision-modules depth-stage" aria-label="Our vision, in three pillars">
               {capabilities.map((capability, index) => (
                 <li
                   key={capability.slug}
@@ -127,11 +127,13 @@ export function FutureSection() {
                     moduleRefs.current[index] = node;
                   }}
                   data-state="idle"
+                  data-depth-tilt
                   aria-labelledby={`vision-${capability.slug}`}
                   style={{ "--discipline": DISCIPLINE_COLORS[index] } as CSSProperties}
-                  className="vision-module"
+                  className="vision-module depth-tilt"
                 >
-                  <Reveal as="div" delay={index * 0.08} className="vision-module-inner">
+                  <span aria-hidden="true" className="depth-glare" />
+                  <Reveal as="div" variant="depth" delay={index * 0.08} className="vision-module-inner">
                     <div className="vision-module-head">
                       <span className="vision-module-id">M-0{index + 1}</span>
                       <span className="vision-module-discipline">
@@ -148,7 +150,11 @@ export function FutureSection() {
                         100%
                       </span>
                     </div>
-                    <h3 id={`vision-${capability.slug}`} className="vision-module-title">
+                    <h3
+                      id={`vision-${capability.slug}`}
+                      style={{ "--layer": 4 } as CSSProperties}
+                      className="vision-module-title depth-layer"
+                    >
                       {capability.title}
                     </h3>
                     <div className="vision-module-body">

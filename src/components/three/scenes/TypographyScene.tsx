@@ -15,8 +15,8 @@ import {
 } from "three";
 import { ParticleSystem, type ParticleSystemHandle } from "@/components/three/primitives/ParticleSystem";
 import { journeyState } from "@/lib/motion/journeyState";
-import { disciplineFocus } from "@/lib/motion/disciplineFocus";
-import { clamp, damp, smoothstep } from "@/lib/motion/mathUtils";
+import { disciplineActivity, disciplineFocus } from "@/lib/motion/disciplineFocus";
+import { clamp, damp } from "@/lib/motion/mathUtils";
 import { SCENE_TIER_CONFIG, tieredParticleCount, type SceneQuality } from "@/lib/three/deviceTiers";
 
 interface TypographySceneProps {
@@ -488,20 +488,12 @@ export function TypographyScene({ quality }: TypographySceneProps) {
     const effectivePin = disciplineFocus.pinned;
 
     // A soft rise/fall envelope per third (not a hard cut at its boundary)
-    // so scroll-driven transitions between disciplines cross-fade smoothly.
-    const envelope = (index: number) => {
-      const start = index / DISCIPLINE_COUNT;
-      const end = (index + 1) / DISCIPLINE_COUNT;
-      const span = Math.max(end - start, 0.0001);
-      const t = clamp((local - start) / span);
-      return smoothstep(0, 0.3, t) * (1 - smoothstep(0.7, 1, t));
-    };
-
+    // so scroll-driven transitions between disciplines cross-fade smoothly —
+    // the same curve the HTML cards lift with (see disciplineFocus.ts).
     let activeIndex = 0;
     let activeStrength = 0;
     for (let i = 0; i < DISCIPLINE_COUNT; i += 1) {
-      const isPinned = effectivePin === i;
-      const activity = Math.max(envelope(i), isPinned ? 1 : 0);
+      const activity = disciplineActivity(local, i, DISCIPLINE_COUNT, effectivePin);
       activityRef.current[i] = activity;
       if (activity > activeStrength) {
         activeStrength = activity;

@@ -4,6 +4,7 @@ import { useCallback, useRef, type CSSProperties } from "react";
 import { Section } from "@/components/ui/Section";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { Reveal } from "@/components/motion/Reveal";
 import { useJourneyFrame } from "@/hooks/useJourneyFrame";
 import type { JourneyState } from "@/lib/motion/journeyState";
 import { universeStatRanges, universeStations } from "@/data/journey";
@@ -56,7 +57,7 @@ export function UniverseSection() {
           than the single-beat chapters since 4 stations cycle through here
           (see universeStatRanges). */}
       <div className="relative flex h-auto flex-col justify-center gap-8 py-10 md:min-h-[100svh] md:gap-8 md:py-16 lg:gap-10 lg:py-20">
-        <Container className="flex flex-col gap-10">
+        <Container data-depth-exit className="flex flex-col gap-10">
           <SectionHeading
             headingId="universe-heading"
             eyebrow="05 — By the numbers"
@@ -65,7 +66,12 @@ export function UniverseSection() {
             scrim
           />
 
-          <ul className="grid gap-x-4 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+          {/* The active statistic comes forward in depth (scale, Z, full
+              opacity) while the others step back a touch — see
+              `.depth-stat` in globals.css, keyed off the same `data-active`
+              the terminal scene syncs to. */}
+          <Reveal as="div" variant="depth" delay={0.1}>
+          <ul className="depth-stage depth-stat-list grid gap-x-4 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
             {universeStations.map(({ stat }, index) => (
               <li
                 key={stat.label}
@@ -73,24 +79,29 @@ export function UniverseSection() {
                   cardRefs.current[index] = node;
                 }}
                 data-active="false"
+                data-depth-tilt
                 style={{ "--halo-color": "#f14a30" } as CSSProperties}
-                className="glass-panel data-active-halo group relative p-6 pt-8 transition-transform duration-300 data-[active=true]:-translate-y-1"
+                className="glass-panel data-active-halo depth-tilt depth-stat group relative p-6 pt-8"
               >
+                <span aria-hidden="true" className="depth-glare" />
                 {/* Token floats outside the card body as its own chip
                     rather than sitting flush inside the box — an
                     asymmetric layout instead of a flat rectangle. Bounded by
                     both `left`/`right` insets (rather than left-only,
                     content-width) so it can never grow past its own card,
                     however long a future token turns out to be. */}
-                <span className="absolute -top-4 left-5 right-5 inline-flex items-center justify-center rounded-2xl border border-brand-400/40 bg-ink-950 px-4 py-1 text-center shadow-[0_10px_30px_-15px_rgba(0,0,0,0.85)]">
+                <span className="depth-stat-token absolute -top-4 left-5 right-5 inline-flex items-center justify-center rounded-2xl border border-brand-400/40 bg-ink-950 px-4 py-1 text-center shadow-[0_10px_30px_-15px_rgba(0,0,0,0.85)]">
                   <span className="type-display-stat text-balance text-brand-300">{stat.token}</span>
                 </span>
-                <p className="type-eyebrow text-brand-300">{stat.label}</p>
-                <p className="mt-3 text-sm leading-relaxed text-ink-300">{stat.description}</p>
+                <p style={{ "--layer": 4 } as CSSProperties} className="depth-layer type-eyebrow text-brand-300">
+                  {stat.label}
+                </p>
+                <p className="depth-stat-copy mt-3 text-sm leading-relaxed text-ink-300">{stat.description}</p>
                 <p className="sr-only">{UNIVERSE_VISUAL_CAPTION}</p>
               </li>
             ))}
           </ul>
+          </Reveal>
         </Container>
       </div>
     </Section>

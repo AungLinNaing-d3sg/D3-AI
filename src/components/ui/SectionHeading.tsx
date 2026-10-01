@@ -17,7 +17,9 @@ interface SectionHeadingProps {
 }
 
 /** Consistent eyebrow/title/description heading block, with a built-in
- * scroll-triggered entrance (see `<Reveal>`) and one shared premium accent
+ * scroll-triggered entrance (see `<Reveal>` — the title emerges line by
+ * line from depth, the lead copy settles toward the camera after it) and
+ * one shared premium accent
  * treatment — a thin, slowly shimmering "data" indicator under the eyebrow
  * plus a soft static glow on the heading itself — applied consistently
  * across every major chapter rather than a bespoke animated effect per
@@ -52,13 +54,13 @@ export function SectionHeading({
         as="h2"
         delay={0.05}
         id={headingId}
-        variant="words"
+        variant="lines"
         className="section-heading-glow type-display-section text-ink-50"
       >
         {title}
       </Reveal>
       {description ? (
-        <Reveal as="p" delay={0.1} variant="blur" className="type-body-lead text-ink-300">
+        <Reveal as="p" delay={0.18} variant="depth" className="type-body-lead text-ink-300">
           {description}
         </Reveal>
       ) : null}

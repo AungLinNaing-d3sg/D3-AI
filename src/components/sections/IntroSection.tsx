@@ -10,6 +10,7 @@ import { useDeviceCapability } from "@/hooks/useDeviceCapability";
 import { useJourneyFrame } from "@/hooks/useJourneyFrame";
 import { useWebglSupported } from "@/hooks/useWebglSupported";
 import type { JourneyState } from "@/lib/motion/journeyState";
+import { damp } from "@/lib/motion/mathUtils";
 import { siteConfig } from "@/data/site";
 import { heroPipelineNodes } from "@/data/journey";
 
@@ -18,6 +19,14 @@ const VERB_INTERVAL = 2400;
 
 /** Tagline words set in the brand accent. */
 const ACCENT_WORDS = new Set(["AI", "infused"]);
+
+/** How far each hero layer sits from the copy's plane — scales its cursor
+ * and scroll parallax. The tagline sits furthest forward, the CTA close
+ * behind it; small values throughout so the copy only ever drifts a few px. */
+const HERO_LAYERS = { eyebrow: 0.35, title: 1, verb: 0.6, description: 0.45, actions: 0.8 } as const;
+type HeroLayer = keyof typeof HERO_LAYERS;
+/** Max cursor drift for a depth-1 layer, px. */
+const HERO_POINTER_PX = { x: 10, y: 6 } as const;
 
 /** `useLayoutEffect` on the client (so the timeline's first frame lands
  * before paint), `useEffect` during SSR. */
@@ -91,24 +100,26 @@ export function IntroSection() {
       const titleWords = gsap.utils.toArray<HTMLElement>(".hero-title-word", root);
       const steps = gsap.utils.toArray<HTMLElement>("[data-hero-step]", root);
       const intro = gsap.timeline({ delay: 0.25, defaults: { ease: "expo.out" } });
+      // Words rise out of their masks from a little depth — a gentle tilt,
+      // not a flip — and every step settles toward the camera from blur.
       intro
         .set(root, { attr: { "data-timeline": "running" } })
         .fromTo(
           '[data-hero-step="eyebrow"]',
-          { opacity: 0, x: -18 },
-          { opacity: 1, x: 0, duration: 0.7 }
+          { opacity: 0, x: -18, z: -40, transformPerspective: 900 },
+          { opacity: 1, x: 0, z: 0, duration: 0.8 }
         )
         .fromTo(
           titleWords,
-          { opacity: 0, yPercent: 105, rotateX: -75, filter: "blur(12px)" },
-          { opacity: 1, yPercent: 0, rotateX: 0, filter: "blur(0px)", duration: 1.15, stagger: 0.085 },
+          { opacity: 0, yPercent: 105, rotateX: -18, z: -60, filter: "blur(12px)", transformPerspective: 900 },
+          { opacity: 1, yPercent: 0, rotateX: 0, z: 0, filter: "blur(0px)", duration: 1.25, stagger: 0.085, clearProps: "filter" },
           "-=0.35"
         )
         .fromTo(".hero-title-rule", { scaleX: 0 }, { scaleX: 1, duration: 1.1, ease: "power3.inOut" }, "-=0.6")
         .fromTo(
           steps.filter((el) => el.dataset.heroStep !== "eyebrow"),
-          { opacity: 0, y: 18, filter: "blur(6px)" },
-          { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.9, stagger: 0.12, clearProps: "filter" },
+          { opacity: 0, y: 18, z: -70, filter: "blur(6px)", transformPerspective: 900 },
+          { opacity: 1, y: 0, z: 0, filter: "blur(0px)", duration: 1.05, stagger: 0.12, clearProps: "filter" },
           "-=0.8"
         )
         .set(root, { attr: { "data-timeline": "done" } });
@@ -124,6 +135,21 @@ export function IntroSection() {
     return () => ctx.revert();
   }, [reducedMotion]);
 
+  const { tier, hasCoarsePointer, isCompact } = useDeviceCapability();
+  const pointerDepth = tier === "desktop" && !hasCoarsePointer;
+  const layerRefs = useRef<Partial<Record<HeroLayer, HTMLElement | null>>>({});
+  const parallax = useRef({ x: 0, y: 0, last: 0 });
+  // Stable ref callbacks (the verb cycle re-renders this every few seconds).
+  const [bindLayer] = useState(() => {
+    const binders = {} as Record<HeroLayer, (node: HTMLElement | null) => void>;
+    (Object.keys(HERO_LAYERS) as HeroLayer[]).forEach((layer) => {
+      binders[layer] = (node) => {
+        layerRefs.current[layer] = node;
+      };
+    });
+    return (layer: HeroLayer) => binders[layer];
+  });
+
   const onFrame = useCallback((state: JourneyState) => {
     const local = state.progress.intro;
     const weight = state.weight.intro;
@@ -131,12 +157,35 @@ export function IntroSection() {
     const cue = cueRef.current;
     if (content) {
       content.style.opacity = String(weight);
-      content.style.transform = `translate3d(0, ${local * -48}px, 0)`;
+      // Leaving the hero, the copy rises and recedes into the scene
+      // together with the camera's push-in (flat on phones).
+      content.style.transform = isCompact
+        ? `translate3d(0, ${local * -48}px, 0)`
+        : `perspective(1000px) translate3d(0, ${local * -48}px, ${local * -110}px)`;
     }
+
+    // Layered depth: each line of copy drifts by its own depth — toward
+    // the cursor on desktop (smoothed, like the camera rig), and apart
+    // slightly on scroll — via the independent CSS `translate` property, so
+    // it never fights the GSAP entrance's own `transform`.
+    const now = performance.now();
+    const delta = Math.min((now - (parallax.current.last || now)) / 1000, 0.1);
+    parallax.current.last = now;
+    const pointer = pointerDepth ? state.pointer : { x: 0, y: 0 };
+    parallax.current.x = damp(parallax.current.x, pointer.x, 2.5, delta);
+    parallax.current.y = damp(parallax.current.y, pointer.y, 2.5, delta);
+    (Object.keys(HERO_LAYERS) as HeroLayer[]).forEach((layer) => {
+      const el = layerRefs.current[layer];
+      if (!el) return;
+      const depth = HERO_LAYERS[layer];
+      const x = parallax.current.x * HERO_POINTER_PX.x * depth;
+      const y = parallax.current.y * HERO_POINTER_PX.y * depth - local * 14 * depth;
+      el.style.translate = `${x.toFixed(2)}px ${y.toFixed(2)}px`;
+    });
     if (cue) {
       cue.style.opacity = String(Math.max(weight - local * 4, 0));
     }
-  }, []);
+  }, [isCompact, pointerDepth]);
 
   useJourneyFrame(onFrame);
 
@@ -159,12 +208,12 @@ export function IntroSection() {
         <HeroStaticMark />
         <Container>
           <div ref={contentRef} data-timeline="pending" className="hero-copy flex max-w-[40rem] flex-col gap-5">
-            <p data-hero-step="eyebrow" className="type-eyebrow flex items-center gap-3 text-brand-300">
+            <p ref={bindLayer("eyebrow")} data-hero-step="eyebrow" className="type-eyebrow flex items-center gap-3 text-brand-300">
               <span className="hero-live-dot" aria-hidden="true" />
               {siteConfig.name} · Singapore
             </p>
 
-            <div>
+            <div ref={bindLayer("title")}>
               <h1 id="intro-heading" className="type-hero-greeting hero-title text-ink-50">
                 {words.map((word, index) => (
                   <span key={`${word}-${index}`}>
@@ -181,7 +230,7 @@ export function IntroSection() {
             </div>
 
             {/* The pipeline's five stages, fading one into the next. */}
-            <p data-hero-step="verb" className="hero-verb-line">
+            <p ref={bindLayer("verb")} data-hero-step="verb" className="hero-verb-line">
               <span className="sr-only">Where your data learns to {VERB_SENTENCE}.</span>
               <span aria-hidden="true" className="hero-verb-sentence">
                 Where your data learns to{" "}
@@ -200,11 +249,11 @@ export function IntroSection() {
               </span>
             </p>
 
-            <p data-hero-step="description" className="max-w-xl type-body-lead text-ink-300">
+            <p ref={bindLayer("description")} data-hero-step="description" className="max-w-xl type-body-lead text-ink-300">
               {siteConfig.description}
             </p>
 
-            <div data-hero-step="actions" className="flex flex-wrap items-center gap-3 pt-1">
+            <div ref={bindLayer("actions")} data-hero-step="actions" className="flex flex-wrap items-center gap-3 pt-1">
               <LinkButton href="#cta" variant="primary">
                 Start a project
               </LinkButton>

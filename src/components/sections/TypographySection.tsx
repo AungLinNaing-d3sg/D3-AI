@@ -7,7 +7,8 @@ import { Reveal } from "@/components/motion/Reveal";
 import { ServiceIcon } from "@/components/ui/ServiceIcon";
 import { useJourneyFrame } from "@/hooks/useJourneyFrame";
 import type { JourneyState } from "@/lib/motion/journeyState";
-import { disciplineFocus } from "@/lib/motion/disciplineFocus";
+import { disciplineActivity, disciplineFocus } from "@/lib/motion/disciplineFocus";
+import { damp } from "@/lib/motion/mathUtils";
 import { services } from "@/data/services";
 
 /** One accent per discipline — order matches `services` (Data, Dynamics,
@@ -35,6 +36,9 @@ const DISCIPLINE_ACCENTS = ["#00d2ff", "#ff4d2d", "#00e676"] as const;
  */
 export function TypographySection() {
   const cardRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  /** Smoothed per-card focus (0..1) — see `onFrame`. */
+  const focusRef = useRef<number[]>(services.map(() => 0));
+  const lastFrameRef = useRef(0);
 
   const onFrame = useCallback((state: JourneyState) => {
     const local = state.progress.typography;
@@ -45,11 +49,31 @@ export function TypographySection() {
     // A click's pin persists until released by scroll (see
     // TypographyScene.tsx); scroll drives it the rest of the time — see
     // disciplineFocus.ts.
-    const activeIndex = disciplineFocus.pinned ?? scrollIndex;
+    const pinned = disciplineFocus.pinned;
+    const activeIndex = pinned ?? scrollIndex;
+
+    const now = performance.now();
+    const delta = Math.min((now - (lastFrameRef.current || now)) / 1000, 0.1);
+    lastFrameRef.current = now;
+
+    // The same activity curve the sphere turns/dollies/highlights with, so
+    // the active card comes forward exactly as its cluster does; damped so
+    // a click's instant pin still eases in. Inactive cards recede in
+    // prominence only relative to whichever card currently leads.
+    const focus = focusRef.current;
+    let lead = 0;
+    services.forEach((_, index) => {
+      const target = disciplineActivity(local, index, services.length, pinned);
+      focus[index] = damp(focus[index] ?? 0, target, 6, delta);
+      lead = Math.max(lead, focus[index] ?? 0);
+    });
 
     cardRefs.current.forEach((card, index) => {
       if (!card) return;
       card.dataset.active = index === activeIndex ? "true" : "false";
+      const value = focus[index] ?? 0;
+      card.style.setProperty("--focus", value.toFixed(3));
+      card.style.setProperty("--prominence", (1 - (lead - value) * 0.28).toFixed(3));
     });
   }, []);
 
@@ -73,7 +97,7 @@ export function TypographySection() {
           scene follows it via the scroll timeline's mid-screen reading
           point (lib/motion/scrollTimeline.ts). */}
       <div className="relative flex h-auto flex-col justify-center gap-8 py-10 md:min-h-[100svh] md:py-16 lg:py-20">
-        <Container className="flex flex-col gap-18">
+        <Container data-depth-exit className="flex flex-col gap-18">
           <div className="relative max-w-2xl">
             {/* Soft, off-centre readability pool — not a solid rectangle —
                 so the sphere's lattice lines never fight this copy for
@@ -90,13 +114,15 @@ export function TypographySection() {
               as="h2"
               delay={0.05}
               id="typography-heading"
+              variant="lines"
               className="section-heading-glow mt-4 type-display-section text-ink-50"
             >
               Three disciplines, one intelligent system
             </Reveal>
             <Reveal
               as="p"
-              delay={0.1}
+              delay={0.18}
+              variant="depth"
               className="mt-4 type-body-lead text-ink-300"
             >
               Data, Dynamics, and Digital aren&apos;t separate offerings —
@@ -116,18 +142,26 @@ export function TypographySection() {
                 DISCIPLINE_ACCENTS[index % DISCIPLINE_ACCENTS.length] ??
                 "#ffffff";
               return (
-                <Reveal key={service.slug} as="div" delay={0.14 + index * 0.06}>
+                <Reveal
+                  key={service.slug}
+                  as="div"
+                  variant="depth"
+                  delay={0.14 + index * 0.08}
+                  className="depth-stage h-full"
+                >
                   <button
                     type="button"
                     ref={(node) => {
                       cardRefs.current[index] = node;
                     }}
                     data-active="false"
+                    data-depth-tilt
                     onClick={() => selectDiscipline(index)}
                     aria-label={`Focus ${service.title} in the connected system`}
                     style={{ "--accent": accent } as CSSProperties}
-                    className="discipline-card flex h-full w-full flex-col gap-4 p-6 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+                    className="discipline-card depth-tilt flex h-full w-full flex-col gap-4 p-6 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
                   >
+                    <span aria-hidden="true" className="depth-glare" />
                     {/* Active pill/badge — only shown once this card is the
                         active discipline (click or scroll). */}
                     <span aria-hidden="true" className="discipline-card-badge">
@@ -136,10 +170,13 @@ export function TypographySection() {
 
                     <ServiceIcon
                       name={service.icon}
-                      className="h-8 w-8"
-                      style={{ color: accent }}
+                      className="depth-layer h-8 w-8"
+                      style={{ color: accent, "--layer": 7 } as CSSProperties}
                     />
-                    <h3 className="font-display text-lg font-semibold text-ink-50">
+                    <h3
+                      style={{ "--layer": 4 } as CSSProperties}
+                      className="depth-layer font-display text-lg font-semibold text-ink-50"
+                    >
                       {service.title}
                     </h3>
                     <p className="text-sm leading-relaxed text-ink-300">
