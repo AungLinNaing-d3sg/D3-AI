@@ -37,7 +37,7 @@ function readValues(formData: FormData): ContactFormValues {
 /** Redacts the free-text message body (potentially sensitive) before this
  * ever reaches a log line — only its length is recorded. */
 function sanitizeForLog(values: ContactFormValues) {
-  return { name: values.name, email: values.email, phone: values.phone, messageLength: values.message.length };
+  return { name: values.name, email: values.email, messageLength: values.message.length };
 }
 
 /**

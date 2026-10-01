@@ -5,6 +5,8 @@ import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { useDeviceCapability } from "@/hooks/useDeviceCapability";
 import { initJourneyTimeline } from "@/lib/motion/scrollTimeline";
 import { initPointerTracking } from "@/lib/motion/pointer";
+import { initDepthInteractions } from "@/lib/motion/depthInteractions";
+import { initDepthScroll } from "@/lib/motion/depthScroll";
 import { ensureGsapRegistered, ScrollTrigger } from "@/lib/motion/gsap";
 import { SCENE_TIER_CONFIG } from "@/lib/three/deviceTiers";
 import { STAGE_IDS, type StageId } from "@/types";
@@ -19,7 +21,7 @@ import { STAGE_IDS, type StageId } from "@/types";
  */
 export function ScrollChoreographer() {
   const prefersReducedMotion = usePrefersReducedMotion();
-  const { quality } = useDeviceCapability();
+  const { quality, isCompact, tier, hasCoarsePointer } = useDeviceCapability();
   const depthScale = SCENE_TIER_CONFIG[quality].depthScale;
 
   useEffect(() => {
@@ -82,6 +84,31 @@ export function ScrollChoreographer() {
     // always matches the current tier's cinematic depth budget — see
     // `src/lib/three/deviceTiers.ts`.
   }, [prefersReducedMotion, depthScale]);
+
+  // HTML content depth, on the same scroll the camera follows: chapters
+  // recede as they leave, layered imagery offsets — see lib/motion/depthScroll.ts.
+  // Phones keep only the lightweight layer offset.
+  useEffect(() => {
+    if (prefersReducedMotion) return;
+    const wrapper = document.getElementById("experience-wrapper");
+    if (!wrapper) return;
+    let cleanup: (() => void) | undefined;
+    const raf = requestAnimationFrame(() => {
+      cleanup = initDepthScroll(wrapper, { withExit: !isCompact });
+    });
+    return () => {
+      cancelAnimationFrame(raf);
+      cleanup?.();
+    };
+  }, [prefersReducedMotion, isCompact]);
+
+  // Cursor depth for cards/buttons — desktop with a real mouse only; touch,
+  // tablets and reduced motion keep the scroll-based effects alone.
+  const pointerDepth = !prefersReducedMotion && tier === "desktop" && !hasCoarsePointer;
+  useEffect(() => {
+    if (!pointerDepth) return;
+    return initDepthInteractions();
+  }, [pointerDepth]);
 
   return null;
 }

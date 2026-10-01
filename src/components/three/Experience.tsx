@@ -3,12 +3,12 @@
 import { Canvas } from "@react-three/fiber";
 import { Lighting } from "@/components/three/Lighting";
 import { CameraRig } from "@/components/three/CameraRig";
+import { AmbientScene } from "@/components/three/AmbientScene";
 import { IntroScene } from "@/components/three/scenes/IntroScene";
 import { AboutScene } from "@/components/three/scenes/AboutScene";
 import { TypographyScene } from "@/components/three/scenes/TypographyScene";
 import { NeuralScene } from "@/components/three/scenes/NeuralScene";
 import { UniverseScene } from "@/components/three/scenes/UniverseScene";
-import { ProductScene } from "@/components/three/scenes/ProductScene";
 import { GameAmbienceScene } from "@/components/three/scenes/GameAmbienceScene";
 import { FutureScene } from "@/components/three/scenes/FutureScene";
 import { CtaScene } from "@/components/three/scenes/CtaScene";
@@ -20,18 +20,18 @@ interface ExperienceProps {
 }
 
 /**
- * The full R3F scene tree — one continuous `<Canvas>` shared by all 9
+ * The full R3F scene tree — one continuous `<Canvas>` shared by all 8
  * chapters. Deliberately contains no interactive UI/forms (the "3D scene"
  * half of "combine traditional HTML/UI with interactive 3D scenes"); all
  * real content, navigation, and controls live in `components/sections`.
  *
  * Each chapter below is its own scene component with its own visual
- * language (identity emblem, typography particles, neural graph, particle
- * universe, floating product UI, cinematic monoliths, minimal CTA glow) —
- * deliberately *not* one object re-skinned 9 times. All 9 always mount so
- * their crossfade (`journeyState.weight`) can overlap smoothly at chapter
- * boundaries; each scene is responsible for going idle (skipping expensive
- * per-frame work) once its own weight reaches zero.
+ * language (identity emblem, discipline sphere, neural graph, particle
+ * universe, cinematic monoliths, minimal CTA glow) — deliberately *not* one
+ * object re-skinned 8 times. All 8 always mount so their crossfade
+ * (`journeyState.weight`) can overlap smoothly at chapter boundaries; each
+ * scene is responsible for going idle (skipping expensive per-frame work)
+ * once its own weight reaches zero.
  */
 export function Experience({ quality, enableParallax }: ExperienceProps) {
   const dpr = SCENE_TIER_CONFIG[quality].dpr;
@@ -51,12 +51,15 @@ export function Experience({ quality, enableParallax }: ExperienceProps) {
       <color attach="background" args={["#05070d"]} />
       <Lighting />
 
+      {/* The continuous world under every chapter: nebula sky, stars,
+          bokeh, light streaks (see three/AmbientScene.tsx). */}
+      <AmbientScene quality={quality} />
+
       <IntroScene quality={quality} />
       <AboutScene quality={quality} />
       <TypographyScene quality={quality} />
       <NeuralScene quality={quality} />
       <UniverseScene quality={quality} />
-      <ProductScene quality={quality} />
       <GameAmbienceScene quality={quality} />
       <FutureScene quality={quality} />
       <CtaScene quality={quality} />

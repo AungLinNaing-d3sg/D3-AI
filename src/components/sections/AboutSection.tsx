@@ -43,15 +43,17 @@ export function AboutSection() {
       ariaLabelledBy="about-heading"
       className="min-h-[75vh] md:min-h-[95vh] lg:min-h-[105vh]"
     >
-      {/* Pinned only from tablet up — see IntroSection for why mobile flows
-          normally instead of holding a full-screen pin. */}
-      <div className="relative flex h-auto flex-col justify-center gap-8 py-10 md:sticky md:top-0 md:h-[100svh] md:gap-8 md:py-16 lg:py-20">
-        <Container className="flex flex-col gap-10">
+      {/* Flows with the page at every size (no pin) — the chapter's 3D
+          scene follows it via the scroll timeline's mid-screen reading
+          point (lib/motion/scrollTimeline.ts). */}
+      <div className="relative flex h-auto flex-col justify-center gap-8 py-10 md:min-h-[100svh] md:gap-8 md:py-16 lg:py-20">
+        <Container data-depth-exit className="flex flex-col gap-10">
           <SectionHeading
             headingId="about-heading"
             eyebrow="02 — Who we are"
             title="Who we are"
             description={siteConfig.description}
+            scrim
           />
 
           <Reveal as="p" delay={0.12} className="max-w-2xl text-balance text-sm leading-relaxed text-ink-300 sm:text-base">
@@ -76,7 +78,7 @@ export function AboutSection() {
           carry the full bios directly. */}
       <Container className="relative z-10 flex flex-col gap-8 pb-24">
         <h3 className="font-display text-2xl font-semibold text-ink-50 sm:text-3xl">Meet the team</h3>
-        <ul className="grid gap-6 sm:grid-cols-2">
+        <ul className="depth-stage depth-stat-list grid gap-6 sm:grid-cols-2">
           {aboutTeamRanges.map(({ member }, index) => (
             <li
               key={member.name}
@@ -84,24 +86,37 @@ export function AboutSection() {
                 cardRefs.current[index] = node;
               }}
               data-active="false"
+              data-depth-tilt
+              data-depth-scroll
               style={{ "--halo-color": "#fd6a50" } as CSSProperties}
-              className="data-active-halo group rounded-3xl border border-white/10 bg-white/[0.03] p-7 transition-colors duration-300 data-[active=true]:border-brand-400/50 data-[active=true]:bg-brand-500/10"
+              className="glass-panel data-active-halo depth-tilt depth-stat group p-7"
             >
-              <Reveal as="div" delay={index * 0.08} className="flex items-center gap-4">
+              <span aria-hidden="true" className="depth-glare" />
+              <Reveal as="div" variant="depth" delay={index * 0.08} className="flex items-center gap-4">
+                {/* Layered portrait — glow (back) → photo → sheen → name
+                    (front), each offset at its own rate by cursor and
+                    scroll for shallow depth, rather than moving as one. */}
                 <div className="relative h-16 w-16 flex-none animate-float-slow sm:h-20 sm:w-20">
                   <div
-                    className="absolute -inset-1 rounded-2xl bg-brand-500/30 opacity-0 blur-md transition-opacity duration-300 group-hover:opacity-70 group-data-[active=true]:opacity-70"
+                    style={{ "--layer": -3 } as CSSProperties}
+                    className="depth-layer absolute -inset-1 rounded-2xl bg-brand-500/30 opacity-0 blur-md transition-opacity duration-300 group-hover:opacity-70 group-data-[active=true]:opacity-70"
                     aria-hidden="true"
                   />
                   <Image
+                    style={{ "--layer": 2 } as CSSProperties}
                     src={member.photo}
                     alt={member.name}
                     width={96}
                     height={96}
-                    className="relative h-full w-full rounded-2xl border border-white/15 object-cover ring-1 ring-white/10 transition-transform duration-300 pointer-fine:group-hover:scale-105 group-data-[active=true]:border-brand-400/60"
+                    className="depth-layer relative h-full w-full rounded-2xl border border-white/15 object-cover ring-1 ring-white/10 transition-transform duration-300 pointer-fine:group-hover:scale-105 group-data-[active=true]:border-brand-400/60"
+                  />
+                  <span
+                    aria-hidden="true"
+                    style={{ "--layer": 4 } as CSSProperties}
+                    className="depth-layer depth-sheen pointer-events-none absolute inset-0 rounded-2xl"
                   />
                 </div>
-                <div>
+                <div style={{ "--layer": 6 } as CSSProperties} className="depth-layer">
                   <p className="font-display text-lg font-semibold text-ink-50">{member.name}</p>
                   <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-brand-400">{member.role}</p>
                 </div>

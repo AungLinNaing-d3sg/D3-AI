@@ -20,11 +20,11 @@ describe("ContactForm", () => {
     }
   });
 
-  it("renders the Name, Email, Phone Number, and Message fields plus a submit button", () => {
+  it("renders just the Name, Email, and Message fields plus a submit button", () => {
     render(<ContactForm />);
     expect(screen.getByLabelText(/^name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/^phone number/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/phone/i)).not.toBeInTheDocument();
     expect(screen.getByLabelText(/^message/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /send message/i })).toBeInTheDocument();
   });
@@ -46,7 +46,7 @@ describe("ContactForm", () => {
     await user.click(screen.getByRole("button", { name: /send message/i }));
 
     const alerts = await screen.findAllByRole("alert");
-    expect(alerts).toHaveLength(4);
+    expect(alerts).toHaveLength(3);
     expect(screen.getByLabelText(/^name/i)).toHaveFocus();
   });
 
@@ -70,7 +70,6 @@ describe("ContactForm", () => {
 
     await user.type(screen.getByLabelText(/^name/i), "Ada Lovelace");
     await user.type(screen.getByLabelText(/^email/i), "ada@example.com");
-    await user.type(screen.getByLabelText(/^phone number/i), "+65 8772 8128");
     await user.type(screen.getByLabelText(/^message/i), "Hello, I'd like to learn more about your services.");
 
     await user.click(screen.getByRole("button", { name: /send message/i }));

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Sora } from "next/font/google";
+import { CustomCursor } from "@/components/cursor/CustomCursor";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { MusicPlayer } from "@/components/music/MusicPlayer";
 import { SmoothScrollProvider } from "@/components/motion/SmoothScrollProvider";
 import { siteConfig } from "@/data/site";
 import "./globals.css";
@@ -94,7 +96,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {/* Progressive-enhancement fallback for the scroll-reveal animations
             in components/motion/Reveal.tsx — see globals.css `.motion-reveal`. */}
         <noscript>
-          <style>{".motion-reveal{visibility:visible !important;}"}</style>
+          <style>{".motion-reveal{opacity:1 !important;visibility:visible !important;}"}</style>
         </noscript>
       </head>
       {/*
@@ -132,11 +134,22 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
         <SmoothScrollProvider>
           <Header />
+          {/* The one global background-music player (fixed; see
+              components/music/MusicPlayer.tsx). */}
+          <MusicPlayer />
           <main id="main-content" className="flex-1">
             {children}
           </main>
           <Footer />
+          {/* Mobile-only spacer, sized to the fixed bottom site-progress bar
+              (components/layout/ScrollProgressRail.tsx) — without it, that
+              bar (fixed, so always floating over whatever is at the bottom
+              of the viewport) would sit on top of the Footer's own final
+              content once the page is scrolled all the way down. */}
+          <div aria-hidden="true" className="h-14 shrink-0 md:hidden" />
         </SmoothScrollProvider>
+        {/* The one site-wide cursor overlay (fine pointers only). */}
+        <CustomCursor />
       </body>
     </html>
   );

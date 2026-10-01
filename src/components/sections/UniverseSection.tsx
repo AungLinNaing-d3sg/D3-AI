@@ -4,6 +4,7 @@ import { useCallback, useRef, type CSSProperties } from "react";
 import { Section } from "@/components/ui/Section";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { Reveal } from "@/components/motion/Reveal";
 import { useJourneyFrame } from "@/hooks/useJourneyFrame";
 import type { JourneyState } from "@/lib/motion/journeyState";
 import { universeStatRanges, universeStations } from "@/data/journey";
@@ -47,24 +48,30 @@ export function UniverseSection() {
       ariaLabelledBy="universe-heading"
       className="min-h-[90vh] md:min-h-[110vh] lg:min-h-[125vh]"
     >
-      {/* Pinned only from tablet up — on mobile the 4 real statistic cards
-          are the primary, always-fully-visible layer and simply flow with
-          the page (never squeezed/clipped inside a fixed-height pin), with
+      {/* Flows with the page at every size (no pin) — the 4 real statistic
+          cards are the primary, always-fully-visible layer (never
+          squeezed/clipped inside a fixed-height pin), with
           the smaller, decorative 3D data universe (see UniverseScene.tsx,
           scaled down via objectScale) animating behind them the whole time —
           see the "By the numbers" mobile requirement. A little more runway
           than the single-beat chapters since 4 stations cycle through here
           (see universeStatRanges). */}
-      <div className="relative flex h-auto flex-col justify-center gap-8 py-10 md:sticky md:top-0 md:h-[100svh] md:gap-8 md:py-16 lg:gap-10 lg:py-20">
-        <Container className="flex flex-col gap-10">
+      <div className="relative flex h-auto flex-col justify-center gap-8 py-10 md:min-h-[100svh] md:gap-8 md:py-16 lg:gap-10 lg:py-20">
+        <Container data-depth-exit className="flex flex-col gap-10">
           <SectionHeading
             headingId="universe-heading"
             eyebrow="05 — By the numbers"
             title="A data universe built from real numbers"
             description="A live coding terminal, typing behind this section — because these numbers are the product of real, ongoing work, not marketing copy."
+            scrim
           />
 
-          <ul className="grid gap-x-4 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+          {/* The active statistic comes forward in depth (scale, Z, full
+              opacity) while the others step back a touch — see
+              `.depth-stat` in globals.css, keyed off the same `data-active`
+              the terminal scene syncs to. */}
+          <Reveal as="div" variant="depth" delay={0.1}>
+          <ul className="depth-stage depth-stat-list grid gap-x-4 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
             {universeStations.map(({ stat }, index) => (
               <li
                 key={stat.label}
@@ -72,24 +79,29 @@ export function UniverseSection() {
                   cardRefs.current[index] = node;
                 }}
                 data-active="false"
+                data-depth-tilt
                 style={{ "--halo-color": "#f14a30" } as CSSProperties}
-                className="data-active-halo group relative rounded-2xl border border-white/10 bg-white/[0.03] p-6 pt-8 transition-all duration-300 data-[active=true]:scale-[1.02] data-[active=true]:border-brand-400/50 data-[active=true]:bg-brand-500/10"
+                className="glass-panel data-active-halo depth-tilt depth-stat group relative p-6 pt-8"
               >
+                <span aria-hidden="true" className="depth-glare" />
                 {/* Token floats outside the card body as its own chip
                     rather than sitting flush inside the box — an
                     asymmetric layout instead of a flat rectangle. Bounded by
                     both `left`/`right` insets (rather than left-only,
                     content-width) so it can never grow past its own card,
                     however long a future token turns out to be. */}
-                <span className="absolute -top-4 left-5 right-5 inline-flex items-center justify-center rounded-2xl border border-brand-400/40 bg-ink-950 px-4 py-1 text-center shadow-[0_10px_30px_-15px_rgba(0,0,0,0.85)]">
+                <span className="depth-stat-token absolute -top-4 left-5 right-5 inline-flex items-center justify-center rounded-2xl border border-brand-400/40 bg-ink-950 px-4 py-1 text-center shadow-[0_10px_30px_-15px_rgba(0,0,0,0.85)]">
                   <span className="type-display-stat text-balance text-brand-300">{stat.token}</span>
                 </span>
-                <p className="type-eyebrow text-brand-400">{stat.label}</p>
-                <p className="mt-3 text-sm leading-relaxed text-ink-300">{stat.description}</p>
+                <p style={{ "--layer": 4 } as CSSProperties} className="depth-layer type-eyebrow text-brand-300">
+                  {stat.label}
+                </p>
+                <p className="depth-stat-copy mt-3 text-sm leading-relaxed text-ink-300">{stat.description}</p>
                 <p className="sr-only">{UNIVERSE_VISUAL_CAPTION}</p>
               </li>
             ))}
           </ul>
+          </Reveal>
         </Container>
       </div>
     </Section>

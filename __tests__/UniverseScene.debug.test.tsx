@@ -9,7 +9,7 @@ import { universeStations } from "@/data/journey";
  * `useFrame` is a no-op there, so this suite can only assert the *static*
  * render tree (structure/content), not the per-frame typewriter/camera-dolly
  * math itself (unreachable without a real frame loop) — see
- * __tests__/ProductScene.debug.test.tsx for the same pattern.
+ * __tests__/CtaScene.debug.test.tsx for the same pattern.
  *
  * Regression coverage for the "live coding terminal" backdrop (a single
  * `CanvasTexture`-driven screen, bezel, desk with a faint reflection, an

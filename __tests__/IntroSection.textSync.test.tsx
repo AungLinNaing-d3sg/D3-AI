@@ -32,8 +32,7 @@ describe("IntroSection hero-copy / 3D-scene fade sync", () => {
       await nextFrame();
     });
 
-    // The `<h1>` now sits inside HeroGreeting's own wrapper div (see
-    // components/motion/HeroGreeting.tsx), itself a direct child of
+    // The `<h1>` sits inside its own wrapper div, itself a direct child of
     // IntroSection's `contentRef` — the element the fade/drift style is
     // actually applied to — so two levels up, not one.
     const heading = container.querySelector("h1");

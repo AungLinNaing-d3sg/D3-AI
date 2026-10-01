@@ -1,53 +1,195 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Section } from "@/components/ui/Section";
 import { Container } from "@/components/ui/Container";
-import { Reveal } from "@/components/motion/Reveal";
-import { HeroGreeting } from "@/components/motion/HeroGreeting";
+import { LinkButton } from "@/components/ui/Button";
+import { ensureGsapRegistered, gsap } from "@/lib/motion/gsap";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+import { useDeviceCapability } from "@/hooks/useDeviceCapability";
 import { useJourneyFrame } from "@/hooks/useJourneyFrame";
+import { useWebglSupported } from "@/hooks/useWebglSupported";
 import type { JourneyState } from "@/lib/motion/journeyState";
+import { damp } from "@/lib/motion/mathUtils";
 import { siteConfig } from "@/data/site";
 import { heroPipelineNodes } from "@/data/journey";
 
+/** How long each verb stays lit in the verb line (ms). */
+const VERB_INTERVAL = 2400;
+
+/** Tagline words set in the brand accent. */
+const ACCENT_WORDS = new Set(["AI", "infused"]);
+
+/** How far each hero layer sits from the copy's plane — scales its cursor
+ * and scroll parallax. The tagline sits furthest forward, the CTA close
+ * behind it; small values throughout so the copy only ever drifts a few px. */
+const HERO_LAYERS = { eyebrow: 0.35, title: 1, verb: 0.6, description: 0.45, actions: 0.8 } as const;
+type HeroLayer = keyof typeof HERO_LAYERS;
+/** Max cursor drift for a depth-1 layer, px. */
+const HERO_POINTER_PX = { x: 10, y: 6 } as const;
+
+/** `useLayoutEffect` on the client (so the timeline's first frame lands
+ * before paint), `useEffect` during SSR. */
+const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
+
+/** THINK → "think", for the fading verb line. */
+const VERBS = heroPipelineNodes.map((node) => node.label.toLowerCase());
+
+/** "a, b, c and d" — the verb line's static, screen-reader sentence. */
+const VERB_SENTENCE = `${VERBS.slice(0, -1).join(", ")} and ${VERBS[VERBS.length - 1] ?? ""}`;
+
+/** Cycles 0..count-1 every `interval` ms while `running`. */
+function useCycle(count: number, interval: number, running: boolean) {
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    if (!running || count < 2) return;
+    const id = window.setInterval(() => setIndex((i) => (i + 1) % count), interval);
+    return () => window.clearInterval(id);
+  }, [count, interval, running]);
+  return index;
+}
+
+/** The mark as a still image when the 3D scene isn't running (reduced
+ * motion / no WebGL) — the Hero still leads with the brand. */
+function HeroStaticMark() {
+  const { enableScene } = useDeviceCapability();
+  const webglSupported = useWebglSupported();
+  if (enableScene && webglSupported) return null;
+  return (
+    <div aria-hidden="true" className="hero-static-mark pointer-events-none">
+      {/* eslint-disable-next-line @next/next/no-img-element -- decorative, already-optimised PNG */}
+      <img src="/D3SG-logo.png" alt="" width={180} height={56} />
+    </div>
+  );
+}
+
 /**
- * Chapter 01 — Cinematic AI Intro. Full-screen hero: large typography over
- * the shared 3D starfield/pipeline atmosphere (see
- * three/scenes/IntroScene.tsx — the THINK/LEARN/UNDERSTAND/PREDICT/CREATE
- * pipeline lives exclusively here, assembling around a central AI core on a
- * real-time clock rather than scroll progress, since it's the first thing a
- * visitor sees), with a slow scroll-driven fade/drift as the user starts the
- * journey — the connective tissue into chapter 02 rather than a hard cut.
- * Visual hierarchy is deliberate: title, then description, then the scroll
- * cue, with the pipeline itself as background atmosphere rather than
- * competing content — see the always-visible, accessible pipeline chip list
- * below the description for non-visual/reduced-motion users.
+ * Chapter 01 — the Hero. The living D3-SG mark (three/scenes/IntroScene.tsx:
+ * the logo built from glowing particles, orbited by three light trails)
+ * floats in a realistic deep-space plate (intro/HeroAtmosphere.tsx), right
+ * of the copy on landscape screens and above it on portrait ones.
+ *
+ * The copy enters on one GSAP timeline: the eyebrow slides in, the tagline
+ * rises word by word out of a mask (tilting up from blur), a rule draws
+ * under it, then the verb line, description and actions follow in
+ * sequence. After that a light sweep runs across the tagline every few
+ * seconds, and the verb line cycles the five stages of how we build AI
+ * (`heroPipelineNodes`: "…learns to think", "learn", "understand",
+ * "predict", "create"), each verb crossfading into the next.
+ *
+ * Under reduced motion nothing cycles and everything is shown at rest. On
+ * scroll the copy fades and drifts in lockstep with the scene's own
+ * crossfade weight (see IntroSection.textSync.test.tsx).
  */
 export function IntroSection() {
   const contentRef = useRef<HTMLDivElement>(null);
   const cueRef = useRef<HTMLDivElement>(null);
+  const reducedMotion = usePrefersReducedMotion();
+  const verb = useCycle(VERBS.length, VERB_INTERVAL, !reducedMotion);
+
+  // The entrance timeline, then the title's recurring light sweep.
+  useIsomorphicLayoutEffect(() => {
+    const root = contentRef.current;
+    if (!root) return;
+    if (reducedMotion) {
+      root.dataset.timeline = "done";
+      return;
+    }
+    ensureGsapRegistered();
+    const ctx = gsap.context(() => {
+      const titleWords = gsap.utils.toArray<HTMLElement>(".hero-title-word", root);
+      const steps = gsap.utils.toArray<HTMLElement>("[data-hero-step]", root);
+      const intro = gsap.timeline({ delay: 0.25, defaults: { ease: "expo.out" } });
+      // Words rise out of their masks from a little depth — a gentle tilt,
+      // not a flip — and every step settles toward the camera from blur.
+      intro
+        .set(root, { attr: { "data-timeline": "running" } })
+        .fromTo(
+          '[data-hero-step="eyebrow"]',
+          { opacity: 0, x: -18, z: -40, transformPerspective: 900 },
+          { opacity: 1, x: 0, z: 0, duration: 0.8 }
+        )
+        .fromTo(
+          titleWords,
+          { opacity: 0, yPercent: 105, rotateX: -18, z: -60, filter: "blur(12px)", transformPerspective: 900 },
+          { opacity: 1, yPercent: 0, rotateX: 0, z: 0, filter: "blur(0px)", duration: 1.25, stagger: 0.085, clearProps: "filter" },
+          "-=0.35"
+        )
+        .fromTo(".hero-title-rule", { scaleX: 0 }, { scaleX: 1, duration: 1.1, ease: "power3.inOut" }, "-=0.6")
+        .fromTo(
+          steps.filter((el) => el.dataset.heroStep !== "eyebrow"),
+          { opacity: 0, y: 18, z: -70, filter: "blur(6px)", transformPerspective: 900 },
+          { opacity: 1, y: 0, z: 0, filter: "blur(0px)", duration: 1.05, stagger: 0.12, clearProps: "filter" },
+          "-=0.8"
+        )
+        .set(root, { attr: { "data-timeline": "done" } });
+
+      gsap
+        .timeline({ delay: intro.duration() + 0.6, repeat: -1, repeatDelay: 5.5 })
+        .fromTo(
+          titleWords,
+          { backgroundPosition: "100% 0%" },
+          { backgroundPosition: "0% 0%", duration: 1.6, stagger: 0.07, ease: "sine.inOut" }
+        );
+    }, root);
+    return () => ctx.revert();
+  }, [reducedMotion]);
+
+  const { tier, hasCoarsePointer, isCompact } = useDeviceCapability();
+  const pointerDepth = tier === "desktop" && !hasCoarsePointer;
+  const layerRefs = useRef<Partial<Record<HeroLayer, HTMLElement | null>>>({});
+  const parallax = useRef({ x: 0, y: 0, last: 0 });
+  // Stable ref callbacks (the verb cycle re-renders this every few seconds).
+  const [bindLayer] = useState(() => {
+    const binders = {} as Record<HeroLayer, (node: HTMLElement | null) => void>;
+    (Object.keys(HERO_LAYERS) as HeroLayer[]).forEach((layer) => {
+      binders[layer] = (node) => {
+        layerRefs.current[layer] = node;
+      };
+    });
+    return (layer: HeroLayer) => binders[layer];
+  });
 
   const onFrame = useCallback((state: JourneyState) => {
     const local = state.progress.intro;
-    // The hero copy must dissolve in lockstep with the 3D scene's own
-    // crossfade weight (three/scenes/IntroScene.tsx reads the same
-    // `weight.intro` — see lib/motion/scrollTimeline.ts `crossfadeWeight`)
-    // rather than a disconnected local-progress formula, otherwise the text
-    // and the starfield/nebula visual fall out of sync and the copy can
-    // vanish while the 3D scene is still fully visible (or vice versa).
     const weight = state.weight.intro;
     const content = contentRef.current;
     const cue = cueRef.current;
     if (content) {
       content.style.opacity = String(weight);
-      content.style.transform = `translate3d(0, ${local * -48}px, 0)`;
+      // Leaving the hero, the copy rises and recedes into the scene
+      // together with the camera's push-in (flat on phones).
+      content.style.transform = isCompact
+        ? `translate3d(0, ${local * -48}px, 0)`
+        : `perspective(1000px) translate3d(0, ${local * -48}px, ${local * -110}px)`;
     }
+
+    // Layered depth: each line of copy drifts by its own depth — toward
+    // the cursor on desktop (smoothed, like the camera rig), and apart
+    // slightly on scroll — via the independent CSS `translate` property, so
+    // it never fights the GSAP entrance's own `transform`.
+    const now = performance.now();
+    const delta = Math.min((now - (parallax.current.last || now)) / 1000, 0.1);
+    parallax.current.last = now;
+    const pointer = pointerDepth ? state.pointer : { x: 0, y: 0 };
+    parallax.current.x = damp(parallax.current.x, pointer.x, 2.5, delta);
+    parallax.current.y = damp(parallax.current.y, pointer.y, 2.5, delta);
+    (Object.keys(HERO_LAYERS) as HeroLayer[]).forEach((layer) => {
+      const el = layerRefs.current[layer];
+      if (!el) return;
+      const depth = HERO_LAYERS[layer];
+      const x = parallax.current.x * HERO_POINTER_PX.x * depth;
+      const y = parallax.current.y * HERO_POINTER_PX.y * depth - local * 14 * depth;
+      el.style.translate = `${x.toFixed(2)}px ${y.toFixed(2)}px`;
+    });
     if (cue) {
       cue.style.opacity = String(Math.max(weight - local * 4, 0));
     }
-  }, []);
+  }, [isCompact, pointerDepth]);
 
   useJourneyFrame(onFrame);
+
+  const words = siteConfig.tagline.split(" ");
 
   return (
     <Section
@@ -55,49 +197,73 @@ export function IntroSection() {
       ariaLabelledBy="intro-heading"
       className="min-h-[75vh] md:min-h-[100vh] lg:min-h-[110vh]"
     >
-      {/* Pinned/scrubbed only from tablet up (`md:sticky`) — on mobile this
-          flows normally with the page so scrolling never feels like a
-          full-screen hold, per the "mobile scroll experience" requirement;
-          the decorative 3D scene (fixed, full-viewport — see SceneCanvas)
-          keeps animating behind it either way. */}
-      <div className="relative flex h-auto items-center py-14 md:sticky md:top-0 md:h-[100svh] md:py-0">
+      {/* Flows with the page at every size (no pin) — the chapter's 3D
+          scene follows it via the scroll timeline's mid-screen reading
+          point (lib/motion/scrollTimeline.ts). */}
+      <div className="hero-stage relative flex h-auto items-center py-14 md:min-h-[100svh] md:py-0">
+        <div
+          aria-hidden="true"
+          className="readability-scrim pointer-events-none absolute -inset-x-16 -inset-y-24 -z-10 blur-2xl"
+        />
+        <HeroStaticMark />
         <Container>
-          <div ref={contentRef} className="flex max-w-3xl flex-col gap-6">
-            <Reveal as="p" className="type-eyebrow text-brand-400">
+          <div ref={contentRef} data-timeline="pending" className="hero-copy flex max-w-[40rem] flex-col gap-5">
+            <p ref={bindLayer("eyebrow")} data-hero-step="eyebrow" className="type-eyebrow flex items-center gap-3 text-brand-300">
+              <span className="hero-live-dot" aria-hidden="true" />
               {siteConfig.name} · Singapore
-            </Reveal>
+            </p>
 
-            {/* Words assemble from converging "data" particles rather than a
-                per-character stagger, then catch a one-shot light sweep —
-                see components/motion/HeroGreeting.tsx. The title is the
-                visual focal point, so it establishes first and gets the
-                most deliberate treatment of anything on the page. */}
-            <HeroGreeting id="intro-heading" text={siteConfig.tagline} className="type-hero-greeting text-ink-50" />
+            <div ref={bindLayer("title")}>
+              <h1 id="intro-heading" className="type-hero-greeting hero-title text-ink-50">
+                {words.map((word, index) => (
+                  <span key={`${word}-${index}`}>
+                    <span className="hero-title-mask">
+                      <span className="hero-title-word" data-accent={ACCENT_WORDS.has(word) ? "true" : undefined}>
+                        {word}
+                      </span>
+                    </span>
+                    {index < words.length - 1 ? " " : null}
+                  </span>
+                ))}
+              </h1>
+              <span aria-hidden="true" className="hero-title-rule" />
+            </div>
 
-            {/* Masked "curtain" reveal (see Reveal.tsx `variant="mask"`),
-                timed to begin only once the title's own entrance has
-                substantially finished — description follows title, never
-                competes with it. */}
-            <Reveal as="p" delay={1.9} variant="mask" className="max-w-xl type-body-lead text-ink-300">
-              {siteConfig.description}
-            </Reveal>
-
-            {/* Always-visible, accessible list of the pipeline stages the 3D
-                scene assembles around its central core (see
-                three/scenes/IntroScene.tsx) — non-visual/reduced-motion
-                users still get the concept even though the floating pipeline
-                itself is purely decorative/aria-hidden. */}
-            <Reveal as="div" delay={2.15} className="flex flex-wrap gap-2">
-              {heroPipelineNodes.map((node, index) => (
-                <span
-                  key={node.id}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-brand-400/30 bg-brand-500/5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-300"
-                >
-                  <span className="text-brand-400/70">{String(index + 1).padStart(2, "0")}</span>
-                  {node.label}
+            {/* The pipeline's five stages, fading one into the next. */}
+            <p ref={bindLayer("verb")} data-hero-step="verb" className="hero-verb-line">
+              <span className="sr-only">Where your data learns to {VERB_SENTENCE}.</span>
+              <span aria-hidden="true" className="hero-verb-sentence">
+                Where your data learns to{" "}
+                <span className="hero-verb-stack">
+                  {VERBS.map((word, index) => (
+                    <span key={word} className="hero-verb" data-active={index === verb ? "true" : "false"}>
+                      {word}.
+                    </span>
+                  ))}
                 </span>
-              ))}
-            </Reveal>
+              </span>
+              <span aria-hidden="true" className="hero-verb-ticks">
+                {VERBS.map((word, index) => (
+                  <span key={word} className="hero-verb-tick" data-active={index === verb ? "true" : "false"} />
+                ))}
+              </span>
+            </p>
+
+            <p ref={bindLayer("description")} data-hero-step="description" className="max-w-xl type-body-lead text-ink-300">
+              {siteConfig.description}
+            </p>
+
+            <div ref={bindLayer("actions")} data-hero-step="actions" className="flex flex-wrap items-center gap-3 pt-1">
+              <LinkButton href="#cta" variant="primary">
+                Start a project
+              </LinkButton>
+              <LinkButton href="#about" variant="secondary" className="group/explore">
+                Explore the journey
+                <span aria-hidden="true" className="transition-transform duration-300 group-hover/explore:translate-x-0.5">
+                  →
+                </span>
+              </LinkButton>
+            </div>
           </div>
         </Container>
 

@@ -6,11 +6,13 @@
  * authoritative, never-trust-the-client check) so the two can never drift
  * out of sync.
  *
- * Field set mirrors the legacy D3-SG "Contact Us" page 1:1 — see
- * `/docs/ContactUs.png`: Name, Email, Phone Number, Message.
+ * Field set: Name, Email, Message — deliberately compact for the Chapter 08
+ * form (the legacy D3-SG "Contact Us" page, `/docs/ContactUs.png`, also
+ * asked for a phone number; dropped at the client's request to keep the
+ * form to the essentials).
  */
 
-export const CONTACT_FIELD_NAMES = ["name", "email", "phone", "message"] as const;
+export const CONTACT_FIELD_NAMES = ["name", "email", "message"] as const;
 
 export type ContactFieldName = (typeof CONTACT_FIELD_NAMES)[number];
 
@@ -30,8 +32,6 @@ export const CONTACT_HONEYPOT_FIELD = "company";
 
 export const CONTACT_NAME_MAX_LENGTH = 120;
 export const CONTACT_EMAIL_MAX_LENGTH = 254;
-export const CONTACT_PHONE_MIN_DIGITS = 7;
-export const CONTACT_PHONE_MAX_DIGITS = 20;
 export const CONTACT_MESSAGE_MIN_LENGTH = 10;
 export const CONTACT_MESSAGE_MAX_LENGTH = 2000;
 
@@ -39,18 +39,14 @@ export const CONTACT_MESSAGE_MAX_LENGTH = 2000;
 // obvious typos without rejecting valid, less-common email formats.
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Digits plus the punctuation real phone numbers use: + ( ) - and spaces.
-const PHONE_CHARSET_PATTERN = /^[0-9+()\-\s]+$/;
-
 export const CONTACT_FIELD_LABELS: Record<ContactFieldName, string> = {
   name: "Name",
   email: "Email",
-  phone: "Phone Number",
   message: "Message",
 };
 
 export function emptyContactFormValues(): ContactFormValues {
-  return { name: "", email: "", phone: "", message: "" };
+  return { name: "", email: "", message: "" };
 }
 
 /**
@@ -75,17 +71,6 @@ export function validateContactField(field: ContactFieldName, rawValue: string):
         return `Email must be ${CONTACT_EMAIL_MAX_LENGTH} characters or fewer.`;
       }
       if (!EMAIL_PATTERN.test(value)) return "Please enter a valid email address.";
-      return undefined;
-    }
-    case "phone": {
-      if (!value) return "Please enter your phone number.";
-      if (!PHONE_CHARSET_PATTERN.test(value)) {
-        return "Phone number can only contain digits, spaces, and + ( ) -.";
-      }
-      const digitCount = value.replace(/\D/g, "").length;
-      if (digitCount < CONTACT_PHONE_MIN_DIGITS || digitCount > CONTACT_PHONE_MAX_DIGITS) {
-        return `Phone number must have between ${CONTACT_PHONE_MIN_DIGITS} and ${CONTACT_PHONE_MAX_DIGITS} digits.`;
-      }
       return undefined;
     }
     case "message": {

@@ -12,8 +12,8 @@ const keyColor = new Color();
  * Single scroll-reactive lighting rig shared by every scene. Colour
  * temperature and intensity are read from `journeyState.light` every frame
  * (see lib/motion/scrollTimeline.ts), continuously warming/cooling as the
- * journey moves — a cool blue intro, warming through the typography/product
- * chapters, cooling into the neural/data chapters, and settling on the
+ * journey moves — a cool blue intro, warming through the disciplines
+ * chapter, cooling into the neural/data chapters, and settling on the
  * brand colour for the final CTA.
  */
 export function Lighting() {

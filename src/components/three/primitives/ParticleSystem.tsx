@@ -2,7 +2,49 @@
 
 import { forwardRef, useImperativeHandle, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { AdditiveBlending, NormalBlending, type BufferAttribute, type Points, type PointsMaterial as ThreePointsMaterial } from "three";
+import {
+  AdditiveBlending,
+  CanvasTexture,
+  NormalBlending,
+  type BufferAttribute,
+  type Points,
+  type PointsMaterial as ThreePointsMaterial,
+  type Texture,
+} from "three";
+
+/**
+ * A soft, radially-faded white dot, generated once at runtime (no network
+ * asset). Three.js's default `PointsMaterial` with no `map` rasterises each
+ * point as a hard-edged square — this is the single biggest lever for
+ * "premium/cinematic" particles rather than a flat tech-demo look, and it's
+ * shared so every particle-based scene benefits at once.
+ */
+let sharedParticleSprite: Texture | null = null;
+
+export function getParticleSprite(): Texture | undefined {
+  if (typeof document === "undefined") return undefined;
+  if (sharedParticleSprite) return sharedParticleSprite;
+
+  const size = 64;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return undefined;
+
+  const center = size / 2;
+  const gradient = ctx.createRadialGradient(center, center, 0, center, center, center);
+  gradient.addColorStop(0, "rgba(255,255,255,1)");
+  gradient.addColorStop(0.35, "rgba(255,255,255,0.75)");
+  gradient.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, size, size);
+
+  const texture = new CanvasTexture(canvas);
+  texture.needsUpdate = true;
+  sharedParticleSprite = texture;
+  return texture;
+}
 
 export interface ParticleSystemHandle {
   /** The live, mutable position buffer — write directly into it inside
@@ -31,8 +73,8 @@ export interface ParticleSystemProps {
 /**
  * Reusable, performance-conscious `THREE.Points` renderer. This is the one
  * low-level "particles on screen" primitive shared by every particle-based
- * scene (Typography, Neural Network, Data Universe, Product ambience,
- * Cinematic Future dust) — see CLAUDE.md "create reusable 3D components" /
+ * scene (Our Approach, Neural Network, Data Universe, Cinematic Future
+ * dust) — see CLAUDE.md "create reusable 3D components" /
  * "do not duplicate animation logic". What makes each of those scenes look
  * completely different is the *position-generation logic* each one supplies
  * via `onFrame`, not this renderer.
@@ -44,6 +86,7 @@ export const ParticleSystem = forwardRef<ParticleSystemHandle, ParticleSystemPro
   const pointsRef = useRef<Points>(null);
   const materialRef = useRef<ThreePointsMaterial>(null);
   const positions = useMemo(() => new Float32Array(count * 3), [count]);
+  const sprite = useMemo(() => getParticleSprite(), []);
 
   useImperativeHandle(
     forwardedRef,
@@ -71,6 +114,7 @@ export const ParticleSystem = forwardRef<ParticleSystemHandle, ParticleSystemPro
       </bufferGeometry>
       <pointsMaterial
         ref={materialRef}
+        map={sprite}
         size={size}
         color={color}
         transparent

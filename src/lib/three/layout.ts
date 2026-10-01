@@ -9,7 +9,7 @@
  * `<button>`s layered over a small, self-contained, `aria-hidden` R3F canvas
  * — same "3D is decorative, HTML carries the interaction/accessibility"
  * split already used across the main journey (see three/scenes/AboutScene.tsx
- * team roster, three/scenes/ProductScene.tsx panels). This helper is what
+ * team roster, three/scenes/TypographyScene.tsx discipline sphere). This helper is what
  * keeps each decorative mesh visually near its real button without needing
  * full camera-projection math for a small, fixed-FOV mini-scene.
  */

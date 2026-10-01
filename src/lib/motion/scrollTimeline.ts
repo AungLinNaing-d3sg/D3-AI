@@ -5,12 +5,12 @@ import { ensureGsapRegistered, ScrollTrigger } from "@/lib/motion/gsap";
 
 /**
  * The single continuous camera flight path through the whole experience —
- * one keyframe *between* every stage (10 waypoints for 9 stages), authored to
- * read as one cinematic move rather than 9 independent shots: push in from a
+ * one keyframe *between* every stage (9 waypoints for 8 stages), authored to
+ * read as one cinematic move rather than 8 independent shots: push in from a
  * wide establishing shot, settle for the About Us identity emblem, weave past
- * the typography and network, pull back to reveal the data universe, glide
- * into the product UI, settle for the mini-game, pull back for the cinematic
- * future vista, then rest centred for the final CTA.
+ * the disciplines and network, pull back to reveal the data universe, settle
+ * for the mini-game, pull back for the cinematic future vista, then rest
+ * centred for the final CTA.
  */
 const cameraKeyframes: CameraKeyframe[] = [
   { x: 0, y: 0.5, z: 9.5, lookX: 0, lookY: 0, lookZ: 0, fov: 42 }, // 0 — intro start
@@ -18,11 +18,14 @@ const cameraKeyframes: CameraKeyframe[] = [
   { x: -0.4, y: 0.1, z: 4.6, lookX: 0.08, lookY: 0.02, lookZ: -0.4, fov: 46 }, // 2 — about end / typography start
   { x: 0.5, y: 0.05, z: 4, lookX: 0.1, lookY: 0, lookZ: 0, fov: 50 }, // 3 — typography end / neural start
   { x: -1.1, y: 0.35, z: 2.6, lookX: 0.25, lookY: 0, lookZ: -1.2, fov: 56 }, // 4 — neural end / universe start
-  { x: 0, y: 0, z: 5.4, lookX: 0, lookY: 0, lookZ: 0, fov: 46 }, // 5 — universe end / product start
-  { x: 0, y: 0.25, z: 4.2, lookX: 0, lookY: 0, lookZ: 0, fov: 42 }, // 6 — product end / game start
-  { x: 0, y: 0.4, z: 6.8, lookX: 0, lookY: 0, lookZ: -1, fov: 40 }, // 7 — game end / future start
-  { x: 0, y: 0.15, z: 5.6, lookX: 0, lookY: 0, lookZ: 0, fov: 38 }, // 8 — future end / cta start
-  { x: 0, y: 0, z: 5, lookX: 0, lookY: 0, lookZ: 0, fov: 36 }, // 9 — cta end
+  { x: 0, y: 0, z: 5.4, lookX: 0, lookY: 0, lookZ: 0, fov: 46 }, // 5 — universe end / game start
+  { x: 0, y: 0.4, z: 6.8, lookX: 0, lookY: 0, lookZ: -1, fov: 40 }, // 6 — game end / future start
+  { x: 0, y: 0.15, z: 5.6, lookX: 0, lookY: 0, lookZ: 0, fov: 38 }, // 7 — future end / cta start
+  // 8 — cta end: from keyframe 7's slightly wider view, a slow push in with
+  // a small orbit to the left, so the intelligence core's depth and layered
+  // glass read as the section scrolls (see three/scenes/CtaScene.tsx) —
+  // felt as perspective, never as an obvious camera move.
+  { x: -0.3, y: 0.2, z: 4.9, lookX: 0, lookY: 0.02, lookZ: 0, fov: 36 },
 ];
 
 const lightKeyframes: LightKeyframe[] = [
@@ -32,10 +35,13 @@ const lightKeyframes: LightKeyframe[] = [
   { ambient: 0.45, key: 1.4, rim: 0.6, colorHex: "#22d3ee" },
   { ambient: 0.4, key: 1.5, rim: 0.7, colorHex: "#6366f1" },
   { ambient: 0.55, key: 1.3, rim: 0.5, colorHex: "#e5e9f2" },
-  { ambient: 0.5, key: 1.4, rim: 0.55, colorHex: "#f59e0b" },
   { ambient: 0.35, key: 1.1, rim: 0.75, colorHex: "#7c8cff" },
-  { ambient: 0.4, key: 1.5, rim: 0.6, colorHex: "#f14a30" },
-  { ambient: 0.3, key: 1.8, rim: 0.5, colorHex: "#f14a30" }, // cta
+  { ambient: 0.4, key: 1.35, rim: 0.6, colorHex: "#f14a30" },
+  // cta — kept low: the intelligence core carries its own warm key, cool
+  // fill, rim and internal orange emission (see three/scenes/CtaScene.tsx),
+  // so the shared rig only adds a faint, warm-neutral base that never
+  // washes out the closing copy.
+  { ambient: 0.22, key: 0.8, rim: 0.45, colorHex: "#e6d8cc" },
 ];
 
 /**
@@ -57,6 +63,10 @@ function scaleCameraKeyframes(depthScale: number): CameraKeyframe[] {
     lookZ: frame.lookZ * depthScale,
   }));
 }
+
+/** How far down the viewport (0..1) each stage's progress is measured at —
+ * see the `scrollY` note in `initJourneyTimeline`. */
+const READING_POINT = 0.5;
 
 /** Soft crossfade envelope: ramps 0→1 over the first `edge` of local
  * progress and 1→0 over the last `edge`, flat at 1 in between. The very
@@ -107,6 +117,10 @@ export function initJourneyTimeline(
 
   const bounds: StageBounds[] = stageEls.map(({ id }) => ({ id, top: 0, height: 1 }));
   let total = 1;
+  /** Where the first stage ends and the last begins, in whole-page
+   * progress (see `scrollY`). */
+  let firstStageEnd = 0.1;
+  let lastStageStart = 1;
 
   /**
    * Re-measures every stage's document-flow top/height (and the wrapper's
@@ -127,6 +141,21 @@ export function initJourneyTimeline(
       bound.height = Math.max(el.offsetHeight, 1);
     });
     total = Math.max(wrapperEl.offsetHeight, 1);
+    const first = bounds[0];
+    const last = bounds[bounds.length - 1];
+    firstStageEnd = first ? Math.max(0.001, (first.top + first.height) / total) : 0.1;
+    lastStageStart = last ? Math.min(0.999, last.top / total) : 1;
+
+    // Stage boundaries in whole-page `globalProgress` space — recomputed
+    // here (not per scroll tick) since they only change when layout does,
+    // exactly like `bounds`/`total` above. Consumed by the global scroll
+    // progress rail (components/layout/ScrollProgressRail.tsx).
+    bounds.forEach((bound) => {
+      journeyState.stageBounds[bound.id] = {
+        start: bound.top / total,
+        end: (bound.top + bound.height) / total,
+      };
+    });
   }
 
   measure();
@@ -139,7 +168,20 @@ export function initJourneyTimeline(
     invalidateOnRefresh: true,
     onRefresh: measure,
     onUpdate(self) {
-      const scrollY = self.progress * total;
+      // The "reading point" each stage's progress is measured at — where a
+      // chapter's own 3D scene is in step with its content: the middle of
+      // the screen (READING_POINT). It eases in from the top of the screen
+      // across the first stage (so the page opens exactly as before), holds
+      // at the middle, and eases down to the bottom across the last stage
+      // so that stage still completes exactly at the end of the page.
+      // (Previously it drifted from top to bottom over the whole page, so
+      // late chapters' scenes ran ahead of — and faded before — their copy.)
+      const p = self.progress;
+      const viewport = window.innerHeight;
+      const realScroll = p * Math.max(total - viewport, 1);
+      const readingPoint = READING_POINT * smoothstep(0, firstStageEnd, p);
+      const toEnd = smoothstep(lastStageStart, 1, p);
+      const scrollY = realScroll + viewport * (readingPoint + (1 - readingPoint) * toEnd);
       journeyState.globalProgress = self.progress;
 
       let activeStage: StageId = bounds[0]?.id ?? STAGE_IDS[0];
@@ -192,7 +234,34 @@ export function initJourneyTimeline(
     },
   });
 
+  // Any post-mount content-height change — the AI Playground swapping its
+  // menu for an active game's own canvas/instructions (see GameSection),
+  // late-loading imagery, an orientation change, etc. — silently desyncs
+  // this timeline's cached
+  // `bounds`/`total` (and, since ScrollTrigger only auto-refreshes on
+  // *window* resize, its own cached pixel `end`) from the page's actual
+  // scrollable height. Left uncorrected, a stage measured too short/tall
+  // makes its local progress reach 0/1 before (or well after) the user has
+  // actually scrolled through it, which can visibly strand the crossfade/
+  // camera on the wrong stage — the "Digital Pitch → AI" transition feeling
+  // like it "ends" early is exactly this class of bug — even though native/
+  // Lenis document scrolling itself keeps working underneath. Re-measuring
+  // (via the same `ScrollTrigger.refresh()` → `onRefresh: measure` path
+  // already used for the font-swap case above) on every observed content
+  // resize keeps every stage's bounds correct for the rest of the session.
+  let refreshFrame = 0;
+  const resizeObserver =
+    typeof ResizeObserver !== "undefined"
+      ? new ResizeObserver(() => {
+          cancelAnimationFrame(refreshFrame);
+          refreshFrame = requestAnimationFrame(() => ScrollTrigger.refresh());
+        })
+      : undefined;
+  resizeObserver?.observe(wrapperEl);
+
   return () => {
+    cancelAnimationFrame(refreshFrame);
+    resizeObserver?.disconnect();
     trigger.kill();
     resetJourneyState();
   };
