@@ -14,7 +14,8 @@ const onEnter = (trigger: Element, start = "top 85%") => ({ trigger, start, once
  * `data-anim`, so no two sections move the same way:
  *
  *  Hero      chars rise + flip · subtitle decodes · pinned, shrinks + blurs
- *            away while the glass curtain slides over it
+ *            away while the frosted curtain rises from the bottom over it
+ *            (the D3SG particle logo behind it disperses — HeroParticles)
  *  Marquee   loop whose speed and direction follow scroll velocity
  *  About     heading lines from a mask · statement lights up word by word
  *            (scrubbed) · values wipe in · phone rises out of a clip
@@ -23,8 +24,9 @@ const onEnter = (trigger: Element, start = "top 85%") => ({ trigger, start, once
  *            resolve in random order · step titles sharpen from blur
  *  Team      heading chars slide in skewed · cards wipe up
  *  FAQ       heading types itself out with a caret
- *  Contact   red panel grows out of an inset frame · heading words converge
- *  Footer    wordmark letters rise
+ *  Contact   red panel grows out of an inset frame · heading words converge ·
+ *            pinned and pushed back while the footer slides up over it
+ *  Footer    columns rise in · particle wordmark assembles (FooterWordmark)
  *
  * Everything lives in one gsap.context / matchMedia and is reverted on
  * unmount. Nothing runs under reduced motion: globals.css then shows every
@@ -59,14 +61,15 @@ export function MotionDirector() {
         if (title) {
           const split = SplitText.create(title, { type: "words,chars", wordsClass: "word" });
           gsap.set(title, { opacity: 1 });
-          gsap.from(split.chars, { yPercent: 80, rotateX: -90, opacity: 0, filter: "blur(8px)", transformOrigin: "50% 100%", duration: 1.1, ease: "expo.out", stagger: 0.022, delay: 0.15 });
+          // Starts once the particle logo has mostly gathered behind it.
+          gsap.from(split.chars, { yPercent: 80, rotateX: -90, opacity: 0, filter: "blur(8px)", transformOrigin: "50% 100%", duration: 1.1, ease: "expo.out", stagger: 0.022, delay: 0.55 });
         }
         const subtitle = one('[data-anim="scramble"]');
         if (subtitle) {
           const text = subtitle.textContent ?? "";
           subtitle.textContent = "";
           gsap.set(subtitle, { opacity: 1 });
-          gsap.to(subtitle, { duration: 1.6, delay: 0.7, ease: "none", scrambleText: { text, chars: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", revealDelay: 0.35, speed: 0.6 } });
+          gsap.to(subtitle, { duration: 1.6, delay: 1.1, ease: "none", scrambleText: { text, chars: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", revealDelay: 0.35, speed: 0.6 } });
         }
 
         /* Hero exit: pinned while the glass curtain slides over it. */
@@ -80,6 +83,15 @@ export function MotionDirector() {
             .timeline({ scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", pin: true, pinSpacing: false, scrub: true } })
             .to(heroInner, { scale: 0.88, y: -40, opacity: 0, filter: "blur(10px)", ease: "none", duration: 0.6 })
             .to({}, { duration: 0.4 });
+        }
+
+        /* Curtain: the second section rises from the bottom, widening from an
+           inset card to full width, its contents trailing slightly behind. */
+        const curtain = one(".curtain");
+        if (curtain) {
+          const rise = { trigger: curtain, start: "top bottom", end: "top top", scrub: true };
+          gsap.fromTo(curtain, { scale: 0.9, borderRadius: "4.5rem 4.5rem 0 0" }, { scale: 1, borderRadius: "2.75rem 2.75rem 0 0", ease: "none", scrollTrigger: rise });
+          gsap.fromTo(curtain.children, { y: 120 }, { y: 0, ease: "none", scrollTrigger: rise });
         }
 
         /* Marquee: endless loop that speeds up and reverses with the scroll. */
@@ -199,12 +211,20 @@ export function MotionDirector() {
           gsap.fromTo(split.words, { x: (i: number) => (i - mid) * 70, opacity: 0.25 }, { x: 0, opacity: 1, ease: "none", scrollTrigger: { trigger: el, start: "top 95%", end: "top 45%", scrub: true } });
         });
 
-        /* Footer wordmark. */
-        all('[data-anim="wordmark"]').forEach((el) => {
-          const split = SplitText.create(el, { type: "chars" });
-          gsap.set(el, { opacity: 1 });
-          gsap.from(split.chars, { yPercent: 100, duration: 1.1, ease: "expo.out", stagger: 0.06, scrollTrigger: onEnter(el, "top 95%") });
-        });
+        /* Footer covers Contact: the section pins as it bottoms out, then sinks
+           back (scale + dim) while the footer panel slides up over it. */
+        const contact = one("#contact");
+        const footer = one(".site-footer");
+        if (contact && footer) {
+          const cover = { trigger: contact, start: "bottom bottom", end: () => `+=${footer.offsetHeight}`, scrub: true };
+          ScrollTrigger.create({ ...cover, pin: true, pinSpacing: false });
+          const panel = contact.querySelector(".cta");
+          if (panel) gsap.to(panel, { scale: 0.92, opacity: 0.35, filter: "blur(4px)", ease: "none", scrollTrigger: cover });
+        }
+        const footRows = all("[data-foot-reveal]");
+        if (footRows[0]) {
+          gsap.from(footRows, { y: 40, opacity: 0, duration: 1, ease: "expo.out", stagger: 0.12, scrollTrigger: onEnter(footRows[0], "top 90%") });
+        }
       });
 
       /* Services: horizontal travel on wide screens, simple reveals otherwise. */

@@ -17,7 +17,9 @@ export function ScrollProgress() {
       const progress = max > 0 ? Math.min(window.scrollY / max, 1) : 0;
       if (barRef.current) barRef.current.style.transform = `scaleX(${progress})`;
       buttonRef.current?.style.setProperty("--off", (100 - progress * 100).toFixed(1));
-      setVisible(window.scrollY > window.innerHeight * 0.8);
+      // The footer has its own "Back to top" pill, so step aside once it shows.
+      const footerTop = document.querySelector(".site-footer")?.getBoundingClientRect().top ?? Infinity;
+      setVisible(window.scrollY > window.innerHeight * 0.8 && footerTop > window.innerHeight * 0.85);
     };
     update();
     window.addEventListener("scroll", update, { passive: true });

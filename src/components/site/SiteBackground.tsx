@@ -1,15 +1,15 @@
-import { Background3D } from "./Background3D";
+import { HeroParticles } from "./HeroParticles";
 
 /**
- * Fixed, decorative backdrop: a fine grid and soft brand glow, with the 3D
- * pearl sphere (components/three/background) layered on top once the page is
- * idle. Everything here is aria-hidden decoration.
+ * Fixed, decorative backdrop: a fine grid and soft brand glow under the
+ * particle layer that forms the D3SG logo in the hero and drifts behind the
+ * rest of the page. Everything here is aria-hidden decoration.
  */
 export function SiteBackground() {
   return (
     <div className="bg" aria-hidden="true">
       <div className="grid-lines" />
-      <Background3D />
+      <HeroParticles />
     </div>
   );
 }
