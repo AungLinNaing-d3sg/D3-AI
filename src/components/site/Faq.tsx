@@ -66,7 +66,7 @@ export function Faq() {
           <span className="kicker" data-reveal>
             FAQ
           </span>
-          <h2 id="faq-title" data-split>
+          <h2 id="faq-title" data-reveal>
             Questions, <span className="grad">answered.</span>
           </h2>
           <p className="lead" data-reveal>

@@ -22,16 +22,20 @@ function typingDots() {
   return node;
 }
 
+const PLAYS = 2;
+
 /**
- * Plays the scripted support conversation with typing indicators, then
- * clears and replays. Timers (not a GSAP timeline) because each beat appends
- * new nodes rather than tweening existing ones.
+ * Plays the scripted support conversation with typing indicators, replays it
+ * once more, then rests on the finished conversation. Timers (not a GSAP
+ * timeline) because each beat appends new nodes rather than tweening
+ * existing ones.
  */
 const phoneChat: DemoFactory<HTMLDivElement> = (wrap) => {
   const staticBody = wrap.querySelector<HTMLElement>(".phone-body.is-static")!;
   const body = wrap.querySelector<HTMLElement>(".phone-body.is-live")!;
   const chips = Array.from(wrap.querySelectorAll<HTMLElement>(".phone-chip"));
   let timers: ReturnType<typeof setTimeout>[] = [];
+  let plays = 0;
   const later = (ms: number, fn: () => void) => timers.push(setTimeout(fn, ms));
   const add = (node: HTMLElement) => {
     body.append(node);
@@ -51,6 +55,7 @@ const phoneChat: DemoFactory<HTMLDivElement> = (wrap) => {
     },
     start() {
       controls.stop();
+      if (plays >= PLAYS) return;
       reset();
       let t = 500;
       phoneChatScript.forEach((step) => {
@@ -77,8 +82,12 @@ const phoneChat: DemoFactory<HTMLDivElement> = (wrap) => {
         }
         t += 900 + step.text.length * 18;
       });
-      later(t + 2600, () => body.classList.add("is-clearing"));
-      later(t + 3100, () => controls.start());
+      later(t, () => {
+        plays += 1;
+        if (plays >= PLAYS) return;
+        later(2600, () => body.classList.add("is-clearing"));
+        later(3100, () => controls.start());
+      });
     },
     stop() {
       timers.forEach(clearTimeout);

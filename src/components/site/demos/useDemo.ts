@@ -62,12 +62,14 @@ export function useDemo<T extends HTMLElement>(factory: DemoFactory<T>) {
  * Wraps a timeline builder in start/stop controls. The builder runs again
  * each time the previous cycle completes; `maxCycles` lets a demo play a few
  * times and then rest on its finished frame instead of looping forever.
+ * Only *completed* cycles count, so a cycle interrupted by scrolling away
+ * replays when the demo comes back into view instead of freezing half-done.
  */
 export function loop(build: () => gsap.core.Timeline, firstDelay = 0, maxCycles = Infinity): Pick<DemoControls, "start" | "stop"> {
   let timeline: gsap.core.Timeline | undefined;
   let delayed: gsap.core.Tween | undefined;
   let first = true;
-  let cycles = 0;
+  let completed = 0;
 
   const stop = () => {
     timeline?.kill();
@@ -77,12 +79,13 @@ export function loop(build: () => gsap.core.Timeline, firstDelay = 0, maxCycles 
   return {
     start() {
       stop();
-      if (cycles >= maxCycles) return;
+      if (completed >= maxCycles) return;
       const run = () => {
-        if (cycles >= maxCycles) return;
-        cycles += 1;
         timeline = build();
-        timeline.eventCallback("onComplete", run);
+        timeline.eventCallback("onComplete", () => {
+          completed += 1;
+          if (completed < maxCycles) run();
+        });
       };
       delayed = gsap.delayedCall(first ? firstDelay : 0.2, run);
       first = false;

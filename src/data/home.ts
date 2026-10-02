@@ -28,8 +28,7 @@ export const heroContent = {
   titleBefore: "Creating an",
   titleHighlight: "AI-infused",
   titleAfter: "future, together with you.",
-  verbLead: "We help your data",
-  verbs: ["think.", "learn.", "predict.", "work for you."],
+  lead: siteConfig.description,
   trust: [
     { value: "3", label: "Solution areas" },
     { value: "20+ yrs", label: "Leadership experience" },
@@ -37,16 +36,11 @@ export const heroContent = {
   ],
 } as const;
 
-export const techStack = [
-  "Microsoft Azure",
-  "Dynamics 365",
-  "Power Platform",
-  "Data, ML & AI",
-  "BI & Data Warehousing",
-  "Cloud-Native Apps",
-  "Test Automation & DevOps",
-  "Data Governance",
-] as const;
+/** Sourced from the leadership bios in src/data/team.ts. */
+export const proofPoints = {
+  industries: ["Public Sector", "Education", "Logistics", "Transportation"],
+  certifications: ["ITIL", "PMP", "Six Sigma Black Belt", "Certified Scrum Master"],
+} as const;
 
 /** Short tile headings for the three disciplines; summaries and bullets come
  * from src/data/services.ts (matched by slug). */
@@ -63,10 +57,23 @@ export const aboutContent = {
   titleHighlight: "Future-ready thinking.",
   statement:
     "We are a Singapore-based IT solutions provider. We turn data into decisions, processes into automation and ideas into cloud-native products, built on Microsoft and delivered by a team with real-world project experience and industrial know-how.",
+  // Each point restates a fact from site.ts / services.ts / team.ts.
   values: [
-    { icon: "check", title: "Practical first", text: "Solutions shaped around how your teams actually work." },
-    { icon: "shield", title: "Governance built in", text: "Data and AI you can trust, from day one." },
-    { icon: "rings", title: "Partners, not vendors", text: "With you from first assessment to managed support." },
+    {
+      icon: "check",
+      title: "Microsoft-focused",
+      text: "Our service portfolio revolves around Azure, Dynamics 365 and Power Platform.",
+    },
+    {
+      icon: "shield",
+      title: "Certified leadership",
+      text: "ITIL, PMP, Six Sigma Black Belt and Certified Scrum Master credentials.",
+    },
+    {
+      icon: "rings",
+      title: "Sector experience",
+      text: "Trusted advisor to IT leaders across public sector, education, logistics and transportation.",
+    },
   ],
 } as const;
 
@@ -115,6 +122,10 @@ export const faqItems = [
   {
     q: "How does a project usually start?",
     a: "Usually with a readiness assessment and fit-gap analysis, followed by a strategy roadmap and plan, before any build work begins.",
+  },
+  {
+    q: "Which industries do you work with?",
+    a: "Our leadership has advised IT leaders and CIOs across the public sector, education, logistics and transportation, including enterprise-wide projects for government agencies.",
   },
   {
     q: "Where are you based?",

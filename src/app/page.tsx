@@ -1,7 +1,7 @@
 import { MotionDirector } from "@/components/site/MotionDirector";
 import { SiteBackground } from "@/components/site/SiteBackground";
 import { Hero } from "@/components/site/Hero";
-import { TechMarquee } from "@/components/site/TechMarquee";
+import { ProofStrip } from "@/components/site/ProofStrip";
 import { About } from "@/components/site/About";
 import { Services } from "@/components/site/Services";
 import { Process } from "@/components/site/Process";
@@ -10,13 +10,14 @@ import { Faq } from "@/components/site/Faq";
 import { Contact } from "@/components/site/Contact";
 
 /**
- * Homepage — light theme: hero with live product-style demo cards, then
- * About, Services (each discipline acted out by a small animated demo), How
- * we deliver, Leadership, FAQ and Contact. Section order mirrors the
+ * Homepage — light theme: hero with two product-style demo cards, a strip of
+ * the sectors and certifications behind the team, then About, Services (each
+ * discipline acted out by a small demo), How we deliver, Leadership, FAQ and
+ * Contact. Section order mirrors the
  * existing site's Home → About Us → Our Services → Contact Us navigation.
  *
- * `<SiteBackground>` (fixed decorative backdrop) and `<MotionDirector>`
- * (invisible scroll choreography) are siblings of the sections rather than
+ * `<SiteBackground>` (static decorative backdrop) and `<MotionDirector>`
+ * (invisible scroll reveals) are siblings of the sections rather than
  * wrappers, so every section stays plain, server-rendered, readable markup.
  */
 export default function Home() {
@@ -25,7 +26,7 @@ export default function Home() {
       <SiteBackground />
       <MotionDirector />
       <Hero />
-      <TechMarquee />
+      <ProofStrip />
       <About />
       <Services />
       <Process />

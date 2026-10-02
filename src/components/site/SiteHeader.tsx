@@ -56,7 +56,7 @@ export function SiteHeader() {
             ))}
           </nav>
           <div className="nav-actions">
-            <InPageLink className="btn btn-primary btn-sm" href="#contact" data-magnetic>
+            <InPageLink className="btn btn-primary btn-sm" href="#contact">
               Contact us
             </InPageLink>
             <button

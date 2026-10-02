@@ -11,7 +11,7 @@ export function Team() {
             <span className="kicker" data-reveal>
               Leadership
             </span>
-            <h2 id="team-title" data-split>
+            <h2 id="team-title" data-reveal>
               The people <span className="grad">behind the work.</span>
             </h2>
           </div>
@@ -44,7 +44,7 @@ export function Team() {
               <h3>{careersContent.title}</h3>
               <p>{careersContent.text}</p>
             </div>
-            <a className="btn btn-white" href={careersContent.href} data-magnetic>
+            <a className="btn btn-white" href={careersContent.href}>
               {careersContent.cta}
             </a>
           </article>

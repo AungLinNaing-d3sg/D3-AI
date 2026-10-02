@@ -70,7 +70,7 @@ const revenueStream: DemoFactory<HTMLDivElement> = (card) => {
       const series = [...data, next];
       const progress = { t: 0 };
       return gsap
-        .timeline({ delay: 1.1 })
+        .timeline({ delay: 2 })
         .to(progress, { t: 1, duration: 1, ease: "power2.inOut", onUpdate: () => render(series, progress.t) })
         .to(shown, { v: Math.max(growth(series.slice(1)), 1.2), duration: 1, ease: "power2.out", onUpdate: () => { kpi.textContent = shown.v.toFixed(1); } }, 0)
         .call(() => { data = series.slice(1); });
@@ -159,7 +159,7 @@ const approvalFlow: DemoFactory<HTMLDivElement> = (card) => {
       return hold(tl, 3.2);
     },
     1,
-    2
+    1 // plays once, then rests on the finished run
   );
 };
 
@@ -180,63 +180,6 @@ export function ApprovalFlowCard() {
           </li>
         ))}
       </ol>
-    </div>
-  );
-}
-
-/* ---------- Model training until it is good enough to deploy ---------- */
-
-const modelTraining: DemoFactory<HTMLDivElement> = (card) => {
-  const fill = card.querySelector<SVGCircleElement>(".fill")!;
-  const accuracy = card.querySelector<HTMLElement>(".acc")!;
-  const label = card.querySelector<HTMLElement>(".train-label")!;
-  const set = (value: number) => {
-    fill.style.strokeDashoffset = String(100 - value);
-    accuracy.textContent = `${Math.round(value)}%`;
-  };
-
-  return {
-    ...loop(
-      () => {
-        const epoch = { e: 0 };
-        return gsap
-          .timeline()
-          .call(() => { set(58); label.textContent = "Training · epoch 0/20"; })
-          .to(epoch, {
-            e: 20,
-            duration: 4.6,
-            ease: "none",
-            onUpdate: () => {
-              const e = epoch.e;
-              const noise = Math.sin(e * 2.7) * (1 - e / 20) * 2;
-              set(Math.min(96, 58 + 38 * (1 - Math.pow(1 - e / 20, 2.2)) + noise));
-              label.textContent = `Training · epoch ${Math.ceil(e)}/20`;
-            },
-          })
-          .call(() => { set(96); label.textContent = "Deployed ✓"; })
-          .to({}, { duration: 3.4 });
-      },
-      1.4,
-      2
-    ),
-    init() {
-      fill.style.transition = "none";
-    },
-  };
-};
-
-export function ModelTrainingCard() {
-  const ref = useDemo(modelTraining);
-  return (
-    <div className="card ring" ref={ref}>
-      <svg viewBox="0 0 64 64" aria-hidden="true">
-        <circle className="track" cx="32" cy="32" r="26" />
-        <circle className="fill" cx="32" cy="32" r="26" pathLength={100} />
-      </svg>
-      <div>
-        <b className="acc">96%</b>
-        <span className="train-label">Model accuracy</span>
-      </div>
     </div>
   );
 }

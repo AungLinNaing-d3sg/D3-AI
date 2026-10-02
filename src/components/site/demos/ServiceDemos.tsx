@@ -55,7 +55,7 @@ const biDashboard: DemoFactory<HTMLDivElement> = (box) => {
       }
     });
     return tl;
-  }, 0.5);
+  }, 0.5, 2);
 };
 
 export function BiDashboardDemo() {
@@ -121,11 +121,13 @@ const pipelineBoard: DemoFactory<HTMLDivElement> = (box) => {
       const c = cursor;
       const tl = gsap.timeline();
       const toSlot = (col: number, axis: "x" | "y") => () => relPos(slots[col]!, box)[axis];
-      tl.call(() => {
-        gsap.set(live, { ...slotAt(0), width: slots[0]!.offsetWidth });
-        setColumn(0);
-        toast.classList.remove("show");
-      })
+      // Reset at the start (not the end) so the final cycle rests on "Won".
+      tl.call(() => toast.classList.remove("show"))
+        .to(live, { opacity: 0, duration: 0.3 })
+        .call(() => {
+          gsap.set(live, { ...slotAt(0), width: slots[0]!.offsetWidth });
+          setColumn(0);
+        })
         .to(live, { opacity: 1, duration: 0.4 })
         .to(c, { x: toSlot(0, "x"), y: toSlot(0, "y"), duration: 0.9, ease: "power2.inOut" });
       [1, 2].forEach((col) => {
@@ -143,9 +145,8 @@ const pipelineBoard: DemoFactory<HTMLDivElement> = (box) => {
         duration: 0.8,
         ease: "power2.inOut",
       });
-      hold(tl, 2.4);
-      return tl.call(() => toast.classList.remove("show")).to(live, { opacity: 0, duration: 0.4 }, "+=0.3");
-    }, 0.4),
+      return hold(tl, 2.4);
+    }, 0.4, 2),
     renderStatic() {
       const { x, y } = slotAt(WON);
       live.style.transform = `translate(${x}px, ${y}px)`;
@@ -263,7 +264,7 @@ const codeToApp: DemoFactory<HTMLDivElement> = (box) => {
       });
       tl.call(() => status.classList.remove("is-hidden"));
       return hold(tl, 3.2);
-    }, 0.4),
+    }, 0.4, 2),
     init() {
       staticCode.hidden = true;
       liveCode.hidden = false;

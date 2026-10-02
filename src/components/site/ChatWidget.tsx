@@ -15,8 +15,6 @@ import { InPageLink } from "./InPageLink";
 
 /** Window event other components dispatch to open the widget. */
 const OPEN_CHAT_EVENT = "d3:open-chat";
-const HINT_DELAY_MS = 6000;
-const HINT_HIDE_MS = 15000;
 
 interface Message {
   id: number;
@@ -67,7 +65,6 @@ export function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [typing, setTyping] = useState(false);
-  const [hint, setHint] = useState(false);
   const [draft, setDraft] = useState("");
   const greeted = useRef(false);
   const nextId = useRef(0);
@@ -100,7 +97,6 @@ export function ChatWidget() {
   const setChat = useCallback(
     (next: boolean) => {
       setOpen(next);
-      setHint(false);
       if (next && !greeted.current) {
         greeted.current = true;
         botSay("hello");
@@ -144,15 +140,9 @@ export function ChatWidget() {
   useEffect(() => {
     const onOpen = () => setChat(true);
     window.addEventListener(OPEN_CHAT_EVENT, onOpen);
-    const show = setTimeout(() => {
-      if (!greeted.current) setHint(true);
-    }, HINT_DELAY_MS);
-    const hide = setTimeout(() => setHint(false), HINT_HIDE_MS);
     const pending = timers.current;
     return () => {
       window.removeEventListener(OPEN_CHAT_EVENT, onOpen);
-      clearTimeout(show);
-      clearTimeout(hide);
       pending.forEach(clearTimeout);
     };
   }, [setChat]);
@@ -177,9 +167,6 @@ export function ChatWidget() {
 
   return (
     <div className={`chat${open ? " is-open" : ""}`}>
-      <button type="button" className={`chat-hint${hint ? " show" : ""}`} tabIndex={-1} aria-hidden={!hint} onClick={() => setChat(true)}>
-        👋 Questions? Ask our assistant.
-      </button>
       <section id="chat-panel" className="chat-panel" role="dialog" aria-label="D3-SG assistant" inert={!open}>
         <header className="cp-head">
           <span className="avatar" aria-hidden="true">

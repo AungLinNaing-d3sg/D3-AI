@@ -8,7 +8,6 @@ interface InPageLinkProps extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 
   children: ReactNode;
   /** Extra work before scrolling, e.g. closing the mobile menu. */
   onNavigate?: () => void;
-  "data-magnetic"?: boolean;
 }
 
 /**

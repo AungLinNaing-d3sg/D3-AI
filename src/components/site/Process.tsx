@@ -5,8 +5,8 @@ const HEARTBEAT = "M0 25H60L68 25L76 8L84 42L92 25H150L158 25L166 12L174 38L182 
 const UPTIME_DAYS = 30;
 const DEGRADED_DAY = 17;
 
-/** Illustrative mini-visual for each delivery step (sample content). They
- * render complete; globals.css animates them in when the step becomes active. */
+/** Illustrative mini-visual for each delivery step (sample content). Static;
+ * the step itself highlights as it scrolls into focus. */
 const visuals: ReactNode[] = [
   <div className="viz viz-assess" aria-hidden="true" key="assess">
     {[
@@ -20,7 +20,6 @@ const visuals: ReactNode[] = [
         <b className={kind}>{verdict}</b>
       </div>
     ))}
-    <i className="va-scan" />
   </div>,
   <div className="viz viz-plan" aria-hidden="true" key="plan">
     <div className="gantt">
@@ -70,8 +69,7 @@ const visuals: ReactNode[] = [
       </span>
     </div>
     <svg className="heartbeat" viewBox="0 0 300 50">
-      <path className="hb-base" d={HEARTBEAT} />
-      <path className="hb-pulse" pathLength={100} d={HEARTBEAT} />
+      <path className="hb-line" d={HEARTBEAT} />
     </svg>
     <div className="uptime">
       {Array.from({ length: UPTIME_DAYS }, (_, day) => (
@@ -93,7 +91,7 @@ export function Process() {
           <span className="kicker" data-reveal>
             How we deliver
           </span>
-          <h2 id="process-title" data-split>
+          <h2 id="process-title" data-reveal>
             From first assessment to <span className="grad">managed operation.</span>
           </h2>
           <p className="lead" data-reveal>

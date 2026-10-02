@@ -35,10 +35,10 @@ export function About() {
           <span className="kicker" data-reveal>
             Who we are
           </span>
-          <h2 id="about-title" data-split>
+          <h2 id="about-title" data-reveal>
             {title} <span className="grad">{titleHighlight}</span>
           </h2>
-          <p className="statement" data-highlight>
+          <p className="statement" data-reveal>
             {statement}
           </p>
           <div className="values">

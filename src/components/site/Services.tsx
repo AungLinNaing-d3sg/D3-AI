@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { microsoftStack, serviceTiles } from "@/data/home";
 import { services } from "@/data/services";
-import { siteConfig } from "@/data/site";
 import { BiDashboardDemo, CodeToAppDemo, PipelineBoardDemo } from "./demos/ServiceDemos";
 
 const demoFor: Record<(typeof serviceTiles)[number]["slug"], ReactNode> = {
@@ -25,12 +24,12 @@ export function Services() {
             <span className="kicker" data-reveal>
               What we do
             </span>
-            <h2 id="services-title" data-split>
+            <h2 id="services-title" data-reveal>
               Three disciplines. <span className="grad">One partner.</span>
             </h2>
           </div>
           <p className="lead" data-reveal>
-            {siteConfig.description}
+            Revolving around Microsoft technologies, this is our service portfolio.
           </p>
         </div>
 
@@ -40,12 +39,12 @@ export function Services() {
             if (!service) return null;
             return (
               <article className={tileClass[tile.slug]} data-reveal key={tile.slug}>
-                <div className="tile-in" data-tilt>
+                <div className="tile-in">
                   <span className="tag">{tile.tag}</span>
                   <h3>{tile.title}</h3>
                   <p>{service.summary}</p>
-                  <ul className="chips-sm" aria-label={`${tile.title} services`}>
-                    {service.bullets.slice(0, 4).map((bullet) => (
+                  <ul className="svc-list" aria-label={`${tile.title} services`}>
+                    {service.bullets.map((bullet) => (
                       <li key={bullet}>{bullet}</li>
                     ))}
                   </ul>
@@ -56,7 +55,7 @@ export function Services() {
           })}
 
           <article className="tile t-stat" data-reveal>
-            <div className="tile-in" data-tilt>
+            <div className="tile-in">
               <span className="tag">Experience</span>
               <p>Senior leadership with two decades of industry experience.</p>
               <div className="stat-num">
@@ -68,7 +67,7 @@ export function Services() {
           </article>
 
           <article className="tile t-sg" data-reveal>
-            <div className="tile-in" data-tilt>
+            <div className="tile-in">
               <span className="tag">Based in</span>
               <p>Paya Lebar Square, serving teams across the region.</p>
               <div className="pin">
@@ -79,7 +78,7 @@ export function Services() {
           </article>
 
           <article className="tile t-stack" data-reveal>
-            <div className="tile-in" data-tilt>
+            <div className="tile-in">
               <span className="tag">Built on Microsoft</span>
               <p>Our service portfolio revolves around Microsoft technologies.</p>
               <div className="chips">
