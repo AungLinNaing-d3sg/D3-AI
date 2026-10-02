@@ -34,13 +34,13 @@ export interface WordmarkOptions {
 
 const TAU = Math.PI * 2;
 
-function displayFamily(): string {
+export function displayFamily(): string {
   const family = getComputedStyle(document.documentElement).getPropertyValue("--font-sans-display").trim();
   return family || "sans-serif";
 }
 
 /** Rasterise the text off-screen and return dot positions + accent flags. */
-function samplePoints(opts: WordmarkOptions, box: Box, family: string) {
+export function samplePoints(opts: WordmarkOptions, box: Box, family: string) {
   const width = Math.max(1, Math.ceil(box.w));
   const height = Math.max(1, Math.ceil(box.h));
   const off = document.createElement("canvas");
