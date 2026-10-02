@@ -86,13 +86,11 @@ const visuals: ReactNode[] = [
 export function Process() {
   return (
     <section id="process" aria-labelledby="process-title">
-      <div className="wrap process-grid">
+      <div className="process-panel" data-process-panel>
+      <div className="process-grid">
         <div className="process-side">
-          <span className="kicker" data-reveal>
-            How we deliver
-          </span>
-          <h2 id="process-title" data-reveal>
-            From first assessment to <span className="grad">managed operation.</span>
+          <h2 id="process-title" data-anim="random-chars">
+            From first assessment to <span className="accent">managed operation.</span>
           </h2>
           <p className="lead" data-reveal>
             A team with real-world project experience and industrial know-how, with you at every step.
@@ -104,13 +102,16 @@ export function Process() {
           </li>
           {processSteps.map((step, i) => (
             <li className="step" key={step.title}>
-              <span className="tag">Step {String(i + 1).padStart(2, "0")}</span>
-              <h3>{step.title}</h3>
+              <span className="numeral" aria-hidden="true">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <h3 data-anim="blur-in">{step.title}</h3>
               <p>{step.text}</p>
               {visuals[i]}
             </li>
           ))}
         </ol>
+      </div>
       </div>
     </section>
   );

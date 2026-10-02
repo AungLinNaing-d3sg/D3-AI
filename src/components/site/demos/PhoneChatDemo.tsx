@@ -100,7 +100,7 @@ const phoneChat: DemoFactory<HTMLDivElement> = (wrap) => {
 export function PhoneChatDemo() {
   const ref = useDemo(phoneChat);
   return (
-    <div className="phone-wrap" data-reveal ref={ref}>
+    <div className="phone-wrap" data-anim="clip-up" ref={ref}>
       {CHIPS.map((chip) => (
         <div key={chip.className} className={`phone-chip ${chip.className} show`} aria-hidden="true">
           {chip.icon} {chip.label} <b>{chip.value}</b>

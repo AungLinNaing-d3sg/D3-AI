@@ -2,55 +2,55 @@ import type { NavItem } from "@/types";
 import { siteConfig } from "@/data/site";
 
 /**
- * Copy for the light-theme homepage (src/app/page.tsx).
+ * Copy for the homepage (src/app/page.tsx). Deliberately lean: section
+ * headings and the content itself, no eyebrow/kicker labels.
  *
- * Every factual claim here is carried over from the existing D3-SG site (see
+ * Every factual claim is carried over from the existing D3-SG site (see
  * /docs screenshots, src/data/site.ts, services.ts and team.ts). The animated
- * product demos use clearly labelled sample data and Microsoft's own
- * fictional demo companies (Contoso, Fabrikam, Northwind, …) so nothing reads
- * as a real client result.
+ * product demos use sample data and Microsoft's own fictional demo companies
+ * (Contoso, Fabrikam, Northwind, …) so nothing reads as a real client result.
  */
 
-/** In-page anchors; each `href` must match a section `id` in page.tsx. */
+/** Section links shown as individual glass pills; each `href` must match a
+ * section `id` in page.tsx. Contact is rendered separately as the CTA pill. */
 export const siteNav: NavItem[] = [
   { href: "#about", label: "About" },
   { href: "#services", label: "Services" },
-  { href: "#process", label: "How we deliver" },
+  { href: "#process", label: "Process" },
   { href: "#team", label: "Team" },
   { href: "#faq", label: "FAQ" },
-  { href: "#contact", label: "Contact" },
 ];
+
+export const contactNav: NavItem = { href: "#contact", label: "Contact" };
 
 export const SECTION_IDS = ["hero", "about", "services", "process", "team", "faq", "contact"] as const;
 
 export const heroContent = {
-  eyebrow: "Microsoft-focused IT partner · Singapore",
   titleBefore: "Creating an",
   titleHighlight: "AI-infused",
   titleAfter: "future, together with you.",
-  lead: siteConfig.description,
-  trust: [
-    { value: "3", label: "Solution areas" },
-    { value: "20+ yrs", label: "Leadership experience" },
-    { value: "Microsoft", label: "Technology focus" },
-  ],
+  subtitle: "Data, Dynamics 365 and digital products, built on Microsoft.",
 } as const;
 
-/** Sourced from the leadership bios in src/data/team.ts. */
-export const proofPoints = {
-  industries: ["Public Sector", "Education", "Logistics", "Transportation"],
-  certifications: ["ITIL", "PMP", "Six Sigma Black Belt", "Certified Scrum Master"],
-} as const;
-
-/** Short tile headings for the three disciplines; summaries and bullets come
- * from src/data/services.ts (matched by slug). */
-export const serviceTiles = [
-  { slug: "data", tag: "01 · Data", title: "Data, analytics & AI" },
-  { slug: "dynamics", tag: "02 · Dynamics", title: "Dynamics 365 & Power Platform" },
-  { slug: "digital", tag: "03 · Digital", title: "Cloud-native digital development" },
+/** Sectors and certifications from the leadership bios (src/data/team.ts). */
+export const marqueeItems = [
+  "Public Sector",
+  "ITIL",
+  "Education",
+  "PMP",
+  "Logistics",
+  "Six Sigma Black Belt",
+  "Transportation",
+  "Certified Scrum Master",
 ] as const;
 
-export const microsoftStack = ["Azure", "Dynamics 365", "Power Platform", "Power BI", ".NET", "Azure DevOps"] as const;
+/** Short panel headings for the three disciplines; summaries and bullets come
+ * from src/data/services.ts (matched by slug). */
+export const serviceTiles = [
+  { slug: "data", title: "Data, analytics & AI" },
+  { slug: "dynamics", title: "Dynamics 365 & Power Platform" },
+  { slug: "digital", title: "Cloud-native digital development" },
+] as const;
 
 export const aboutContent = {
   title: "Real-world experience.",
@@ -59,27 +59,13 @@ export const aboutContent = {
     "We are a Singapore-based IT solutions provider. We turn data into decisions, processes into automation and ideas into cloud-native products, built on Microsoft and delivered by a team with real-world project experience and industrial know-how.",
   // Each point restates a fact from site.ts / services.ts / team.ts.
   values: [
-    {
-      icon: "check",
-      title: "Microsoft-focused",
-      text: "Our service portfolio revolves around Azure, Dynamics 365 and Power Platform.",
-    },
-    {
-      icon: "shield",
-      title: "Certified leadership",
-      text: "ITIL, PMP, Six Sigma Black Belt and Certified Scrum Master credentials.",
-    },
-    {
-      icon: "rings",
-      title: "Sector experience",
-      text: "Trusted advisor to IT leaders across public sector, education, logistics and transportation.",
-    },
+    { title: "Microsoft-focused", text: "Our service portfolio revolves around Azure, Dynamics 365 and Power Platform." },
+    { title: "Certified leadership", text: "ITIL, PMP, Six Sigma Black Belt and Certified Scrum Master credentials." },
+    { title: "Sector experience", text: "Trusted advisor to IT leaders across public sector, education, logistics and transportation." },
   ],
 } as const;
 
-export type ValueIcon = (typeof aboutContent.values)[number]["icon"];
-
-/** The scripted conversation the About-section phone plays on loop. */
+/** The scripted conversation the About-section phone plays. */
 export const phoneChatScript = [
   { who: "user", text: "Hi! Where’s my order #4821?", chip: 0 },
   { who: "bot", text: "Found it 👋 Order #4821 shipped this morning and should arrive on Thursday." },

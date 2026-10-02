@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import { Audiowide, JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { SmoothScrollProvider } from "@/components/motion/SmoothScrollProvider";
 import { ChatWidget } from "@/components/site/ChatWidget";
 import { ScrollProgress } from "@/components/site/ScrollProgress";
@@ -14,8 +14,12 @@ const bodyFont = Plus_Jakarta_Sans({
   display: "swap",
 });
 
-const displayFont = Geist({
+/** Futuristic display face for headings, navigation, buttons and numbers.
+ * Body copy stays in the sans above: Audiowide is a single-weight display
+ * font and loses legibility at paragraph sizes. */
+const displayFont = Audiowide({
   variable: "--font-sans-display",
+  weight: "400",
   subsets: ["latin"],
   display: "swap",
 });

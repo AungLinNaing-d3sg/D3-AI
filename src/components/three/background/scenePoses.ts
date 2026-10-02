@@ -9,7 +9,8 @@
  *
  * Rule, enforced by __tests__/site/scenePoses.test.ts: every object is centred
  * in the outer side margins (|nx| ≥ 0.45) and kept clear of the header band,
- * so it never sits behind headings, body text or the navigation. The large
+ * so it never sits behind headings, body text or the navigation (the hero,
+ * where the pearl is the title's backdrop, is the one exception). The large
  * sphere always stays on the right and the accent on the left, so neither
  * ever sweeps across the reading column between sections.
  */
@@ -32,10 +33,11 @@ export interface Pose {
 export type SectionPoses = Record<BackgroundObject, Pose>;
 
 export const SECTION_POSES: Record<BackgroundSection, SectionPoses> = {
-  // Behind the hero demo cards, peeking out to their right.
+  // The one deliberate exception: the pearl sits centred behind the hero
+  // title as its backdrop (light sphere, dark type — still legible).
   hero: {
-    main: { nx: 0.45, ny: 0.04, z: -4, s: 2.1, ry: 0 },
-    accent: { nx: -0.46, ny: -0.3, z: -4, s: 0.45, ry: 0 },
+    main: { nx: 0, ny: 0.02, z: -4, s: 2.6, ry: 0 },
+    accent: { nx: 0.34, ny: -0.3, z: -3, s: 0.38, ry: 0 },
   },
   // Behind the phone.
   about: {
@@ -73,5 +75,6 @@ export const SECTION_POSES: Record<BackgroundSection, SectionPoses> = {
 export function poseFor(section: BackgroundSection, object: BackgroundObject, objectScale: number, compact: boolean): Pose {
   const pose = SECTION_POSES[section][object];
   if (!compact) return { ...pose, s: pose.s * objectScale };
+  if (section === "hero") return { ...pose, s: pose.s * objectScale };
   return { ...pose, nx: Math.sign(pose.nx || 1) * 0.6, s: pose.s * objectScale * 0.75 };
 }

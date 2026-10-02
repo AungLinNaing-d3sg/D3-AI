@@ -8,11 +8,8 @@ export function Team() {
       <div className="wrap">
         <div className="section-head">
           <div>
-            <span className="kicker" data-reveal>
-              Leadership
-            </span>
-            <h2 id="team-title" data-reveal>
-              The people <span className="grad">behind the work.</span>
+            <h2 id="team-title" data-anim="skew-chars">
+              The people <span className="accent">behind the work.</span>
             </h2>
           </div>
           <p className="lead" data-reveal>
@@ -21,7 +18,7 @@ export function Team() {
         </div>
         <div className="team-grid">
           {teamMembers.map((member) => (
-            <article className="person" data-reveal key={member.name}>
+            <article className="person glass" data-anim="card-wipe" key={member.name}>
               <div className="person-head">
                 <div className="person-photo">
                   <Image src={member.photo} alt={`Portrait of ${member.name}`} width={144} height={144} />
@@ -38,9 +35,8 @@ export function Team() {
               </ul>
             </article>
           ))}
-          <article className="person careers" data-reveal>
+          <article className="person careers" data-anim="card-wipe">
             <div>
-              <span className="tag">Careers</span>
               <h3>{careersContent.title}</h3>
               <p>{careersContent.text}</p>
             </div>

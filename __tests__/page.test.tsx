@@ -44,10 +44,24 @@ describe("Home page", () => {
     });
   });
 
-  it("keeps the decorative product demos out of the accessibility tree and labels them as sample data", () => {
+  it("keeps the decorative product demos out of the accessibility tree", () => {
     render(<Home />);
-    expect(document.querySelector("#hero .stage")).toHaveAttribute("aria-hidden", "true");
-    expect(screen.getByText(/sample data/i)).toBeInTheDocument();
+    [".dash", ".kanban", ".dev", ".phone"].forEach((selector) => {
+      expect(document.querySelector(selector)).toHaveAttribute("aria-hidden", "true");
+    });
+  });
+
+  it("uses no eyebrow or kicker labels anywhere", () => {
+    render(<Home />);
+    expect(document.querySelectorAll(".kicker, .eyebrow, .tag")).toHaveLength(0);
+  });
+
+  it("keeps the hero to a title, a subtitle and its actions", () => {
+    render(<Home />);
+    const hero = document.getElementById("hero")!;
+    expect(hero.querySelectorAll("h1")).toHaveLength(1);
+    expect(hero.querySelectorAll("p")).toHaveLength(1);
+    expect(within(hero).getAllByRole("link").map((link) => link.getAttribute("href"))).toEqual(["#contact", "#services"]);
   });
 
   it("renders the contact form inside the contact section", () => {

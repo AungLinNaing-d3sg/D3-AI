@@ -63,11 +63,8 @@ export function Faq() {
     <section id="faq" aria-labelledby="faq-title">
       <div className="wrap faq-grid">
         <div>
-          <span className="kicker" data-reveal>
-            FAQ
-          </span>
-          <h2 id="faq-title" data-reveal>
-            Questions, <span className="grad">answered.</span>
+          <h2 id="faq-title" data-anim="type">
+            Questions, <span className="accent">answered.</span>
           </h2>
           <p className="lead" data-reveal>
             Can’t find what you need? Ask our assistant, or send the team a message.

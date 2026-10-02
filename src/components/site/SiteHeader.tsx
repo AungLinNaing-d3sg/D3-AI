@@ -2,22 +2,29 @@
 
 import Image from "next/image";
 import { useEffect, useState, type CSSProperties } from "react";
-import { siteNav } from "@/data/home";
+import { contactNav, SECTION_IDS, siteNav } from "@/data/home";
 import { siteConfig } from "@/data/site";
 import { lenisInstance } from "@/lib/motion/lenisInstance";
 import { InPageLink } from "./InPageLink";
 
-/** Fixed pill header that frosts once the page scrolls, plus the full-screen
- * mobile menu (below 1080px, where the inline links are hidden by CSS). */
+/**
+ * Navigation as separate frosted-glass pills that sit together as one bar:
+ * logo · section links · Contact. The pill for the section currently in view
+ * turns solid. Below 1080px the links collapse into a full-screen glass menu.
+ */
 export function SiteHeader() {
-  const [scrolled, setScrolled] = useState(false);
+  const [active, setActive] = useState<string>("hero");
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const sections = SECTION_IDS.map((id) => document.getElementById(id)).filter((el): el is HTMLElement => !!el);
+    if (typeof IntersectionObserver === "undefined" || sections.length === 0) return;
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach((entry) => entry.isIntersecting && setActive(entry.target.id)),
+      { rootMargin: "-45% 0px -45% 0px" }
+    );
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -41,27 +48,34 @@ export function SiteHeader() {
     setMenuOpen(false);
   };
 
+  const isActive = (href: string) => active === href.slice(1);
+
   return (
     <>
-      <div className={`nav-wrap${scrolled ? " is-scrolled" : ""}`}>
+      <div className="nav-wrap">
         <header className="nav">
-          <InPageLink className="brand" href="#hero" aria-label={`${siteConfig.name} home`} onNavigate={closeMenu}>
+          <InPageLink className="pill pill-brand" href="#hero" aria-label={`${siteConfig.name} home`} onNavigate={closeMenu}>
             <Image src="/D3SG-logo.png" alt="D3-SG" width={180} height={56} priority />
           </InPageLink>
-          <nav className="nav-links" aria-label="Primary">
+          <nav className="pill-group" aria-label="Primary">
             {siteNav.map((item) => (
-              <InPageLink key={item.href} href={item.href as `#${string}`}>
+              <InPageLink
+                key={item.href}
+                className={`pill${isActive(item.href) ? " is-active" : ""}`}
+                href={item.href as `#${string}`}
+                aria-current={isActive(item.href) ? "true" : undefined}
+              >
                 {item.label}
               </InPageLink>
             ))}
           </nav>
-          <div className="nav-actions">
-            <InPageLink className="btn btn-primary btn-sm" href="#contact">
-              Contact us
+          <div className="nav-end">
+            <InPageLink className="pill pill-cta" href={contactNav.href as `#${string}`}>
+              {contactNav.label}
             </InPageLink>
             <button
               type="button"
-              className="menu-btn"
+              className="pill pill-icon menu-btn"
               aria-expanded={menuOpen}
               aria-controls="mobile-menu"
               aria-label={menuOpen ? "Close menu" : "Open menu"}
@@ -76,21 +90,18 @@ export function SiteHeader() {
 
       <div id="mobile-menu" className={`mobile-menu${menuOpen ? " is-open" : ""}`} inert={!menuOpen}>
         <nav aria-label="Mobile">
-          <ul>
-            {siteNav.map((item, i) => (
-              <li key={item.href} style={{ "--i": i } as CSSProperties}>
-                <InPageLink href={item.href as `#${string}`} onNavigate={closeMenu}>
-                  {item.label} <small>{String(i + 1).padStart(2, "0")}</small>
-                </InPageLink>
-              </li>
-            ))}
-          </ul>
+          {[...siteNav, contactNav].map((item, i) => (
+            <InPageLink
+              key={item.href}
+              className="pill"
+              href={item.href as `#${string}`}
+              onNavigate={closeMenu}
+              style={{ "--i": i, marginBottom: "0.5rem" } as CSSProperties}
+            >
+              {item.label} <small>{String(i + 1).padStart(2, "0")}</small>
+            </InPageLink>
+          ))}
         </nav>
-        <div className="mm-foot">
-          <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a>
-          <a href={`tel:${siteConfig.phoneHref}`}>{siteConfig.phone}</a>
-          <span>Paya Lebar Square, Singapore</span>
-        </div>
       </div>
     </>
   );
