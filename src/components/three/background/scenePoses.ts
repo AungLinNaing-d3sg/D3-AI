@@ -1,6 +1,6 @@
 /**
- * Where the three discipline objects of the homepage background
- * (DisciplineScene.tsx) rest while each section is in view.
+ * Where the two spheres of the homepage background (SphereScene.tsx) rest
+ * while each section is in view.
  *
  * Coordinates are viewport-relative so the composition survives any screen
  * size: `nx`/`ny` are fractions of the visible width/height at the object's
@@ -9,14 +9,16 @@
  *
  * Rule, enforced by __tests__/site/scenePoses.test.ts: every object is centred
  * in the outer side margins (|nx| ≥ 0.45) and kept clear of the header band,
- * so it never sits behind headings, body text or the navigation.
+ * so it never sits behind headings, body text or the navigation. The large
+ * sphere always stays on the right and the accent on the left, so neither
+ * ever sweeps across the reading column between sections.
  */
 
 export const BACKGROUND_SECTIONS = ["hero", "about", "services", "process", "team", "faq", "contact"] as const;
 export type BackgroundSection = (typeof BACKGROUND_SECTIONS)[number];
 
-/** data = rising BI bars · flow = connected workflow nodes · device = app screen */
-export const BACKGROUND_OBJECTS = ["data", "flow", "device"] as const;
+/** main = large pearl sphere · accent = small brand-red sphere */
+export const BACKGROUND_OBJECTS = ["main", "accent"] as const;
 export type BackgroundObject = (typeof BACKGROUND_OBJECTS)[number];
 
 export interface Pose {
@@ -30,45 +32,37 @@ export interface Pose {
 export type SectionPoses = Record<BackgroundObject, Pose>;
 
 export const SECTION_POSES: Record<BackgroundSection, SectionPoses> = {
-  // Text left, demo cards right: objects sit in the outer margins only.
+  // Behind the hero demo cards, peeking out to their right.
   hero: {
-    data: { nx: 0.47, ny: 0.22, z: -4, s: 0.8, ry: -0.5 },
-    flow: { nx: -0.47, ny: -0.3, z: -5, s: 0.75, ry: 0.4 },
-    device: { nx: 0.46, ny: -0.36, z: -5, s: 0.7, ry: -0.35 },
+    main: { nx: 0.45, ny: 0.04, z: -4, s: 2.1, ry: 0 },
+    accent: { nx: -0.46, ny: -0.3, z: -4, s: 0.45, ry: 0 },
   },
-  // Text left, phone right.
+  // Behind the phone.
   about: {
-    data: { nx: -0.47, ny: 0.1, z: -5, s: 0.75, ry: 0.6 },
-    flow: { nx: 0.47, ny: -0.3, z: -4, s: 0.8, ry: -0.5 },
-    device: { nx: 0.48, ny: 0.3, z: -6, s: 0.65, ry: -0.3 },
+    main: { nx: 0.49, ny: 0.12, z: -4, s: 1.9, ry: 0.6 },
+    accent: { nx: -0.47, ny: 0.24, z: -4, s: 0.4, ry: 0 },
   },
-  // Full-width bento: everything goes to the margins.
   services: {
-    data: { nx: -0.48, ny: 0.1, z: -4, s: 0.8, ry: 0.7 },
-    flow: { nx: 0.48, ny: 0.25, z: -4, s: 0.8, ry: -0.6 },
-    device: { nx: 0.47, ny: -0.32, z: -5, s: 0.7, ry: -0.5 },
+    main: { nx: 0.5, ny: -0.12, z: -5, s: 2.1, ry: 1.2 },
+    accent: { nx: -0.47, ny: -0.28, z: -4, s: 0.42, ry: 0 },
   },
-  // Sticky heading left, steps right.
+  // Behind the step cards.
   process: {
-    data: { nx: -0.47, ny: -0.3, z: -4, s: 0.8, ry: 0.5 },
-    flow: { nx: 0.48, ny: 0.3, z: -5, s: 0.75, ry: -0.4 },
-    device: { nx: 0.47, ny: -0.3, z: -5, s: 0.7, ry: -0.6 },
+    main: { nx: 0.49, ny: 0.16, z: -4, s: 1.9, ry: 1.8 },
+    accent: { nx: -0.46, ny: -0.3, z: -4, s: 0.4, ry: 0 },
   },
   team: {
-    data: { nx: 0.47, ny: 0.3, z: -5, s: 0.75, ry: -0.5 },
-    flow: { nx: -0.48, ny: -0.2, z: -4, s: 0.8, ry: 0.5 },
-    device: { nx: 0.47, ny: -0.32, z: -5, s: 0.7, ry: -0.4 },
+    main: { nx: 0.5, ny: -0.16, z: -5, s: 2.0, ry: 2.4 },
+    accent: { nx: -0.47, ny: 0.26, z: -4, s: 0.4, ry: 0 },
   },
   faq: {
-    data: { nx: -0.47, ny: 0.25, z: -4, s: 0.8, ry: 0.6 },
-    flow: { nx: 0.48, ny: -0.3, z: -4, s: 0.8, ry: -0.5 },
-    device: { nx: -0.47, ny: -0.35, z: -6, s: 0.65, ry: 0.4 },
+    main: { nx: 0.49, ny: 0.1, z: -4, s: 1.9, ry: 3 },
+    accent: { nx: -0.46, ny: -0.3, z: -4, s: 0.42, ry: 0 },
   },
-  // The red panel fills the middle; objects sit beside it.
+  // Beside the red contact panel.
   contact: {
-    data: { nx: -0.48, ny: 0.3, z: -4, s: 0.75, ry: 0.6 },
-    flow: { nx: 0.48, ny: 0.3, z: -4, s: 0.75, ry: -0.6 },
-    device: { nx: 0.47, ny: -0.35, z: -6, s: 0.65, ry: 0 },
+    main: { nx: 0.5, ny: 0.2, z: -5, s: 2.1, ry: 3.6 },
+    accent: { nx: -0.47, ny: -0.3, z: -4, s: 0.4, ry: 0 },
   },
 };
 
