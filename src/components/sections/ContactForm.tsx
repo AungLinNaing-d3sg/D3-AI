@@ -2,8 +2,9 @@
 
 import { useActionState, useRef, useState, type FormEvent } from "react";
 import { useFormStatus } from "react-dom";
-import { initialContactFormState, submitContactMessage } from "@/app/actions/contact";
+import { submitContactMessage } from "@/app/actions/contact";
 import {
+  initialContactFormState,
   CONTACT_FIELD_LABELS,
   CONTACT_FIELD_NAMES,
   CONTACT_HONEYPOT_FIELD,
@@ -16,8 +17,7 @@ import {
   type ContactFormValues,
 } from "@/lib/validation/contactForm";
 
-/** Glass inputs and focus light — see `.contact-field`/`.contact-input` in
- * globals.css. */
+/** Light-theme inputs — see `.contact-input` in globals.css. */
 const inputClasses = "contact-input";
 
 const fieldInputProps: Record<ContactFieldName, { type: string; autoComplete: string }> = {
@@ -27,16 +27,14 @@ const fieldInputProps: Record<ContactFieldName, { type: string; autoComplete: st
 };
 
 /** Submit button. Split out so `useFormStatus` (which only works inside a
- * `<form>`) can drive its own pending label/disabled state. The same glass
- * pill as the rest of Chapter 08 (`.cta-pill`), with its arrow. */
+ * `<form>`) can drive its own pending label/disabled state. */
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" disabled={pending} className="cta-pill w-full justify-center sm:w-auto">
+    <button type="submit" disabled={pending} className="btn btn-primary">
       <span>{pending ? "Sending…" : "Send message"}</span>
       <svg
         aria-hidden="true"
-        className="cta-pill-arrow"
         width="16"
         height="16"
         viewBox="0 0 16 16"
@@ -53,7 +51,7 @@ function SubmitButton() {
 }
 
 /**
- * "Send us a message" contact form (Chapter 08 — Final CTA): Name, Email,
+ * "Send us a message" contact form (homepage Contact section): Name, Email,
  * Message — see CONTACT_FIELD_NAMES for why it's this compact.
  *
  * Client-side validation (`validateContactField`/`validateContactForm`,
@@ -127,7 +125,7 @@ export function ContactForm() {
       noValidate
       aria-labelledby="contact-form-heading"
       aria-describedby="contact-form-status"
-      className="relative w-full max-w-xl text-left"
+      className="relative w-full text-left"
     >
       {/* Honeypot: visually hidden and out of both the accessible name and
           the tab order, so only an automated bot can ever fill it in. */}
@@ -136,12 +134,12 @@ export function ContactForm() {
         <input id="contact-company" name={CONTACT_HONEYPOT_FIELD} type="text" tabIndex={-1} autoComplete="off" />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="contact-grid">
         {(["name", "email"] as const).map((field) => (
           <div key={field} className="contact-field">
             <label htmlFor={`contact-${field}`} className="contact-label">
               {CONTACT_FIELD_LABELS[field]}{" "}
-              <span aria-hidden="true" className="text-brand-400">
+              <span aria-hidden="true" className="contact-req">
                 *
               </span>
             </label>
@@ -160,7 +158,7 @@ export function ContactForm() {
               className={inputClasses}
             />
             {errors[field] ? (
-              <p id={`contact-${field}-error`} role="alert" className="mt-1.5 text-xs text-brand-300">
+              <p id={`contact-${field}-error`} role="alert" className="contact-error">
                 {errors[field]}
               </p>
             ) : null}
@@ -171,7 +169,7 @@ export function ContactForm() {
       <div className="contact-field mt-4">
         <label htmlFor="contact-message" className="contact-label">
           {CONTACT_FIELD_LABELS.message}{" "}
-          <span aria-hidden="true" className="text-brand-400">
+          <span aria-hidden="true" className="contact-req">
             *
           </span>
         </label>
@@ -190,25 +188,19 @@ export function ContactForm() {
           className={`${inputClasses} resize-y`}
         />
         {errors.message ? (
-          <p id="contact-message-error" role="alert" className="mt-1.5 text-xs text-brand-300">
+          <p id="contact-message-error" role="alert" className="contact-error">
             {errors.message}
           </p>
         ) : null}
       </div>
 
-      <div className="mt-5 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="contact-actions">
         <SubmitButton />
         <p
           id="contact-form-status"
           role="status"
           aria-live="polite"
-          className={
-            state.status === "idle"
-              ? "sr-only"
-              : state.status === "success"
-                ? "text-sm font-medium text-emerald-400"
-                : "text-sm font-medium text-brand-300"
-          }
+          className={state.status === "idle" ? "sr-only" : `contact-status is-${state.status}`}
         >
           {state.message}
         </p>

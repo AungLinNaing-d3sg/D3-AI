@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono, Sora } from "next/font/google";
-import { CustomCursor } from "@/components/cursor/CustomCursor";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
-import { MusicPlayer } from "@/components/music/MusicPlayer";
+import { Geist, JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { SmoothScrollProvider } from "@/components/motion/SmoothScrollProvider";
+import { ChatWidget } from "@/components/site/ChatWidget";
+import { ScrollProgress } from "@/components/site/ScrollProgress";
+import { SiteFooter } from "@/components/site/SiteFooter";
+import { SiteHeader } from "@/components/site/SiteHeader";
 import { siteConfig } from "@/data/site";
 import "./globals.css";
 
-const bodyFont = Inter({
+const bodyFont = Plus_Jakarta_Sans({
   variable: "--font-sans-body",
   subsets: ["latin"],
   display: "swap",
 });
 
-const displayFont = Sora({
+const displayFont = Geist({
   variable: "--font-sans-display",
   subsets: ["latin"],
   display: "swap",
@@ -23,7 +23,7 @@ const displayFont = Sora({
 /**
  * Technical/numeric accent face — used sparingly for eyebrow labels,
  * statistic figures, and other short, technical typographic moments (see
- * globals.css `.type-eyebrow` / `.type-display-stat`) to give the type
+ * globals.css `.kicker` / `.tag` and the code demo) to give the type
  * system an AI/technology register alongside the two display/body faces
  * above, rather than introducing a whole third voice. Self-hosted by
  * `next/font` at build time (no runtime network request), so it stays
@@ -94,9 +94,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${bodyFont.variable} ${displayFont.variable} ${monoFont.variable} h-full`}>
       <head>
         {/* Progressive-enhancement fallback for the scroll-reveal animations
-            in components/motion/Reveal.tsx — see globals.css `.motion-reveal`. */}
+            driven by components/site/MotionDirector.tsx — see globals.css. */}
         <noscript>
-          <style>{".motion-reveal{opacity:1 !important;visibility:visible !important;}"}</style>
+          <style>{"[data-reveal],[data-split]{opacity:1 !important;}"}</style>
         </noscript>
       </head>
       {/*
@@ -115,10 +115,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         nothing to mask any real mismatch caused by this app's own code. */}
       <body className="flex min-h-full flex-col antialiased" suppressHydrationWarning>
         {/* Skip link for keyboard/screen-reader users to bypass repeated nav. */}
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-brand-500 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
-        >
+        <a href="#main-content" className="skip-link">
           Skip to content
         </a>
         {/*
@@ -133,23 +130,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           }}
         />
         <SmoothScrollProvider>
-          <Header />
-          {/* The one global background-music player (fixed; see
-              components/music/MusicPlayer.tsx). */}
-          <MusicPlayer />
+          <ScrollProgress />
+          <SiteHeader />
           <main id="main-content" className="flex-1">
             {children}
           </main>
-          <Footer />
-          {/* Mobile-only spacer, sized to the fixed bottom site-progress bar
-              (components/layout/ScrollProgressRail.tsx) — without it, that
-              bar (fixed, so always floating over whatever is at the bottom
-              of the viewport) would sit on top of the Footer's own final
-              content once the page is scrolled all the way down. */}
-          <div aria-hidden="true" className="h-14 shrink-0 md:hidden" />
+          <SiteFooter />
+          {/* Scripted demo assistant (see lib/chat/assistant.ts). */}
+          <ChatWidget />
         </SmoothScrollProvider>
-        {/* The one site-wide cursor overlay (fine pointers only). */}
-        <CustomCursor />
       </body>
     </html>
   );

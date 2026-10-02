@@ -20,6 +20,25 @@ export type ContactFormValues = Record<ContactFieldName, string>;
 
 export type ContactFormErrors = Partial<Record<ContactFieldName, string>>;
 
+/** Result of the `submitContactMessage` Server Action, round-tripped through
+ * `useActionState`. Defined here rather than in the action module because a
+ * "use server" file may only export async functions. */
+export interface ContactFormState {
+  status: "idle" | "success" | "error";
+  message: string;
+  errors: ContactFormErrors;
+  /** Bumped on every submission so the client can always detect a fresh
+   * result, even if two submissions happen to produce identical state. */
+  submittedAt: number;
+}
+
+export const initialContactFormState: ContactFormState = {
+  status: "idle",
+  message: "",
+  errors: {},
+  submittedAt: 0,
+};
+
 /**
  * Honeypot field name. Left blank by every real visitor (it is hidden from
  * both sighted users and assistive tech, and removed from tab order — see

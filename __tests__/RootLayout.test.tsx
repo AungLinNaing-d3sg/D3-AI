@@ -19,8 +19,10 @@ import RootLayout from "@/app/layout";
 // are actually testable and meaningful: (1) the change is additive/non-breaking
 // to the rendered markup and existing a11y structure, and (2) the prop is a
 // pure React directive that never leaks into the emitted HTML.
-jest.mock("@/components/layout/Header", () => ({ Header: () => <div>header</div> }));
-jest.mock("@/components/layout/Footer", () => ({ Footer: () => <div>footer</div> }));
+jest.mock("@/components/site/SiteHeader", () => ({ SiteHeader: () => <div>header</div> }));
+jest.mock("@/components/site/SiteFooter", () => ({ SiteFooter: () => <div>footer</div> }));
+jest.mock("@/components/site/ChatWidget", () => ({ ChatWidget: () => null }));
+jest.mock("@/components/site/ScrollProgress", () => ({ ScrollProgress: () => null }));
 jest.mock("@/components/motion/SmoothScrollProvider", () => ({
   SmoothScrollProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));

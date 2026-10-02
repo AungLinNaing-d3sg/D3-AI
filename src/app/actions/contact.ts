@@ -5,25 +5,12 @@ import {
   CONTACT_HONEYPOT_FIELD,
   emptyContactFormValues,
   validateContactForm,
-  type ContactFormErrors,
+  type ContactFormState,
   type ContactFormValues,
 } from "@/lib/validation/contactForm";
 
-export interface ContactFormState {
-  status: "idle" | "success" | "error";
-  message: string;
-  errors: ContactFormErrors;
-  /** Bumped on every submission so the client can always detect a fresh
-   * result, even if two submissions happen to produce identical state. */
-  submittedAt: number;
-}
-
-export const initialContactFormState: ContactFormState = {
-  status: "idle",
-  message: "",
-  errors: {},
-  submittedAt: 0,
-};
+// A "use server" module may only export async functions, so the form-state
+// type and its initial value live in lib/validation/contactForm.ts.
 
 function readValues(formData: FormData): ContactFormValues {
   const values = emptyContactFormValues();

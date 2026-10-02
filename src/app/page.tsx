@@ -1,50 +1,37 @@
-import { SceneCanvas } from "@/components/three/SceneCanvas";
-import { ScrollChoreographer } from "@/components/motion/ScrollChoreographer";
-import { SiteAudioController } from "@/components/motion/SiteAudioController";
-import { ScrollProgressRail } from "@/components/layout/ScrollProgressRail";
-import { IntroSection } from "@/components/sections/IntroSection";
-import { AboutSection } from "@/components/sections/AboutSection";
-import { TypographySection } from "@/components/sections/TypographySection";
-import { NeuralSection } from "@/components/sections/NeuralSection";
-import { UniverseSection } from "@/components/sections/UniverseSection";
-import { GameSection } from "@/components/sections/GameSection";
-import { FutureSection } from "@/components/sections/FutureSection";
-import { CtaSection } from "@/components/sections/CtaSection";
+import { MotionDirector } from "@/components/site/MotionDirector";
+import { SiteBackground } from "@/components/site/SiteBackground";
+import { Hero } from "@/components/site/Hero";
+import { TechMarquee } from "@/components/site/TechMarquee";
+import { About } from "@/components/site/About";
+import { Services } from "@/components/site/Services";
+import { Process } from "@/components/site/Process";
+import { Team } from "@/components/site/Team";
+import { Faq } from "@/components/site/Faq";
+import { Contact } from "@/components/site/Contact";
 
 /**
- * Homepage — one continuous, 8-chapter cinematic scrollytelling journey
- * through a single AI universe (cinematic intro → about us → the three real
- * disciplines → neural network → data universe → "train your AI" mini-game
- * → cinematic AI future → final CTA). The "AI Product Experience" chapter
- * that used to sit between the data universe and the mini-game was removed
- * — it duplicated the same three real disciplines (Data/Dynamics/Digital)
- * the "Our Approach" chapter already covers; that chapter is now the single
- * source for them (see components/sections/TypographySection.tsx).
+ * Homepage — light theme: hero with live product-style demo cards, then
+ * About, Services (each discipline acted out by a small animated demo), How
+ * we deliver, Leadership, FAQ and Contact. Section order mirrors the
+ * existing site's Home → About Us → Our Services → Contact Us navigation.
  *
- * `<SceneCanvas>` (the shared 3D half) and `<ScrollChoreographer>` (the
- * invisible GSAP/ScrollTrigger controller) are siblings of the real HTML
- * chapters, not wrappers around them, per the "separate 3D scenes from
- * normal UI" requirement; they communicate only through the shared
- * `journeyState` singleton (src/lib/motion/journeyState.ts) and the
- * `[data-stage]` DOM attribute each chapter's `<Section>` renders.
+ * `<SiteBackground>` (fixed decorative backdrop) and `<MotionDirector>`
+ * (invisible scroll choreography) are siblings of the sections rather than
+ * wrappers, so every section stays plain, server-rendered, readable markup.
  */
 export default function Home() {
   return (
     <>
-      <SceneCanvas />
-      <ScrollChoreographer />
-      <SiteAudioController />
-      <ScrollProgressRail />
-      <div id="experience-wrapper">
-        <IntroSection />
-        <AboutSection />
-        <TypographySection />
-        <NeuralSection />
-        <UniverseSection />
-        <GameSection />
-        <FutureSection />
-        <CtaSection />
-      </div>
+      <SiteBackground />
+      <MotionDirector />
+      <Hero />
+      <TechMarquee />
+      <About />
+      <Services />
+      <Process />
+      <Team />
+      <Faq />
+      <Contact />
     </>
   );
 }
