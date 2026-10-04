@@ -219,7 +219,13 @@ export function MotionDirector() {
           const cover = { trigger: contact, start: "bottom bottom", end: () => `+=${footer.offsetHeight}`, scrub: true };
           ScrollTrigger.create({ ...cover, pin: true, pinSpacing: false });
           const panel = contact.querySelector(".cta");
-          if (panel) gsap.to(panel, { scale: 0.92, opacity: 0.35, filter: "blur(4px)", ease: "none", scrollTrigger: cover });
+          // Stay fully readable while the footer's first third rises, then sink back.
+          if (panel) {
+            gsap
+              .timeline({ scrollTrigger: cover })
+              .to({}, { duration: 0.35 })
+              .to(panel, { scale: 0.93, opacity: 0.4, filter: "blur(4px)", ease: "none", duration: 0.65 });
+          }
         }
         const footRows = all("[data-foot-reveal]");
         if (footRows[0]) {

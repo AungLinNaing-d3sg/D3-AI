@@ -1,4 +1,5 @@
 import { ContactForm } from "@/components/sections/ContactForm";
+import { careersContent } from "@/data/home";
 import { siteConfig } from "@/data/site";
 
 export function Contact() {
@@ -20,6 +21,9 @@ export function Contact() {
                 <a href={`tel:${siteConfig.phoneHref}`}>{siteConfig.phone}</a>
               </span>
               <span>{siteConfig.addressLines.join(", ")}</span>
+              <span>
+                Careers: <a href={careersContent.href}>{careersContent.cta.toLowerCase()} with the team</a>
+              </span>
             </div>
           </div>
           <div className="form-card">
