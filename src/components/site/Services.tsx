@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { serviceTiles } from "@/data/home";
 import { services } from "@/data/services";
-import { BiDashboardDemo, CodeToAppDemo, PipelineBoardDemo } from "./demos/ServiceDemos";
+import { BiDashboardDemo, PipelineBoardDemo } from "./demos/ServiceDemos";
+import { CodeToAppDemo } from "./demos/CodeToAppDemo";
 
 const demoFor: Record<(typeof serviceTiles)[number]["slug"], ReactNode> = {
   data: <BiDashboardDemo />,

@@ -239,11 +239,17 @@ export function MotionDirector() {
         const pin = one(".h-pin");
         const track = pin?.querySelector<HTMLElement>(".panels");
         if (!pin || !track) return;
-        const distance = () => Math.max(0, track.scrollWidth - window.innerWidth);
+        // Travel until the last panel's right edge meets the gutter.
+        const distance = () => {
+          const last = track.lastElementChild as HTMLElement | null;
+          if (!last) return 0;
+          const gutter = parseFloat(getComputedStyle(track).paddingLeft) || 0;
+          return Math.max(0, last.offsetLeft + last.offsetWidth + gutter - window.innerWidth);
+        };
         const travel = gsap.to(track, {
           x: () => -distance(),
           ease: "none",
-          scrollTrigger: { trigger: pin, start: "center center", end: () => `+=${distance()}`, pin: true, scrub: 1, invalidateOnRefresh: true },
+          scrollTrigger: { trigger: pin, start: "center center", end: () => `+=${distance()}`, pin: true, scrub: true, invalidateOnRefresh: true },
         });
         all('[data-anim="panel-title"]').forEach((el) => {
           const split = SplitText.create(el, { type: "lines", mask: "lines", linesClass: "line" });

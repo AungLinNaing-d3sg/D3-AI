@@ -25,7 +25,10 @@ export interface SceneOptions {
 
 const INK = "#0d0e11";
 const RED = "#e5412d";
-const HERO_ALPHA = 0.3;
+const HERO_ALPHA = 0.36;
+/** Brightness levels for the hero logo (light sweep + pointer glow). */
+const LEVELS = 4;
+const HERO_PEAK_ALPHA = 0.9;
 const SHAPE_ALPHA = 0.34;
 
 export class ParticleScene {
@@ -50,6 +53,7 @@ export class ParticleScene {
   private pointer = { x: -9999, y: -9999 };
   private introStart = 0;
   private cleared = false;
+  private level = new Uint8Array(0);
 
   constructor(private canvas: HTMLCanvasElement, private opts: SceneOptions) {
     const ctx = canvas.getContext("2d");
@@ -102,6 +106,7 @@ export class ParticleScene {
     }
     this.vx = new Float32Array(n);
     this.vy = new Float32Array(n);
+    this.level = new Uint8Array(n);
     this.cleared = false;
   }
 
@@ -234,17 +239,54 @@ export class ParticleScene {
       this.y[i] = this.y[i]! + vy;
     }
 
+    if (useHero) {
+      // A soft diagonal light sweep every ~7s, plus a glow around the pointer.
+      const period = 7;
+      const sweep = ((time % period) / period) * (this.w + this.h * 0.45 + 900) - 450;
+      const glowR = this.opts.repelRadius * 1.6;
+      for (let i = 0; i < this.n; i++) {
+        const d = this.x[i]! + this.y[i]! * 0.45 - sweep;
+        let k = animate ? Math.exp(-(d * d) / (2 * 110 * 110)) : 0;
+        if (glowR > 0) {
+          const dx = this.x[i]! - mx;
+          const dy = this.y[i]! - my;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < glowR) k += (1 - dist / glowR) ** 2 * 1.2;
+        }
+        this.level[i] = Math.min(LEVELS - 1, Math.floor(Math.min(k, 0.999) * LEVELS));
+      }
+    }
+
     const ctx = this.ctx;
     const size = this.opts.dotSize;
     const accentOf = useHero ? this.logoAccent : this.shapeAccent;
     ctx.clearRect(0, 0, this.w, this.h);
+    if (useHero) {
+      // Batched by colour and brightness level: base dots, then brighter,
+      // slightly larger dots where the sweep or the pointer passes.
+      for (const pass of [0, 1]) {
+        ctx.fillStyle = pass ? RED : INK;
+        for (let lvl = 0; lvl < LEVELS; lvl++) {
+          const lift = lvl / (LEVELS - 1);
+          const a = (HERO_ALPHA + (HERO_PEAK_ALPHA - HERO_ALPHA) * lift) * (alpha / HERO_ALPHA);
+          ctx.globalAlpha = Math.min(1, pass ? a * 1.5 : a);
+          const s = size * 1.12 * (1 + lift * 0.5);
+          for (let i = 0; i < this.n; i++) {
+            if (accentOf[i] !== pass || this.level[i] !== lvl) continue;
+            ctx.fillRect(this.x[i]! - s / 2, this.y[i]! - s / 2, s, s);
+          }
+        }
+      }
+      ctx.globalAlpha = 1;
+      return;
+    }
     for (const pass of [0, 1]) {
       ctx.globalAlpha = pass ? Math.min(1, alpha * 1.6) : alpha;
       ctx.fillStyle = pass ? RED : INK;
       for (let i = 0; i < this.n; i++) {
         if (accentOf[i] !== pass) continue;
         // Nearer dots draw slightly larger, giving the shapes depth.
-        const s = useHero ? size * 1.12 : size * (0.55 + (depth[i]! - 0.7) * 1.1);
+        const s = size * (0.55 + (depth[i]! - 0.7) * 1.1);
         ctx.fillRect(this.x[i]! - s / 2, this.y[i]! - s / 2, s, s);
       }
     }

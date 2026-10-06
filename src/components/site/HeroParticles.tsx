@@ -29,9 +29,9 @@ export function HeroParticles() {
       const compact = window.innerWidth < 768;
       const scene = new ParticleScene(canvas, {
         gapSections: GAP_SECTIONS,
-        maxParticles: compact ? 1100 : 2600,
-        dotSize: compact ? 1.8 : 2.2,
-        repelRadius: compact ? 0 : 110,
+        maxParticles: compact ? 1500 : 3600,
+        dotSize: compact ? 2 : 2.3,
+        repelRadius: compact ? 0 : 100,
         heroLayout: (w, h) => {
           const bw = Math.min(w * (compact ? 0.94 : 0.9), 1240);
           const bh = bw * 0.34;
