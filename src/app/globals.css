@@ -73,6 +73,7 @@ a { color: inherit; text-decoration: none; }
 @keyframes typing { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-3px); opacity: 1; } }
 @keyframes fade-in { from { opacity: 0; } }
 @keyframes caret { 50% { opacity: 0; } }
+@keyframes ripple { 0% { scale: 0.3; opacity: 0.9; } 100% { scale: 1.4; opacity: 0; } }
 @keyframes float { 50% { translate: 0 -6px; } }
 
 /* ---------- Background ----------
@@ -167,12 +168,18 @@ h2 { max-width: 20ch; font-size: clamp(1.7rem, 1rem + 2.4vw, 3rem); }
 .curtain::before { content: ""; position: absolute; left: 50%; top: 0.9rem; width: 3rem; height: 4px; margin-left: -1.5rem; border-radius: 4px; background: var(--line-2); }
 
 /* ---------- Marquee ---------- */
-.marquee { overflow: hidden; padding: 2.2rem 0 1rem; }
+.marquee { position: relative; overflow: hidden; display: grid; gap: 0.6rem; padding: 2.6rem 0 1.4rem; mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent); -webkit-mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent); }
+.mq-row { overflow: hidden; }
 .marquee-track { display: flex; width: max-content; will-change: transform; }
-.marquee ul { display: flex; flex: none; }
-.marquee li { display: flex; align-items: center; gap: 2.2rem; padding-right: 2.2rem; white-space: nowrap; font: 400 clamp(1.4rem, 1rem + 1.6vw, 2.6rem) var(--display); color: transparent; -webkit-text-stroke: 1px var(--ink-3); }
-.marquee li:nth-child(even) { color: var(--ink); -webkit-text-stroke: 0; }
-.marquee li::after { content: ""; width: 0.55rem; height: 0.55rem; border-radius: 50%; background: var(--accent); }
+.mq-half { display: flex; flex: none; }
+.mq-item { --f: 0; display: flex; align-items: center; gap: clamp(1.4rem, 1rem + 1.4vw, 2.6rem); padding-right: clamp(1.4rem, 1rem + 1.4vw, 2.6rem); white-space: nowrap; }
+.mq-word { display: inline-block; font: 400 clamp(1.6rem, 1rem + 2.4vw, 3.4rem)/1.1 var(--display); transform: translateY(calc((1 - var(--f)) * 0.06em)) scale(calc(0.94 + var(--f) * 0.06)); transform-origin: 50% 60%; }
+/* Industries: solid ink, glowing brand red at the centre. */
+.mq-row-1 .mq-word { color: color-mix(in srgb, var(--accent) calc(var(--f) * 100%), rgb(13 14 17 / calc(0.32 + var(--f) * 0.68))); text-shadow: 0 0 calc(var(--f) * 28px) rgb(229 65 45 / calc(var(--f) * 0.35)); }
+/* Certifications: outline that fills with ink at the centre. */
+.mq-row-2 .mq-word { font-size: clamp(1.3rem, 0.9rem + 1.7vw, 2.5rem); color: rgb(13 14 17 / calc(var(--f) * 0.92)); -webkit-text-stroke: 1px rgb(13 14 17 / calc(0.32 + var(--f) * 0.3)); }
+.mq-star { flex: none; width: clamp(0.8rem, 0.6rem + 0.6vw, 1.3rem); height: auto; fill: var(--accent); opacity: calc(0.45 + var(--f) * 0.55); animation: spin 9s linear infinite; }
+.mq-row-2 .mq-star { fill: none; stroke: var(--ink-3); stroke-width: 1.2; animation-direction: reverse; }
 
 /* ---------- About ---------- */
 #about { padding: 5rem 0 6rem; }
@@ -183,26 +190,16 @@ h2 { max-width: 20ch; font-size: clamp(1.7rem, 1rem + 2.4vw, 3rem); }
 .value h3 { font-size: 0.92rem; }
 .value p { font-size: 0.9rem; color: var(--ink-2); }
 
-.phone-wrap { position: relative; display: grid; justify-items: center; }
-.phone { position: relative; width: 300px; height: 610px; padding: 11px; border-radius: 48px; background: #121216; box-shadow: 0 50px 90px -35px rgb(21 21 26 / 0.5), inset 0 0 0 2px #2c2c33; will-change: transform; }
-.phone-screen { position: relative; height: 100%; display: flex; flex-direction: column; overflow: hidden; border-radius: 38px; background: #fbfaf8; }
-.phone-notch { position: absolute; top: 9px; left: 50%; z-index: 3; width: 92px; height: 26px; margin-left: -46px; border-radius: 99px; background: #121216; }
-.phone-status { display: flex; justify-content: space-between; height: 44px; padding: 13px 26px 0; font-size: 0.72rem; font-weight: 700; }
+.phone-wrap { position: relative; display: grid; justify-items: center; width: fit-content; margin: 0 auto; }
 .chat-head { display: flex; align-items: center; gap: 0.65rem; padding: 0.7rem 1rem; border-bottom: 1px solid var(--line); background: #fff; }
 .avatar { flex: none; width: 2.2rem; height: 2.2rem; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: #fff; font: 800 1rem var(--display); }
 .chat-head b { display: block; font-size: 0.85rem; }
 .chat-head small { display: flex; align-items: center; gap: 0.3rem; font-size: 0.7rem; color: var(--ok); }
 .chat-head small::before { content: ""; width: 0.4rem; height: 0.4rem; border-radius: 50%; background: currentColor; }
-.phone-body { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 0.5rem; overflow: hidden; padding: 1rem 0.8rem; transition: opacity 0.4s; }
-.phone-body.is-clearing { opacity: 0; }
-.phone-body[hidden] { display: none; }
-.phone-input { display: flex; justify-content: space-between; align-items: center; margin: 0.4rem 0.8rem 1rem; padding: 0.45rem 0.45rem 0.45rem 1rem; border-radius: 99px; border: 1px solid var(--line); background: #fff; font-size: 0.8rem; color: var(--ink-3); }
-.phone-input i { width: 1.9rem; height: 1.9rem; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: #fff; font-style: normal; font-size: 0.75rem; }
 .phone-chip { position: absolute; z-index: 2; display: flex; align-items: center; gap: 0.5rem; padding: 0.65rem 0.9rem; border-radius: 0.9rem; border: 1px solid var(--line); background: rgb(255 255 255 / 0.92); box-shadow: var(--shadow-lg); white-space: nowrap; font-size: 0.78rem; font-weight: 600; transition: opacity 0.5s, transform 0.6s var(--ease); }
 .phone-chip b { color: var(--accent); }
-.pc1 { left: -1.5rem; top: 24%; }
-.pc2 { right: -1.5rem; bottom: 22%; }
-.phone-cap { max-width: 19rem; margin-top: 1.4rem; text-align: center; font-size: 0.85rem; color: var(--ink-3); }
+.pc1 { right: calc(100% - 1.6rem); top: 58%; }
+.pc2 { left: calc(100% - 1.6rem); bottom: 16%; }
 
 /* Chat bubbles (phone demo + chat widget) */
 .msg { max-width: 82%; padding: 0.6rem 0.85rem; border-radius: 1.1rem; font-size: 0.82rem; line-height: 1.42; overflow-wrap: anywhere; }
@@ -214,6 +211,51 @@ h2 { max-width: 20ch; font-size: clamp(1.7rem, 1rem + 2.4vw, 3rem); }
 .typing i:nth-child(2) { animation-delay: 0.15s; }
 .typing i:nth-child(3) { animation-delay: 0.3s; }
 .msg-card { align-self: flex-start; display: flex; align-items: center; gap: 0.45rem; padding: 0.5rem 0.75rem; border-radius: 0.8rem; background: var(--ok-soft); color: var(--ok-ink); font-size: 0.74rem; font-weight: 700; }
+
+/* About: company-profile app on the shared iPhone frame (scaled up). */
+.iphone.ip-lg { zoom: 1.55; }
+.ap-screen { gap: 0; padding-bottom: 0; }
+.ap-appbar { flex: none; display: flex; justify-content: space-between; align-items: center; padding: 0.2rem 0.15rem 0.35rem; font-size: 0.55rem; }
+.ap-icon { width: 0.95rem; height: 0.95rem; display: grid; place-items: center; border-radius: 50%; background: #e9e9ee; font-size: 0.55rem; color: #3a3a3c; }
+.ap-viewport { position: relative; flex: 1; min-height: 0; overflow: hidden; margin: 0 -0.55rem; padding: 0 0.55rem; }
+.ap-scroll { display: grid; gap: 0.42rem; padding-bottom: 0.5rem; will-change: transform; }
+.ap-part { transition: opacity 0.45s var(--ease), transform 0.55s var(--ease); }
+.ap-hero { position: relative; overflow: hidden; padding: 1.55rem 0.55rem 0.55rem; border-radius: 0.75rem; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / 0.05); }
+.ap-cover { position: absolute; inset: 0 0 auto; height: 1.25rem; background: linear-gradient(110deg, #e5412d, #ff7a59 55%, #ffb08f); }
+.ap-cover::after { content: ""; position: absolute; inset: 0; background-image: radial-gradient(rgb(255 255 255 / 0.5) 0.6px, transparent 0.9px); background-size: 4px 4px; }
+.ap-logo { position: absolute; left: 0.55rem; top: 0.62rem; width: 2.3rem; height: 1.1rem; display: grid; place-items: center; border-radius: 0.35rem; background: #fff; box-shadow: 0 2px 6px rgb(0 0 0 / 0.12); }
+.ap-logo img { width: 80%; height: auto; }
+.ap-name { display: flex; align-items: center; gap: 0.2rem; font: 400 0.62rem var(--display); }
+.ap-verified { width: 0.55rem; height: 0.55rem; display: grid; place-items: center; border-radius: 50%; background: #1d9bf0; color: #fff; font-size: 0.32rem; font-style: normal; }
+.ap-hero small { display: block; margin-top: 0.1rem; font-size: 0.42rem; color: #8a8a8e; }
+.ap-tags { display: flex; flex-wrap: wrap; gap: 0.2rem; margin-top: 0.35rem; }
+.ap-tags span { padding: 0.08rem 0.3rem; border-radius: 99px; background: #fff0ec; color: var(--accent); font-size: 0.38rem; font-weight: 700; }
+.ap-stats { display: grid; grid-template-columns: repeat(3, 1fr); overflow: hidden; border-radius: 0.75rem; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / 0.05); }
+.ap-stats > div { padding: 0.38rem 0.2rem; text-align: center; }
+.ap-stats > div + div { border-left: 0.5px solid #e5e5ea; }
+.ap-stats b { display: block; font: 400 0.7rem var(--display); }
+.ap-stats small { font-size: 0.36rem; color: #8a8a8e; }
+.ap-card { padding: 0.42rem 0.5rem; border-radius: 0.75rem; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / 0.05); }
+.ap-card h4 { margin-bottom: 0.2rem; font-size: 0.42rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #8a8a8e; }
+.ap-cred { display: flex; justify-content: space-between; align-items: center; padding: 0.2rem 0; font-size: 0.48rem; font-weight: 600; }
+.ap-cred + .ap-cred { border-top: 0.5px solid #ececf0; }
+.ap-cred i { position: relative; width: 0.62rem; height: 0.62rem; border-radius: 50%; border: 1px solid #d1d1d6; transition: background 0.3s, border-color 0.3s; }
+.ap-cred.is-checking i { border-color: var(--accent); border-top-color: transparent; animation: spin 0.7s linear infinite; }
+.ap-cred.is-ok i { border-color: var(--ok); background: var(--ok); }
+.ap-cred.is-ok i::after { content: ""; position: absolute; left: 0.17rem; top: 0.07rem; width: 0.14rem; height: 0.28rem; border: solid #fff; border-width: 0 1.2px 1.2px 0; transform: rotate(45deg); }
+.ap-chips { display: flex; flex-wrap: wrap; gap: 0.22rem; }
+.ap-chip { padding: 0.14rem 0.38rem; border-radius: 99px; border: 0.5px solid #e0e0e6; background: #f6f6f8; font-size: 0.42rem; font-weight: 600; transition: opacity 0.35s, transform 0.45s var(--ease); }
+.ap-map-card b { display: block; margin-top: 0.35rem; font-size: 0.5rem; }
+.ap-map-card small { font-size: 0.4rem; color: #8a8a8e; }
+.ap-map { position: relative; height: 4.2rem; overflow: hidden; border-radius: 0.5rem; background: #eef0ea; }
+.ap-road { position: absolute; background: #fff; box-shadow: 0 0 0 0.5px #dcdcd4; }
+.ap-road.r1 { left: -10%; right: -10%; top: 45%; height: 0.32rem; transform: rotate(-8deg); }
+.ap-road.r2 { top: -10%; bottom: -10%; left: 58%; width: 0.26rem; transform: rotate(12deg); }
+.ap-road.r3 { left: -10%; right: 40%; top: 78%; height: 0.18rem; transform: rotate(4deg); }
+.ap-park { position: absolute; left: 8%; top: 8%; width: 2rem; height: 1.1rem; border-radius: 0.4rem; background: #d8ead2; }
+.ap-pin { position: absolute; left: 55%; top: 42%; width: 0.72rem; height: 0.72rem; margin: -0.72rem 0 0 -0.36rem; border-radius: 50% 50% 50% 0; background: var(--accent); transform: rotate(-45deg); box-shadow: 0 2px 4px rgb(0 0 0 / 0.25); }
+.ap-pin::after { content: ""; position: absolute; inset: 0.22rem; border-radius: 50%; background: #fff; }
+.ap-pin::before { content: ""; position: absolute; left: 50%; top: 50%; width: 1.6rem; height: 1.6rem; margin: -0.8rem 0 0 -0.8rem; border-radius: 50%; background: rgb(229 65 45 / 0.18); transform: rotate(45deg) translate(0.35rem, 0.35rem); animation: ripple 2.2s var(--ease) infinite; }
 
 /* ---------- Services: horizontal panels ---------- */
 #services { padding: 6rem 0 4rem; }
@@ -307,7 +349,8 @@ h2 { max-width: 20ch; font-size: clamp(1.7rem, 1rem + 2.4vw, 3rem); }
 .vsc-sync { color: #cccccc; }
 .vsc-spacer { flex: 1; }
 /* iPhone */
-.iphone { position: absolute; right: 0; top: 2.2rem; width: 10.6rem; aspect-ratio: 9 / 19.2; padding: 0.42rem; border-radius: 2.15rem; background: linear-gradient(145deg, #3a3b40, #121316 45%, #2a2b30); box-shadow: 0 0 0 1px #4a4b50, inset 0 0 0 1.5px #0b0b0d, 0 40px 70px -30px rgb(13 14 17 / 0.6), 0 12px 24px -12px rgb(13 14 17 / 0.4); }
+.iphone { position: relative; width: 10.6rem; aspect-ratio: 9 / 19.2; padding: 0.42rem; border-radius: 2.15rem; background: linear-gradient(145deg, #3a3b40, #121316 45%, #2a2b30); box-shadow: 0 0 0 1px #4a4b50, inset 0 0 0 1.5px #0b0b0d, 0 40px 70px -30px rgb(13 14 17 / 0.6), 0 12px 24px -12px rgb(13 14 17 / 0.4); }
+.dev .iphone { position: absolute; right: 0; top: 2.2rem; }
 .ip-btn-side { position: absolute; width: 3px; border-radius: 2px; background: #2e2f34; }
 .ip-btn-side.l1 { left: -3px; top: 18%; height: 7%; }
 .ip-btn-side.l2 { left: -3px; top: 28%; height: 7%; }
@@ -547,7 +590,10 @@ html.chat-open .to-top { opacity: 0; pointer-events: none; }
   [data-reveal] { opacity: 0; }
   .msg, .msg-card { animation: msg-in 0.35s var(--ease) both; }
   .phone-chip:not(.show) { opacity: 0; transform: translateY(8px); }
-  .ip-part.is-hidden { opacity: 0; transform: translateY(8px) scale(0.97); }
+  .ip-part.is-hidden, .ap-part.is-hidden { opacity: 0; transform: translateY(8px) scale(0.97); }
+  .ap-chip.is-hidden { opacity: 0; transform: scale(0.6); }
+  .ap-pin:not(.is-dropped) { opacity: 0; transform: translateY(-1.2rem) rotate(-45deg); }
+  .ap-pin { transition: opacity 0.3s, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
   .iphone { animation: float 6s ease-in-out infinite; }
   .deal-live { opacity: 0; }
   .rail i { transform: scaleY(0); }
@@ -580,12 +626,11 @@ html.chat-open .to-top { opacity: 0; pointer-events: none; }
   .value { grid-template-columns: 1fr; gap: 0.3rem; }
   .panel { padding: 1.6rem; }
   .panel .numeral { position: static; display: block; margin-bottom: 0.6rem; font-size: 2.6rem; }
-  .phone { width: 272px; height: 560px; }
-  .pc1 { left: -0.25rem; }
-  .pc2 { right: -0.25rem; }
+  .pc1 { right: auto; left: -0.25rem; top: 6%; }
+  .pc2 { left: auto; right: -0.25rem; }
   .dev { padding-right: 0; }
   .vsc { height: 16rem; }
-  .iphone { position: relative; top: 0; right: auto; justify-self: center; }
+  .dev .iphone { position: relative; top: 0; right: auto; justify-self: center; }
   .kanban { gap: 0.35rem; padding: 0.5rem; }
   .kb-col { padding: 0.35rem; }
   .deal { padding: 0.3rem 0.4rem; font-size: 0.64rem; }
@@ -596,6 +641,7 @@ html.chat-open .to-top { opacity: 0; pointer-events: none; }
 }
 @media (max-width: 600px) {
   .pill-cta { display: none; }
+  .phone-chip { display: none; }
   .chat { right: 1rem; bottom: 1rem; }
   .to-top { right: 1.375rem; bottom: 5.6rem; }
   .chat-panel { position: fixed; inset: 0; width: auto; height: auto; border: 0; border-radius: 0; transform: translateY(100%); transform-origin: bottom; }

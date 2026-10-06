@@ -94,21 +94,49 @@ export function MotionDirector() {
           gsap.fromTo(curtain.children, { y: 120 }, { y: 0, ease: "none", scrollTrigger: rise });
         }
 
-        /* Marquee: endless loop that speeds up and reverses with the scroll. */
-        const track = one(".marquee-track");
-        if (track) {
-          const loop = gsap.to(track, { xPercent: -50, ease: "none", duration: 40, repeat: -1 });
-          loop.totalTime(loop.duration() * 50); // room to play backwards
+        /* Marquee: two counter-moving rows. Speed and direction follow the
+           scroll, rows lean with velocity, and each word lights up (--f) as it
+           crosses the centre. Per-frame work only runs while it is visible. */
+        const tracks = all(".marquee-track");
+        if (tracks.length) {
+          const loops = tracks.map((t, i) => {
+            const dir = Number(t.dataset.dir) || -1;
+            const tween = gsap.fromTo(t, { xPercent: dir < 0 ? 0 : -50 }, { xPercent: dir < 0 ? -50 : 0, ease: "none", duration: i ? 26 : 20, repeat: -1 });
+            tween.totalTime(tween.duration() * 50); // room to play backwards
+            return tween;
+          });
+          const skew = tracks.map((t) => gsap.quickTo(t, "skewX", { duration: 0.5, ease: "power3.out" }));
+          const items = all(".mq-item");
+          const glow = () => {
+            const mid = window.innerWidth / 2;
+            const reach = Math.max(window.innerWidth * 0.32, 260);
+            items.forEach((item) => {
+              const r = item.getBoundingClientRect();
+              const d = Math.abs(r.left + (r.width - 40) / 2 - mid) / reach;
+              const f = d >= 1 ? 0 : (1 - d) * (1 - d) * (3 - 2 * (1 - d));
+              item.style.setProperty("--f", f.toFixed(3));
+            });
+          };
+          let settle: gsap.core.Tween | undefined;
           ScrollTrigger.create({
             trigger: ".marquee",
             start: "top bottom",
             end: "bottom top",
+            onToggle: (self) => (self.isActive ? gsap.ticker.add(glow) : gsap.ticker.remove(glow)),
             onUpdate: (self) => {
-              const boost = 1 + Math.min(Math.abs(self.getVelocity()) / 250, 5);
-              gsap.to(loop, { timeScale: self.direction * boost, duration: 0.25, overwrite: true });
-              gsap.to(loop, { timeScale: self.direction, duration: 1.2, delay: 0.25 });
+              const v = self.getVelocity();
+              const boost = 1 + Math.min(Math.abs(v) / 220, 6);
+              loops.forEach((loop) => gsap.to(loop, { timeScale: self.direction * boost, duration: 0.2, overwrite: true }));
+              settle?.kill();
+              settle = gsap.delayedCall(0.2, () => loops.forEach((loop) => gsap.to(loop, { timeScale: self.direction, duration: 1 })));
+              const lean = gsap.utils.clamp(-10, 10, v / -260);
+              skew.forEach((to, i) => to(i ? -lean : lean));
+              gsap.delayedCall(0.15, () => skew.forEach((to) => to(0)));
             },
           });
+          cleanups.push(() => gsap.ticker.remove(glow));
+          // Rows rise in from the mask, staggered.
+          gsap.from(".mq-row", { yPercent: 110, opacity: 0, duration: 1.1, ease: "expo.out", stagger: 0.12, scrollTrigger: onEnter(one(".marquee")!, "top 92%") });
         }
 
         /* About. */

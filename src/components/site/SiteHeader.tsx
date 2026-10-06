@@ -16,15 +16,33 @@ export function SiteHeader() {
   const [active, setActive] = useState<string>("hero");
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // The active section is the last one (in page order) whose top edge has
+  // crossed 45% of the viewport. Checking edges rather than "what covers the
+  // middle" matters here: the hero stays pinned behind the glass curtain, so
+  // it overlaps About on screen and would otherwise steal the active state.
   useEffect(() => {
-    const sections = SECTION_IDS.map((id) => document.getElementById(id)).filter((el): el is HTMLElement => !!el);
-    if (typeof IntersectionObserver === "undefined" || sections.length === 0) return;
-    const observer = new IntersectionObserver(
-      (entries) => entries.forEach((entry) => entry.isIntersecting && setActive(entry.target.id)),
-      { rootMargin: "-45% 0px -45% 0px" }
-    );
-    sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const line = window.innerHeight * 0.45;
+      let current: string = SECTION_IDS[0];
+      for (const id of SECTION_IDS) {
+        const el = document.getElementById(id);
+        if (el && el.getBoundingClientRect().top <= line) current = id;
+      }
+      setActive(current);
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
   }, []);
 
   useEffect(() => {

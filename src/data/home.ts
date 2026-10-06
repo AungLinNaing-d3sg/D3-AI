@@ -32,16 +32,11 @@ export const heroContent = {
   subtitle: "Data, Dynamics 365 and digital products, built on Microsoft.",
 } as const;
 
-/** Sectors and certifications from the leadership bios (src/data/team.ts). */
-export const marqueeItems = [
-  "Public Sector",
-  "ITIL",
-  "Education",
-  "PMP",
-  "Logistics",
-  "Six Sigma Black Belt",
-  "Transportation",
-  "Certified Scrum Master",
+/** Sectors and certifications from the leadership bios (src/data/team.ts),
+ * shown as two counter-moving marquee rows. */
+export const marqueeRows = [
+  { label: "Industries", items: ["Public Sector", "Education", "Logistics", "Transportation"] },
+  { label: "Leadership certifications", items: ["ITIL", "PMP", "Six Sigma Black Belt", "Certified Scrum Master"] },
 ] as const;
 
 /** Short panel headings for the three disciplines; summaries and bullets come
@@ -64,14 +59,6 @@ export const aboutContent = {
     { title: "Sector experience", text: "Trusted advisor to IT leaders across public sector, education, logistics and transportation." },
   ],
 } as const;
-
-/** The scripted conversation the About-section phone plays. */
-export const phoneChatScript = [
-  { who: "user", text: "Hi! Where’s my order #4821?", chip: 0 },
-  { who: "bot", text: "Found it 👋 Order #4821 shipped this morning and should arrive on Thursday." },
-  { who: "user", text: "Great, can you send me delivery updates?" },
-  { who: "bot", text: "Done! You’ll get an SMS at every step.", card: "Case updated in Dynamics 365", chip: 1 },
-] as const;
 
 export const processSteps = [
   {

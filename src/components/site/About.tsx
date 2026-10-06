@@ -1,5 +1,5 @@
 import { aboutContent } from "@/data/home";
-import { PhoneChatDemo } from "./demos/PhoneChatDemo";
+import { CompanyProfilePhone } from "./demos/CompanyProfilePhone";
 
 export function About() {
   const { title, titleHighlight, statement, values } = aboutContent;
@@ -22,7 +22,7 @@ export function About() {
             ))}
           </ul>
         </div>
-        <PhoneChatDemo />
+        <CompanyProfilePhone />
       </div>
     </section>
   );

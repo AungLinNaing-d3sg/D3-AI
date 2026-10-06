@@ -46,7 +46,7 @@ describe("Home page", () => {
 
   it("keeps the decorative product demos out of the accessibility tree", () => {
     render(<Home />);
-    [".dash", ".kanban", ".dev", ".phone"].forEach((selector) => {
+    [".dash", ".kanban", ".dev", ".iphone"].forEach((selector) => {
       expect(document.querySelector(selector)).toHaveAttribute("aria-hidden", "true");
     });
   });
