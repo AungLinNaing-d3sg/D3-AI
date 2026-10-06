@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { ensureGsapRegistered, gsap, ScrollTrigger, SplitText } from "@/lib/motion/gsap";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+import { lenisInstance } from "@/lib/motion/lenisInstance";
 
 const all = <T extends HTMLElement = HTMLElement>(selector: string) => gsap.utils.toArray<T>(selector);
 const one = <T extends HTMLElement = HTMLElement>(selector: string) => document.querySelector<T>(selector);
@@ -22,7 +23,9 @@ const onEnter = (trigger: Element, start = "top 85%") => ({ trigger, start, once
  *  Services  pinned horizontal travel (≥1024px) · panel titles from a mask
  *  Process   dark panel expands to full size (scrubbed) · heading chars
  *            resolve in random order · step titles sharpen from blur
- *  Team      heading chars slide in skewed · cards wipe up
+ *  Team      heading chars slide in skewed · pinned dossier stack (cards
+ *            slide over each other, index + progress follow, click to jump)
+ *            · portraits scan in · stats count up · cards tilt with a sheen
  *  FAQ       heading types itself out with a caret
  *  Contact   red panel grows out of an inset frame · heading words converge ·
  *            pinned and pushed back while the footer slides up over it
@@ -198,10 +201,6 @@ export function MotionDirector() {
           gsap.set(el, { opacity: 1 });
           gsap.from(split.chars, { x: 40, skewX: -30, opacity: 0, duration: 0.9, ease: "expo.out", stagger: 0.02, scrollTrigger: onEnter(el) });
         });
-        const cards = all('[data-anim="card-wipe"]');
-        if (cards[0]) {
-          gsap.fromTo(cards, { opacity: 0, clipPath: "inset(100% 0% 0% 0% round 28px)" }, { opacity: 1, clipPath: "inset(0% 0% 0% 0% round 28px)", duration: 1.2, ease: "expo.inOut", stagger: 0.12, scrollTrigger: onEnter(cards[0], "top 85%"), clearProps: "clipPath" });
-        }
 
         /* FAQ: the heading types itself out, caret following each letter. */
         all('[data-anim="type"]').forEach((el) => {
@@ -293,6 +292,84 @@ export function MotionDirector() {
         });
       });
 
+      /* Team dossier: shared helpers, then desktop (pinned stack) or mobile. */
+      const leaders = all(".leader");
+      const indexItems = all(".team-index-item");
+      const progressBar = one(".team-progress");
+      const activated = new Set<number>();
+      const highlight = (i: number) => indexItems.forEach((item, k) => item.classList.toggle("is-active", k === i));
+      // Scan the portrait in and count the stat up, once per leader.
+      const scan = (i: number) => {
+        if (activated.has(i) || !leaders[i]) return;
+        activated.add(i);
+        leaders[i]!.classList.add("is-scanned");
+        const stat = leaders[i]!.querySelector<HTMLElement>("[data-count]");
+        if (stat) {
+          const end = Number(stat.dataset.count);
+          const v = { n: 0 };
+          gsap.to(v, { n: end, duration: 1.6, ease: "power2.out", delay: 0.3, onUpdate: () => { stat.textContent = String(Math.round(v.n)); } });
+        }
+      };
+      const jumpTo = (y: number) => (lenisInstance.current ? lenisInstance.current.scrollTo(y, { duration: 1.2 }) : window.scrollTo({ top: y, behavior: "smooth" }));
+      let jumpTargets: () => number[] = () => leaders.map((l) => l.getBoundingClientRect().top + window.scrollY - 120);
+      indexItems.forEach((item, i) => {
+        const onClick = () => {
+          const target = jumpTargets()[i];
+          if (target !== undefined) jumpTo(target);
+        };
+        item.addEventListener("click", onClick);
+        cleanups.push(() => item.removeEventListener("click", onClick));
+      });
+
+      if (leaders.length) {
+        mm.add("(min-width: 1024px)", () => {
+          const stage = one(".team-stage");
+          const stack = one(".leaders");
+          if (!stage || !stack) return;
+          stack.classList.add("is-stacked");
+          const steps = leaders.length - 1;
+          const tl = gsap.timeline({
+            scrollTrigger: {
+              trigger: stage,
+              start: "top 96px",
+              end: () => `+=${Math.max(steps, 1) * window.innerHeight * 0.9}`,
+              pin: true,
+              scrub: true,
+              invalidateOnRefresh: true,
+              onEnter: () => {
+                highlight(0);
+                scan(0);
+              },
+              onUpdate: (self) => {
+                const pos = self.progress * steps;
+                progressBar?.style.setProperty("--p", steps ? String(self.progress) : "1");
+                highlight(Math.min(steps, Math.round(pos)));
+                for (let k = 1; k <= steps; k++) if (pos >= k - 0.75) scan(k);
+              },
+            },
+          });
+          for (let k = 1; k <= steps; k++) {
+            tl.fromTo(leaders[k]!, { yPercent: 108, rotateX: -8 }, { yPercent: 0, rotateX: 0, ease: "power2.inOut", duration: 1 }, k - 1).to(
+              leaders[k - 1]!,
+              { scale: 0.9, yPercent: -6, opacity: 0.3, filter: "blur(6px)", ease: "power2.inOut", duration: 1 },
+              k - 1
+            );
+          }
+          const st = tl.scrollTrigger!;
+          jumpTargets = () => leaders.map((_, i) => st.start + ((st.end - st.start) * i) / Math.max(steps, 1) + (i ? 2 : 0));
+          return () => {
+            stack.classList.remove("is-stacked");
+            jumpTargets = () => leaders.map((l) => l.getBoundingClientRect().top + window.scrollY - 120);
+          };
+        });
+        mm.add("(max-width: 1023px)", () => {
+          leaders.forEach((leader, i) => {
+            ScrollTrigger.create({ trigger: leader, start: "top 75%", once: true, onEnter: () => scan(i) });
+            gsap.fromTo(leader, { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 1, ease: "expo.out", scrollTrigger: onEnter(leader, "top 90%") });
+          });
+        });
+      }
+
       // Pins were created out of page order; sort so every trigger measures correctly.
       ScrollTrigger.sort();
       ScrollTrigger.refresh();
@@ -301,6 +378,31 @@ export function MotionDirector() {
     // Splitting and pin measurements need the final webfont metrics.
     if (document.fonts?.ready) document.fonts.ready.then(build);
     else build();
+
+    // Dossier cards tilt towards the pointer, with a sheen that follows it.
+    if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+      document.querySelectorAll<HTMLElement>("[data-tilt3d]").forEach((card) => {
+        const move = (event: PointerEvent) => {
+          const r = card.getBoundingClientRect();
+          const x = (event.clientX - r.left) / r.width;
+          const y = (event.clientY - r.top) / r.height;
+          card.style.setProperty("--ry", `${((x - 0.5) * 7).toFixed(2)}deg`);
+          card.style.setProperty("--rx", `${((0.5 - y) * 5).toFixed(2)}deg`);
+          card.style.setProperty("--mx", `${(x * 100).toFixed(1)}%`);
+          card.style.setProperty("--my", `${(y * 100).toFixed(1)}%`);
+        };
+        const leave = () => {
+          card.style.setProperty("--rx", "0deg");
+          card.style.setProperty("--ry", "0deg");
+        };
+        card.addEventListener("pointermove", move);
+        card.addEventListener("pointerleave", leave);
+        cleanups.push(() => {
+          card.removeEventListener("pointermove", move);
+          card.removeEventListener("pointerleave", leave);
+        });
+      });
+    }
 
     return () => {
       cancelled = true;

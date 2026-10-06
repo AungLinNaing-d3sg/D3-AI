@@ -112,3 +112,20 @@ export const careersContent = {
   href: `mailto:${siteConfig.email}?subject=${encodeURIComponent("Careers at D3-SG")}`,
   cta: "Get in touch",
 } as const;
+
+/**
+ * At-a-glance facts for the Team dossier cards, keyed by name. Each value is
+ * restated from that leader's bio in src/data/team.ts (nothing new).
+ */
+export const leaderHighlights: Record<string, { stat: number; statLabel: string; credentials: string[] }> = {
+  "Maximillium Yip": {
+    stat: 20,
+    statLabel: "years in the industry",
+    credentials: ["ITIL", "PMP", "Six Sigma Black Belt"],
+  },
+  "Leo Kyaw": {
+    stat: 16,
+    statLabel: "years in IT",
+    credentials: ["Certified Scrum Master", "ITIL", "PMP", "EMBA"],
+  },
+};

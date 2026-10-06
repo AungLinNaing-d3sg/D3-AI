@@ -100,7 +100,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {/* Progressive-enhancement fallback for the scroll-reveal animations
             driven by components/site/MotionDirector.tsx — see globals.css. */}
         <noscript>
-          <style>{"[data-reveal],[data-split]{opacity:1 !important;}"}</style>
+          <style>{"[data-reveal],[data-split],[data-anim]{opacity:1 !important;}.leader .leader-frame img{clip-path:none !important;}"}</style>
         </noscript>
       </head>
       {/*
