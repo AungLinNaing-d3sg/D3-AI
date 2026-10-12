@@ -10,7 +10,7 @@ const baseClasses =
 
 const variantClasses: Record<Variant, string> = {
   primary:
-    "bg-brand-500 text-white shadow-[0_8px_30px_-8px_rgba(241,74,48,0.65)] hover:bg-brand-400 hover:shadow-[0_12px_40px_-8px_rgba(241,74,48,0.75)] active:bg-brand-600",
+    "bg-brand-500 text-[#fff] shadow-[0_8px_30px_-8px_rgba(241,74,48,0.65)] hover:bg-brand-400 hover:shadow-[0_12px_40px_-8px_rgba(241,74,48,0.75)] active:bg-brand-600",
   secondary:
     "border border-white/15 bg-white/5 text-ink-50 backdrop-blur hover:border-white/30 hover:bg-white/10",
   ghost: "text-ink-100 hover:text-brand-300",

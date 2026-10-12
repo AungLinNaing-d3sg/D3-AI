@@ -96,7 +96,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {/* Progressive-enhancement fallback for the scroll-reveal animations
             in components/motion/Reveal.tsx — see globals.css `.motion-reveal`. */}
         <noscript>
-          <style>{".motion-reveal{opacity:1 !important;visibility:visible !important;}"}</style>
+          <style>{".motion-reveal{opacity:1 !important;visibility:visible !important;}.dossier-frame img{clip-path:none !important;filter:none !important;}"}</style>
         </noscript>
       </head>
       {/*
@@ -117,7 +117,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {/* Skip link for keyboard/screen-reader users to bypass repeated nav. */}
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-brand-500 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-brand-500 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-[#fff]"
         >
           Skip to content
         </a>

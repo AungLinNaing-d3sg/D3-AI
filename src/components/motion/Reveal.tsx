@@ -10,7 +10,7 @@ import { useDeviceCapability } from "@/hooks/useDeviceCapability";
  * `ElementType`) so TypeScript can still correctly type `ref`/`children`
  * for each — a fully polymorphic `as` prop collapses JSX prop typing to
  * `never`. */
-type RevealTag = "div" | "p" | "span" | "h1" | "h2" | "h3";
+type RevealTag = "div" | "p" | "span" | "h1" | "h2" | "h3" | "li" | "article";
 
 /**
  * - `"fade"` (default) — the original lightweight vertical fade/slide, used
@@ -33,8 +33,29 @@ type RevealTag = "div" | "p" | "span" | "h1" | "h2" | "h3";
  * - `"lines"` — major section headings: split into lines (re-split on
  *   resize), each line emerging from depth with a small X/Y/Z offset and a
  *   blur reduction, staggered. Ends perfectly sharp (filter cleared).
+ *
+ * Content-presentation styles shared with the light redesign
+ * (development_v2's MotionDirector), for the About / Approach / Footer copy:
+ * - `"maskLines"` — each line slides up out of its own mask (headings).
+ * - `"scrubWords"` — words light up as the reader scrolls through the text
+ *   (scrubbed to scroll, so it reads at the visitor's own pace).
+ * - `"wipe"` — a left-to-right clip wipe, for list rows.
+ * - `"cardWipe"` — a bottom-up rounded clip wipe, for cards.
+ * - `"skewChars"` — characters slide in from the right with a skew.
  */
-type RevealVariant = "fade" | "chars" | "words" | "blur" | "mask" | "depth" | "lines";
+type RevealVariant =
+  | "fade"
+  | "chars"
+  | "words"
+  | "blur"
+  | "mask"
+  | "depth"
+  | "lines"
+  | "maskLines"
+  | "scrubWords"
+  | "wipe"
+  | "cardWipe"
+  | "skewChars";
 
 /** Starting state of the `"depth"`/`"lines"` treatments (desktop/tablet). */
 const DEPTH_FROM = { z: -140, blur: 8 } as const;
@@ -171,6 +192,60 @@ export function Reveal({
             );
           },
         });
+        return;
+      }
+
+      if (variant === "maskLines") {
+        gsap.set(el, { autoAlpha: 1 });
+        split = SplitText.create(el, {
+          type: "lines",
+          mask: "lines",
+          linesClass: "reveal-line",
+          autoSplit: true,
+          onSplit(self) {
+            revealTargets = self.lines;
+            return gsap.from(self.lines, { yPercent: 110, duration: 1, delay, ease: "expo.out", stagger: 0.1, scrollTrigger });
+          },
+        });
+        return;
+      }
+
+      if (variant === "scrubWords") {
+        gsap.set(el, { autoAlpha: 1 });
+        split = SplitText.create(el, { type: "words" });
+        revealTargets = split.words;
+        gsap.fromTo(split.words, { opacity: 0.18 }, {
+          opacity: 1,
+          stagger: 0.1,
+          ease: "none",
+          scrollTrigger: { trigger: el, start: "top 80%", end: "bottom 50%", scrub: true },
+        });
+        return;
+      }
+
+      if (variant === "wipe" || variant === "cardWipe") {
+        const card = variant === "cardWipe";
+        gsap.fromTo(
+          el,
+          { opacity: 0, clipPath: card ? "inset(100% 0% 0% 0% round 28px)" : "inset(0% 100% 0% 0%)" },
+          {
+            opacity: 1,
+            clipPath: card ? "inset(0% 0% 0% 0% round 28px)" : "inset(0% 0% 0% 0%)",
+            duration: card ? 1.2 : 1.1,
+            delay,
+            ease: "expo.inOut",
+            scrollTrigger,
+            onComplete: () => gsap.set(el, { clearProps: "clipPath" }),
+          }
+        );
+        return;
+      }
+
+      if (variant === "skewChars") {
+        gsap.set(el, { autoAlpha: 1 });
+        split = SplitText.create(el, { type: "words,chars" });
+        revealTargets = split.chars;
+        gsap.from(split.chars, { x: 40, skewX: -30, autoAlpha: 0, duration: 0.9, delay, ease: "expo.out", stagger: 0.02, scrollTrigger });
         return;
       }
 

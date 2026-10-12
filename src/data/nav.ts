@@ -14,7 +14,3 @@ export const primaryNav: NavItem[] = [
   { href: "#vision", label: "Vision" },
   { href: "#contact", label: "Contact" },
 ];
-
-/** The footer repeats the same chapter links; "Contact" is already the last
- * primary nav entry (#contact), so there is nothing to append here. */
-export const footerNav: NavItem[] = [...primaryNav];

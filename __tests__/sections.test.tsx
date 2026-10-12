@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { IntroSection } from "@/components/sections/IntroSection";
 import { AboutSection } from "@/components/sections/AboutSection";
 import { TypographySection } from "@/components/sections/TypographySection";
@@ -43,12 +43,15 @@ describe("homepage chapters", () => {
   it("renders the about-us chapter with the real, sourced leadership team", () => {
     render(<AboutSection />);
     expect(document.getElementById("about")).toHaveAttribute("data-stage", "about");
-    expect(screen.getByRole("heading", { level: 2, name: "Who we are" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { level: 3, name: /meet the team/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: /real-world experience\. future-ready thinking\./i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: /the people behind the work/i })).toBeInTheDocument();
     expect(screen.getByText(aboutPartnerNote)).toBeInTheDocument();
+    ["Microsoft-focused", "Certified leadership", "Sector experience", "Partner ecosystem"].forEach((value) => {
+      expect(screen.getByRole("heading", { level: 3, name: value })).toBeInTheDocument();
+    });
     teamMembers.forEach((member) => {
-      expect(screen.getByText(member.name)).toBeInTheDocument();
-      expect(screen.getByText(member.role)).toBeInTheDocument();
+      expect(screen.getByRole("heading", { level: 3, name: member.name })).toBeInTheDocument();
+      expect(screen.getAllByText(member.role).length).toBeGreaterThan(0);
       member.bio.forEach((line) => {
         expect(screen.getByText(line)).toBeInTheDocument();
       });
@@ -57,7 +60,7 @@ describe("homepage chapters", () => {
 
   it("renders exactly one team roster card per real team member, each starting inactive", () => {
     render(<AboutSection />);
-    const cards = screen.getAllByText(/chief/i).map((el) => el.closest("li"));
+    const cards = teamMembers.map((member) => screen.getByRole("article", { name: member.name }));
     expect(cards).toHaveLength(teamMembers.length);
     cards.forEach((card) => {
       expect(card).toHaveAttribute("data-active", "false");
@@ -68,11 +71,12 @@ describe("homepage chapters", () => {
     render(<TypographySection />);
     expect(document.getElementById("approach")).toHaveAttribute("data-stage", "typography");
     expect(
-      screen.getByRole("heading", { level: 2, name: "Three disciplines, one intelligent system" })
+      screen.getByRole("heading", { level: 2, name: "Three disciplines. One intelligent system." })
     ).toBeInTheDocument();
     services.forEach((service) => {
       expect(screen.getByRole("button", { name: new RegExp(`focus ${service.title}`, "i") })).toBeInTheDocument();
-      expect(screen.getByText(service.title)).toBeInTheDocument();
+      expect(screen.getByRole("heading", { level: 3, name: service.title })).toBeInTheDocument();
+      service.bullets.forEach((bullet) => expect(screen.getByText(bullet)).toBeInTheDocument());
     });
   });
 
@@ -93,8 +97,9 @@ describe("homepage chapters", () => {
   it("starts every discipline card inactive", () => {
     render(<TypographySection />);
     services.forEach((service) => {
-      const button = screen.getByRole("button", { name: new RegExp(`focus ${service.title}`, "i") });
-      expect(button).toHaveAttribute("data-active", "false");
+      const panel = screen.getByRole("article", { name: service.title });
+      expect(panel).toHaveAttribute("data-active", "false");
+      expect(within(panel).getByRole("button", { name: new RegExp(`focus ${service.title}`, "i") })).toBeInTheDocument();
     });
   });
 

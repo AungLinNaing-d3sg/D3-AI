@@ -1,64 +1,73 @@
-import { Logo } from "@/components/ui/Logo";
-import { Container } from "@/components/ui/Container";
-import { footerNav } from "@/data/nav";
+import { Reveal } from "@/components/motion/Reveal";
 import { siteConfig } from "@/data/site";
+import { FooterCover } from "./FooterCover";
+import { FooterLink } from "./FooterLink";
+import { FooterWordmark } from "./FooterWordmark";
 
+const Arrow = () => (
+  <svg className="foot-arrow" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+    <path d="M3 8h9.5M8.5 4l4 4-4 4" />
+  </svg>
+);
+
+/**
+ * Footer in the light redesign's style (development_v2): it swipes up over
+ * the final chapter until it covers the screen (FooterCover). Hierarchy,
+ * top to bottom: a headline call to action, a three-column strip of direct
+ * contact details, the interactive particle "D3SG" wordmark, and a slim
+ * legal bar. Section links live in the header, so the footer carries none.
+ */
 export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="relative z-10 border-t border-white/10 bg-ink-950">
-      <Container className="grid gap-12 py-16 md:grid-cols-[1.2fr_1fr_1fr]">
-        <div className="flex flex-col gap-4">
-          <Logo />
-          <p className="max-w-sm text-sm leading-relaxed text-ink-400">{siteConfig.description}</p>
-        </div>
+    <footer className="site-foot relative z-20">
+      <FooterCover />
+      <div className="site-foot-panel">
+        <Reveal as="div" className="foot-cta">
+          <p className="foot-cta-title">
+            Have a project in mind? <span className="v2-accent">Let&apos;s build it together.</span>
+          </p>
+          <FooterLink href="#contact" className="foot-cta-button">
+            Start a project <Arrow />
+          </FooterLink>
+        </Reveal>
 
-        <div>
-          <h3 className="text-sm font-semibold text-ink-100">Explore</h3>
-          <ul className="mt-4 space-y-3">
-            {footerNav.map((item) => (
-              <li key={item.href}>
-                <a href={item.href} className="text-sm text-ink-400 transition-colors hover:text-brand-300">
-                  {item.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
-          <h3 className="text-sm font-semibold text-ink-100">Get in touch</h3>
-          <address className="mt-4 space-y-2 text-sm not-italic text-ink-400">
-            <p>{siteConfig.contactPerson.name}</p>
-            <p>{siteConfig.contactPerson.role}</p>
-            <p>
-              {siteConfig.legalName} (UEN: {siteConfig.uen})
-            </p>
-            {siteConfig.addressLines.map((line) => (
-              <p key={line}>{line}</p>
-            ))}
-            <p>
-              <a href={`tel:${siteConfig.phoneHref}`} className="transition-colors hover:text-brand-300">
-                {siteConfig.phone}
-              </a>
-            </p>
-            <p>
-              <a href={`mailto:${siteConfig.email}`} className="transition-colors hover:text-brand-300">
+        <Reveal as="div" delay={0.1}>
+          <address className="foot-info">
+            <div className="foot-info-item">
+              <span className="foot-info-label">Email</span>
+              <a className="foot-contact-big" href={`mailto:${siteConfig.email}`}>
                 {siteConfig.email}
               </a>
-            </p>
+            </div>
+            <div className="foot-info-item">
+              <span className="foot-info-label">Call</span>
+              <a className="foot-contact-big" href={`tel:${siteConfig.phoneHref}`}>
+                {siteConfig.phone}
+              </a>
+            </div>
+            <div className="foot-info-item">
+              <span className="foot-info-label">Visit</span>
+              <span className="foot-contact-line">
+                {siteConfig.addressLines[0]}
+                <br />
+                {siteConfig.addressLines[1]}
+              </span>
+            </div>
           </address>
-        </div>
-      </Container>
+        </Reveal>
 
-      <div className="border-t border-white/10">
-        <Container className="flex flex-col items-center justify-between gap-3 py-6 text-xs text-ink-400 sm:flex-row">
-          <p>
-            &copy; {year} {siteConfig.legalName}. All rights reserved.
-          </p>
-          <p>Built with Next.js.</p>
-        </Container>
+        <FooterWordmark />
+
+        {/* Not a <Reveal>: as the last element on the page it can never scroll
+            high enough to trigger an entrance, so it would stay hidden. */}
+        <div className="site-foot-bottom">
+          <span>
+            &copy; {year} {siteConfig.legalName} · UEN {siteConfig.uen}
+          </span>
+          <FooterLink href="#home">Back to top ↑</FooterLink>
+        </div>
       </div>
     </footer>
   );
