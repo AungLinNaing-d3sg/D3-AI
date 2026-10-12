@@ -6,6 +6,7 @@ import { ScrollProgress } from "@/components/site/ScrollProgress";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { siteConfig } from "@/data/site";
+import { THEME_INIT_SCRIPT } from "@/lib/theme/theme";
 import "./globals.css";
 
 const bodyFont = Plus_Jakarta_Sans({
@@ -95,8 +96,13 @@ const organizationJsonLd = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${bodyFont.variable} ${displayFont.variable} ${monoFont.variable} h-full`}>
+    // `suppressHydrationWarning` here covers only the `data-theme` attribute
+    // and `color-scheme` style that THEME_INIT_SCRIPT sets before hydration.
+    <html lang="en" className={`${bodyFont.variable} ${displayFont.variable} ${monoFont.variable} h-full`} suppressHydrationWarning>
       <head>
+        {/* Applies the saved / system theme before first paint (no flash).
+            Static string, no user input. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         {/* Progressive-enhancement fallback for the scroll-reveal animations
             driven by components/site/MotionDirector.tsx — see globals.css. */}
         <noscript>

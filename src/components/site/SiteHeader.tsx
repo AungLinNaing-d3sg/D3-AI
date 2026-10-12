@@ -6,6 +6,7 @@ import { contactNav, SECTION_IDS, siteNav } from "@/data/home";
 import { siteConfig } from "@/data/site";
 import { lenisInstance } from "@/lib/motion/lenisInstance";
 import { InPageLink } from "./InPageLink";
+import { ThemeToggle } from "./ThemeToggle";
 
 /**
  * Navigation as separate frosted-glass pills that sit together as one bar:
@@ -88,6 +89,7 @@ export function SiteHeader() {
             ))}
           </nav>
           <div className="nav-end">
+            <ThemeToggle />
             <InPageLink className="pill pill-cta" href={contactNav.href as `#${string}`}>
               {contactNav.label}
             </InPageLink>

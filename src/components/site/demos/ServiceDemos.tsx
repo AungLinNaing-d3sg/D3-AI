@@ -62,7 +62,7 @@ export function BiDashboardDemo() {
   const ref = useDemo(biDashboard);
   const report = REPORTS[DEFAULT_REPORT]!;
   return (
-    <div className="dash" ref={ref} aria-hidden="true">
+    <div className="dash theme-light" ref={ref} aria-hidden="true">
       <div className="dash-top">
         <div className="dash-tabs">
           {REPORTS.map((r, i) => (
@@ -159,7 +159,7 @@ const pipelineBoard: DemoFactory<HTMLDivElement> = (box) => {
 export function PipelineBoardDemo() {
   const ref = useDemo(pipelineBoard);
   return (
-    <div className="kanban" ref={ref} aria-hidden="true">
+    <div className="kanban theme-light" ref={ref} aria-hidden="true">
       {COLUMNS.map((col, i) => (
         <div className="kb-col" key={col.name}>
           <h4>

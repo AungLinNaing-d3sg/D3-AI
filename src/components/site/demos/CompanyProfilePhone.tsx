@@ -86,13 +86,13 @@ export function CompanyProfilePhone() {
   const ref = useDemo(profile);
   return (
     <div className="phone-wrap" data-anim="clip-up" ref={ref}>
-      <div className="phone-chip pc1 show" aria-hidden="true">
+      <div className="phone-chip pc1 show theme-light" aria-hidden="true">
         ✓ <b>4</b> leadership certifications
       </div>
-      <div className="phone-chip pc2 show" aria-hidden="true">
+      <div className="phone-chip pc2 show theme-light" aria-hidden="true">
         📍 Paya Lebar, <b>Singapore</b>
       </div>
-      <div className="iphone ip-lg" aria-hidden="true">
+      <div className="iphone ip-lg theme-light" aria-hidden="true">
         <span className="ip-btn-side l1" />
         <span className="ip-btn-side l2" />
         <span className="ip-btn-side r1" />

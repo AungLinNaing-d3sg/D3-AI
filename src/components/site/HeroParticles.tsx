@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { canvas2dSupported, displayFontReady } from "@/lib/particles/particleWordmark";
 import { ParticleScene } from "@/lib/particles/particleScene";
+import { subscribeTheme } from "@/lib/theme/theme";
 
 /** Each gap is marked by the top edge of the section that follows it. */
 const GAP_SECTIONS = ["services", "process", "team", "faq", "contact"];
@@ -39,6 +40,14 @@ export function HeroParticles() {
         },
       });
       scene.resize();
+      const syncInk = () => scene.setInk(getComputedStyle(document.documentElement).getPropertyValue("--ink").trim());
+      syncInk();
+      cleanups.push(
+        subscribeTheme(() => {
+          syncInk();
+          if (reducedMotion) scene.drawStatic();
+        })
+      );
       const onResize = () => {
         scene.resize();
         if (reducedMotion) scene.drawStatic();

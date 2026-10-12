@@ -3,6 +3,7 @@ import { serviceTiles } from "@/data/home";
 import { services } from "@/data/services";
 import { BiDashboardDemo, PipelineBoardDemo } from "./demos/ServiceDemos";
 import { CodeToAppDemo } from "./demos/CodeToAppDemo";
+import { ServiceList } from "./ServiceList";
 
 const demoFor: Record<(typeof serviceTiles)[number]["slug"], ReactNode> = {
   data: <BiDashboardDemo />,
@@ -36,11 +37,7 @@ export function Services() {
                 <div>
                   <h3 data-anim="panel-title">{tile.title}</h3>
                   <p>{service.summary}</p>
-                  <ul className="svc-list" aria-label={`${tile.title} services`}>
-                    {service.bullets.map((bullet) => (
-                      <li key={bullet}>{bullet}</li>
-                    ))}
-                  </ul>
+                  <ServiceList items={service.bullets} label={`${tile.title} services`} />
                 </div>
                 <div>{demoFor[tile.slug]}</div>
               </article>

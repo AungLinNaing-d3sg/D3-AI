@@ -278,10 +278,13 @@ export function MotionDirector() {
           ease: "none",
           scrollTrigger: { trigger: pin, start: "center center", end: () => `+=${distance()}`, pin: true, scrub: true, invalidateOnRefresh: true },
         });
-        all('[data-anim="panel-title"]').forEach((el) => {
+        all('[data-anim="panel-title"]').forEach((el, i) => {
           const split = SplitText.create(el, { type: "lines", mask: "lines", linesClass: "line" });
           gsap.set(el, { opacity: 1 });
-          gsap.from(split.lines, { yPercent: 110, duration: 1, ease: "expo.out", stagger: 0.08, scrollTrigger: { trigger: el, containerAnimation: travel, start: "left 85%", once: true } });
+          // The first panel is on screen before the sideways travel starts, so
+          // it reveals on normal vertical scroll; the rest as they slide in.
+          const trigger = i === 0 ? onEnter(el) : { trigger: el, containerAnimation: travel, start: "left 85%", once: true };
+          gsap.from(split.lines, { yPercent: 110, duration: 1, ease: "expo.out", stagger: 0.08, scrollTrigger: trigger });
         });
       });
       mm.add("(max-width: 1023px)", () => {
@@ -327,6 +330,8 @@ export function MotionDirector() {
           const stack = one(".leaders");
           if (!stage || !stack) return;
           stack.classList.add("is-stacked");
+          // Start the first portrait scan as the stage approaches, not only once pinned.
+          ScrollTrigger.create({ trigger: stage, start: "top 70%", once: true, onEnter: () => scan(0) });
           const steps = leaders.length - 1;
           const tl = gsap.timeline({
             scrollTrigger: {

@@ -26,7 +26,7 @@ export function Contact() {
               </span>
             </div>
           </div>
-          <div className="form-card">
+          <div className="form-card theme-light">
             <h3 id="contact-form-heading">Send us a message</h3>
             <ContactForm />
           </div>

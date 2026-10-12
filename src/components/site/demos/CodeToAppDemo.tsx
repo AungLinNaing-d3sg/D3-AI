@@ -266,7 +266,7 @@ export function CodeToAppDemo() {
       </div>
 
       {/* ---------- iPhone ---------- */}
-      <div className="iphone">
+      <div className="iphone theme-light">
         <span className="ip-btn-side l1" />
         <span className="ip-btn-side l2" />
         <span className="ip-btn-side r1" />

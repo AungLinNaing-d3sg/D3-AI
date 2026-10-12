@@ -23,7 +23,7 @@ export interface SceneOptions {
   heroLayout: (width: number, height: number) => Box;
 }
 
-const INK = "#0d0e11";
+const DEFAULT_INK = "#0d0e11";
 const RED = "#e5412d";
 const HERO_ALPHA = 0.36;
 /** Brightness levels for the hero logo (light sweep + pointer glow). */
@@ -54,6 +54,7 @@ export class ParticleScene {
   private introStart = 0;
   private cleared = false;
   private level = new Uint8Array(0);
+  private ink = DEFAULT_INK;
 
   constructor(private canvas: HTMLCanvasElement, private opts: SceneOptions) {
     const ctx = canvas.getContext("2d");
@@ -70,7 +71,7 @@ export class ParticleScene {
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     const logo = samplePoints(
-      { text: "D3SG", accentChars: 1, base: INK, accent: RED, alpha: [HERO_ALPHA, 0], layout: this.opts.heroLayout, maxParticles: this.opts.maxParticles, dotSize: this.opts.dotSize, repelRadius: 0 },
+      { text: "D3SG", accentChars: 1, base: DEFAULT_INK, accent: RED, alpha: [HERO_ALPHA, 0], layout: this.opts.heroLayout, maxParticles: this.opts.maxParticles, dotSize: this.opts.dotSize, repelRadius: 0 },
       this.opts.heroLayout(this.w, this.h),
       displayFamily()
     );
@@ -108,6 +109,11 @@ export class ParticleScene {
     this.vy = new Float32Array(n);
     this.level = new Uint8Array(n);
     this.cleared = false;
+  }
+
+  /** Colour of the non-accent dots (follows the theme's ink token). */
+  setInk(color: string) {
+    if (color) this.ink = color;
   }
 
   setPointer(x: number, y: number) {
@@ -265,7 +271,7 @@ export class ParticleScene {
       // Batched by colour and brightness level: base dots, then brighter,
       // slightly larger dots where the sweep or the pointer passes.
       for (const pass of [0, 1]) {
-        ctx.fillStyle = pass ? RED : INK;
+        ctx.fillStyle = pass ? RED : this.ink;
         for (let lvl = 0; lvl < LEVELS; lvl++) {
           const lift = lvl / (LEVELS - 1);
           const a = (HERO_ALPHA + (HERO_PEAK_ALPHA - HERO_ALPHA) * lift) * (alpha / HERO_ALPHA);
@@ -282,7 +288,7 @@ export class ParticleScene {
     }
     for (const pass of [0, 1]) {
       ctx.globalAlpha = pass ? Math.min(1, alpha * 1.6) : alpha;
-      ctx.fillStyle = pass ? RED : INK;
+      ctx.fillStyle = pass ? RED : this.ink;
       for (let i = 0; i < this.n; i++) {
         if (accentOf[i] !== pass) continue;
         // Nearer dots draw slightly larger, giving the shapes depth.
