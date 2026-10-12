@@ -2480,7 +2480,7 @@ html:not([data-motion-ready]) .motion-reveal {
  * stabilises, the primary action and the form take a little warmth, so the
  * CTA becomes the final focus.
  */
-#cta {
+[data-stage="cta"] {
   --cta-energy: clamp(0, (var(--cta-progress, 1) - 0.55) * 2.6, 1);
 }
 

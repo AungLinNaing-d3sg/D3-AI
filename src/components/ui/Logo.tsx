@@ -9,7 +9,7 @@ interface LogoProps {
 
 /**
  * Brand wordmark — uses the company's existing logo asset (public/). A real
- * `href="#intro"` anchor (not a `next/link` route push): this is a one-page
+ * `href="#home"` anchor (not a `next/link` route push): this is a one-page
  * site, so a route-based `<Link href="/">` click on the homepage is a
  * same-URL navigation Next.js can silently no-op instead of scrolling — the
  * anchor click goes through the same Lenis-aware `scrollToSection` every
@@ -19,8 +19,8 @@ interface LogoProps {
 export function Logo({ className = "" }: LogoProps) {
   return (
     <a
-      href="#intro"
-      onClick={(event) => handleInPageNavClick(event, "#intro")}
+      href="#home"
+      onClick={(event) => handleInPageNavClick(event, "#home")}
       className={`inline-flex items-center ${className}`.trim()}
       aria-label="D3-SG home"
     >

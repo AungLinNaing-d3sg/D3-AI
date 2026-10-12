@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import Home from "@/app/page";
 import { siteConfig } from "@/data/site";
-import { STAGE_IDS } from "@/types";
+import { SECTION_ANCHORS, STAGE_IDS } from "@/types";
 
 // The 3D canvas and scroll choreographer are exercised by their own unit
 // tests / the (mocked) @react-three/fiber + @react-three/drei modules; here
@@ -20,7 +20,7 @@ describe("Home page", () => {
     expect(screen.getByTestId("mock-scene-canvas")).toBeInTheDocument();
 
     STAGE_IDS.forEach((id) => {
-      const el = document.getElementById(id);
+      const el = document.getElementById(SECTION_ANCHORS[id]);
       expect(el).toBeInTheDocument();
       expect(el).toHaveAttribute("data-stage", id);
     });

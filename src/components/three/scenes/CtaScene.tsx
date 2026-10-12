@@ -83,7 +83,7 @@ interface CtaSceneProps {
  * anchor's on-screen rect every frame (on desktop the anchor itself is held
  * in frame while the form scrolls past — see CtaStage's `useCtaStory`);
  * whatever of the scene passes behind the content is dimmed. */
-const SECTION_SELECTOR = "#cta";
+const SECTION_SELECTOR = '[data-stage="cta"]';
 const ANCHOR_SELECTOR = "[data-cta-anchor]";
 const CONTENT_SELECTOR = "[data-cta-content]";
 

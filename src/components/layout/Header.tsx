@@ -8,7 +8,8 @@ import { useJourneyFrame } from "@/hooks/useJourneyFrame";
 import { useDeviceCapability } from "@/hooks/useDeviceCapability";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { gsap } from "@/lib/motion/gsap";
-import { handleInPageNavClick } from "@/lib/motion/scrollNav";
+import { handleInPageNavClick, redirectLegacyHash } from "@/lib/motion/scrollNav";
+import { SECTION_ANCHORS } from "@/types";
 
 /** Pointer tilt limits (degrees) — felt more than seen. */
 const TILT_X = 1.5;
@@ -49,6 +50,13 @@ export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
+
+  // Old shared links (#typography, #cta, …) land on the renamed sections.
+  // Deferred: the Next.js router rewrites history right after hydration.
+  useEffect(() => {
+    const id = window.setTimeout(redirectLegacyHash, 300);
+    return () => window.clearTimeout(id);
+  }, []);
   const navRef = useRef<HTMLElement>(null);
   const indicatorRef = useRef<HTMLSpanElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -68,13 +76,17 @@ export function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  /** Marks the active link (desktop + mobile) and moves the shared indicator. */
+  /**
+   * Marks the active link (desktop + mobile) and moves the shared indicator.
+   * `anchor` is a section's visitor-facing id (`approach`), the same value
+   * the nav links point to (`#approach`) — never the internal stage key.
+   */
   const setActive = useCallback(
-    (stage: string, instant: boolean) => {
-      if (stage === lastActiveStage.current) return;
+    (anchor: string, instant: boolean) => {
+      if (anchor === lastActiveStage.current) return;
       const previousIndex = primaryNav.findIndex((item) => item.href === `#${lastActiveStage.current}`);
-      lastActiveStage.current = stage;
-      const activeIndex = primaryNav.findIndex((item) => item.href === `#${stage}`);
+      lastActiveStage.current = anchor;
+      const activeIndex = primaryNav.findIndex((item) => item.href === `#${anchor}`);
 
       desktopLinkRefs.current.forEach((link, i) => {
         if (link) link.dataset.active = i === activeIndex ? "true" : "false";
@@ -117,15 +129,16 @@ export function Header() {
     []
   );
 
-  useJourneyFrame((state) => setActive(state.activeStage, false));
+  // The scroll journey reports internal stage keys; translate to anchors.
+  useJourneyFrame((state) => setActive(SECTION_ANCHORS[state.activeStage], false));
 
   // Reduced motion: the scroll timeline (and so `journeyState`) is off —
   // track the section crossing the middle of the viewport instead.
   useEffect(() => {
     if (!prefersReducedMotion || typeof IntersectionObserver === "undefined") return;
-    const sections = primaryNav
-      .map((item) => document.getElementById(item.href.slice(1)))
-      .filter((el): el is HTMLElement => Boolean(el));
+    // Every chapter, including ones without a menu item, so entering those
+    // clears the highlight exactly as the scroll journey does.
+    const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-stage]"));
     const observer = new IntersectionObserver(
       (entries) => {
         const hit = entries.find((entry) => entry.isIntersecting);
@@ -261,7 +274,7 @@ export function Header() {
 
             <div className="site-nav-actions">
               <div className="hidden lg:flex">
-                <LinkButton href="#cta" variant="primary" className="site-nav-cta px-5 py-2.5 text-xs">
+                <LinkButton href="#contact" variant="primary" className="site-nav-cta px-5 py-2.5 text-xs">
                   Contact Us
                 </LinkButton>
               </div>
@@ -308,7 +321,7 @@ export function Header() {
               </a>
             ))}
             <div className="site-nav-panel-cta" style={{ "--i": primaryNav.length } as CSSProperties}>
-              <LinkButton href="#cta" variant="primary" className="w-full" onClick={() => setIsMenuOpen(false)}>
+              <LinkButton href="#contact" variant="primary" className="w-full" onClick={() => setIsMenuOpen(false)}>
                 Contact Us
               </LinkButton>
             </div>

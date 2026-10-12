@@ -254,7 +254,7 @@ export function IntroSection() {
             </p>
 
             <div ref={bindLayer("actions")} data-hero-step="actions" className="flex flex-wrap items-center gap-3 pt-1">
-              <LinkButton href="#cta" variant="primary">
+              <LinkButton href="#contact" variant="primary">
                 Start a project
               </LinkButton>
               <LinkButton href="#about" variant="secondary" className="group/explore">

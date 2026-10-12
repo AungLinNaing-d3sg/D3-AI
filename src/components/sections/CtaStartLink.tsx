@@ -4,7 +4,7 @@ import type { MouseEvent } from "react";
 import { handleInPageNavClick } from "@/lib/motion/scrollNav";
 
 interface CtaStartLinkProps {
-  /** In-page target, e.g. `#cta-contact`. */
+  /** In-page target, e.g. `#contact-form`. */
   href: `#${string}`;
   /** The field to hand focus to once the visitor asks to start. */
   focusId: string;

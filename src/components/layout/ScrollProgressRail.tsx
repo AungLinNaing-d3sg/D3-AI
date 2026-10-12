@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { siteSections } from "@/data/sections";
+import { anchorHref } from "@/types";
 import { useJourneyFrame } from "@/hooks/useJourneyFrame";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { scrollToSection } from "@/lib/motion/scrollNav";
@@ -114,7 +115,7 @@ export function ScrollProgressRail() {
                     desktopTickRefs.current[i] = el;
                   }}
                   data-state={i === 0 ? "current" : "upcoming"}
-                  onClick={() => scrollToSection(`#${section.id}`)}
+                  onClick={() => scrollToSection(anchorHref(section.id))}
                   aria-label={`${section.shortLabel} — section ${section.index} of ${siteSections.length}`}
                   className="group relative flex items-center rounded-full p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
                 >

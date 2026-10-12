@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Header } from "@/components/layout/Header";
 
@@ -21,7 +21,7 @@ describe("Header", () => {
   it("links the primary Contact Us action to the final CTA chapter anchor", () => {
     render(<Header />);
     const contactLinks = screen.getAllByRole("link", { name: /contact us/i });
-    expect(contactLinks.some((link) => link.getAttribute("href") === "#cta")).toBe(true);
+    expect(contactLinks.some((link) => link.getAttribute("href") === "#contact")).toBe(true);
   });
 
   it("toggles the mobile menu open state when the menu button is pressed", async () => {
@@ -58,5 +58,20 @@ describe("Header", () => {
     const mobile = document.querySelector('nav[aria-label="Mobile"]')!;
     const hrefs = (root: Element) => [...root.querySelectorAll("a")].map((a) => a.getAttribute("href"));
     expect(hrefs(mobile).slice(0, hrefs(desktop).length)).toEqual(hrefs(desktop));
+  });
+
+  it("highlights the menu item for the section the scroll journey is in", async () => {
+    const { journeyState } = await import("@/lib/motion/journeyState");
+    render(<Header />);
+    journeyState.activeStage = "typography"; // internal key for "Our Approach"
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+    const nav = screen.getAllByRole("navigation")[0]!;
+    const approach = within(nav).getByRole("link", { name: /our approach/i });
+    expect(approach).toHaveAttribute("href", "#approach");
+    expect(approach).toHaveAttribute("data-active", "true");
+    expect(within(nav).getByRole("link", { name: /about us/i })).toHaveAttribute("data-active", "false");
+    journeyState.activeStage = "intro";
   });
 });

@@ -1,4 +1,5 @@
 import type { MouseEvent as ReactMouseEvent } from "react";
+import { SECTION_ANCHORS, STAGE_IDS, type StageId } from "@/types";
 import { lenisInstance } from "./lenisInstance";
 
 /**
@@ -42,4 +43,19 @@ export function handleInPageNavClick(
   if (!href.startsWith("#")) return;
   event.preventDefault();
   scrollToSection(href);
+}
+
+/**
+ * Older links used the internal stage ids as anchors (`#typography`,
+ * `#cta`). Rewrites such a hash in the address bar to its readable anchor
+ * (`#approach`, `#contact`) and scrolls there. Call once on page load.
+ */
+export function redirectLegacyHash(): void {
+  if (typeof window === "undefined") return;
+  const legacy = window.location.hash.slice(1) as StageId;
+  if (!(STAGE_IDS as readonly string[]).includes(legacy)) return;
+  const anchor = SECTION_ANCHORS[legacy];
+  if (anchor === legacy) return;
+  window.history.replaceState(null, "", `#${anchor}`);
+  document.getElementById(anchor)?.scrollIntoView({ block: "start" });
 }

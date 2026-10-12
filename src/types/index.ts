@@ -84,6 +84,26 @@ export const STAGE_IDS = [
 
 export type StageId = (typeof STAGE_IDS)[number];
 
+/**
+ * Visitor-facing URL anchor for each chapter (`#approach`, not
+ * `#typography`). Stage ids stay as the internal keys the 3D journey and
+ * scroll timeline use (`data-stage`); only the element `id`, and so every
+ * link and address-bar hash, uses these readable names.
+ */
+export const SECTION_ANCHORS: Record<StageId, string> = {
+  intro: "home",
+  about: "about",
+  typography: "approach",
+  neural: "how-we-think",
+  universe: "numbers",
+  game: "playground",
+  future: "vision",
+  cta: "contact",
+};
+
+/** In-page link to a chapter, e.g. `anchorHref("cta")` -> `"#contact"`. */
+export const anchorHref = (stage: StageId) => `#${SECTION_ANCHORS[stage]}` as const;
+
 /** A single "camera flight" waypoint. `fov` in degrees. */
 export interface CameraKeyframe {
   x: number;

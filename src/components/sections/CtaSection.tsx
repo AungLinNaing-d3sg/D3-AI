@@ -59,7 +59,7 @@ export function CtaSection() {
 
               <Reveal delay={0.15} variant="blur" blur={4} y={8} duration={0.5}>
                 <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
-                  <CtaStartLink href="#cta-contact" focusId="contact-name" />
+                  <CtaStartLink href="#contact-form" focusId="contact-name" />
                   <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-300">
                     <a
                       href={`mailto:${siteConfig.email}`}
@@ -103,7 +103,7 @@ export function CtaSection() {
               duration={0.6}
               className="mt-12 w-full md:mt-14 lg:mt-0"
             >
-              <div id="cta-contact" className="cta-console scroll-mt-28">
+              <div id="contact-form" className="cta-console scroll-mt-28">
                 <div className="cta-console-head">
                   <h3 id="contact-form-heading" className="cta-console-title">
                     Send us a message

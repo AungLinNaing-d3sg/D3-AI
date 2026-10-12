@@ -24,12 +24,12 @@ describe("homepage chapters", () => {
   it("renders the intro hero headline and tagline as the page's h1", () => {
     render(<IntroSection />);
     expect(screen.getByRole("heading", { level: 1, name: siteConfig.tagline })).toBeInTheDocument();
-    expect(document.getElementById("intro")).toHaveAttribute("data-stage", "intro");
+    expect(document.getElementById("home")).toHaveAttribute("data-stage", "intro");
   });
 
   it("renders the hero's next steps", () => {
     render(<IntroSection />);
-    expect(screen.getByRole("link", { name: /start a project/i })).toHaveAttribute("href", "#cta");
+    expect(screen.getByRole("link", { name: /start a project/i })).toHaveAttribute("href", "#contact");
     expect(screen.getByRole("link", { name: /explore the journey/i })).toHaveAttribute("href", "#about");
   });
 
@@ -66,7 +66,7 @@ describe("homepage chapters", () => {
 
   it("renders the typography chapter's discipline cards accessibly, independent of the 3D sphere", () => {
     render(<TypographySection />);
-    expect(document.getElementById("typography")).toHaveAttribute("data-stage", "typography");
+    expect(document.getElementById("approach")).toHaveAttribute("data-stage", "typography");
     expect(
       screen.getByRole("heading", { level: 2, name: "Three disciplines, one intelligent system" })
     ).toBeInTheDocument();
@@ -100,7 +100,7 @@ describe("homepage chapters", () => {
 
   it("renders the neural network chapter with every technology node label", () => {
     render(<NeuralSection />);
-    expect(document.getElementById("neural")).toHaveAttribute("data-stage", "neural");
+    expect(document.getElementById("how-we-think")).toHaveAttribute("data-stage", "neural");
     technologyNetworkNodes.forEach((node) => {
       expect(screen.getByText(node.label)).toBeInTheDocument();
     });
@@ -108,7 +108,7 @@ describe("homepage chapters", () => {
 
   it("renders the data universe chapter's real, sourced statistics", () => {
     render(<UniverseSection />);
-    expect(document.getElementById("universe")).toHaveAttribute("data-stage", "universe");
+    expect(document.getElementById("numbers")).toHaveAttribute("data-stage", "universe");
     universeStats.forEach((stat) => {
       expect(screen.getByText(stat.token)).toBeInTheDocument();
     });
@@ -141,7 +141,7 @@ describe("homepage chapters", () => {
 
   it("renders the AI Engineering Playground chapter as live system modules, one per real experience", () => {
     render(<GameSection />);
-    expect(document.getElementById("game")).toHaveAttribute("data-stage", "game");
+    expect(document.getElementById("playground")).toHaveAttribute("data-stage", "game");
     expect(screen.getByRole("heading", { level: 2, name: /ai engineering playground/i })).toBeInTheDocument();
     expect(screen.getByText("06 — AI Playground")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /play experience — choose your ai agent/i })).toBeInTheDocument();
@@ -152,13 +152,13 @@ describe("homepage chapters", () => {
 
   it("renders the cinematic future chapter's vision statement", () => {
     render(<FutureSection />);
-    expect(document.getElementById("future")).toHaveAttribute("data-stage", "future");
+    expect(document.getElementById("vision")).toHaveAttribute("data-stage", "future");
     expect(screen.getByRole("heading", { level: 2, name: siteConfig.tagline })).toBeInTheDocument();
   });
 
   it("renders the final CTA with direct email and phone actions", () => {
     render(<CtaSection />);
-    expect(document.getElementById("cta")).toHaveAttribute("data-stage", "cta");
+    expect(document.getElementById("contact")).toHaveAttribute("data-stage", "cta");
     expect(screen.getByRole("link", { name: /email us/i })).toHaveAttribute(
       "href",
       `mailto:${siteConfig.email}`

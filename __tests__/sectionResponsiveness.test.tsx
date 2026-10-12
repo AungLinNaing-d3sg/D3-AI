@@ -38,7 +38,7 @@ function extractMinHeightVh(className: string): number[] {
 describe("chapter section responsiveness", () => {
   it.each(chapters)("keeps the '$id' chapter's own min-height within the compact 70-140vh budget", ({ id, Section }) => {
     render(<Section />);
-    const el = document.getElementById(id);
+    const el = document.querySelector(`[data-stage="${id}"]`);
     expect(el).not.toBeNull();
 
     const vhValues = extractMinHeightVh(el?.className ?? "");

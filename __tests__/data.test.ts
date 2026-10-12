@@ -177,3 +177,22 @@ describe("content data integrity", () => {
   });
 
 });
+
+describe("section anchors", () => {
+  it("gives every chapter a unique, readable anchor and every nav link a target", async () => {
+    const { SECTION_ANCHORS, STAGE_IDS: ids } = await import("@/types");
+    const { primaryNav } = await import("@/data/nav");
+    const anchors = ids.map((id) => SECTION_ANCHORS[id]);
+    expect(new Set(anchors).size).toBe(ids.length);
+    anchors.forEach((a) => expect(a).toMatch(/^[a-z]+(-[a-z]+)*$/));
+    expect(anchors).not.toEqual(expect.arrayContaining(["typography", "neural", "universe", "cta", "intro"]));
+    primaryNav.forEach((item) => expect(anchors).toContain(item.href.slice(1)));
+  });
+
+  it("redirects old shared links to the renamed sections", async () => {
+    const { redirectLegacyHash } = await import("@/lib/motion/scrollNav");
+    window.history.replaceState(null, "", "#typography");
+    redirectLegacyHash();
+    expect(window.location.hash).toBe("#approach");
+  });
+});
