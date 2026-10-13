@@ -12,7 +12,7 @@
  */
 import type { ReactNode } from "react";
 
-type RevealTag = "div" | "p" | "span" | "h1" | "h2" | "h3" | "li" | "article";
+type RevealTag = "div" | "p" | "span" | "h1" | "h2" | "h3" | "h4" | "li" | "article";
 
 interface RevealProps {
   children: ReactNode;

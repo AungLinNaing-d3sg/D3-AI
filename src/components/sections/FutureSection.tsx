@@ -10,6 +10,13 @@ import { siteConfig } from "@/data/site";
 import { useDeviceCapability } from "@/hooks/useDeviceCapability";
 import { DISCIPLINE_COLORS } from "@/lib/motion/heroFocus";
 import { visionFocus } from "@/lib/motion/visionFocus";
+
+/** The tagline's closing phrase, set in the brand accent like every
+ * chapter title. */
+const VISION_ACCENT = "together with you.";
+const visionLead = siteConfig.tagline.endsWith(VISION_ACCENT)
+  ? siteConfig.tagline.slice(0, -VISION_ACCENT.length).trimEnd()
+  : siteConfig.tagline;
 import { useJourneyFrame } from "@/hooks/useJourneyFrame";
 import { useWebglSupported } from "@/hooks/useWebglSupported";
 
@@ -114,7 +121,15 @@ export function FutureSection() {
             <SectionHeading
               headingId="future-heading"
               eyebrow="07 — Our vision"
-              title={siteConfig.tagline}
+              title={
+                visionLead === siteConfig.tagline ? (
+                  siteConfig.tagline
+                ) : (
+                  <>
+                    {visionLead} <span className="v2-accent">{VISION_ACCENT}</span>
+                  </>
+                )
+              }
               description="Not a distant promise — the same three disciplines you just walked through, carried forward."
               scrim
             />

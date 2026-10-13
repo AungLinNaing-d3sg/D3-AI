@@ -9,13 +9,14 @@ import { NeuralSection } from "@/components/sections/NeuralSection";
 import { UniverseSection } from "@/components/sections/UniverseSection";
 import { GameSection } from "@/components/sections/GameSection";
 import { FutureSection } from "@/components/sections/FutureSection";
+import { FaqSection } from "@/components/sections/FaqSection";
 import { CtaSection } from "@/components/sections/CtaSection";
 
 /**
- * Homepage — one continuous, 8-chapter cinematic scrollytelling journey
- * through a single AI universe (cinematic intro → about us → the three real
- * disciplines → neural network → data universe → "train your AI" mini-game
- * → cinematic AI future → final CTA). The "AI Product Experience" chapter
+ * Homepage — one continuous, cinematic scrollytelling journey through a
+ * single AI universe (cinematic intro → about us → the three real
+ * disciplines → how we build → data universe → "train your AI" mini-game
+ * → cinematic AI future → FAQ → final CTA). The "AI Product Experience" chapter
  * that used to sit between the data universe and the mini-game was removed
  * — it duplicated the same three real disciplines (Data/Dynamics/Digital)
  * the "Our Approach" chapter already covers; that chapter is now the single
@@ -43,6 +44,7 @@ export default function Home() {
         <UniverseSection />
         <GameSection />
         <FutureSection />
+        <FaqSection />
         <CtaSection />
       </div>
     </>

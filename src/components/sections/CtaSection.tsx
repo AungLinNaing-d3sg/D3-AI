@@ -52,8 +52,12 @@ export function CtaSection() {
             <div className="flex flex-col gap-7 md:max-w-[23rem] lg:min-h-[100svh] lg:max-w-none lg:justify-center lg:pb-16 lg:pt-28">
               <SectionHeading
                 headingId="cta-heading"
-                eyebrow="08 — Let’s talk"
-                title="Let’s build what’s next."
+                eyebrow="09 — Let’s talk"
+                title={
+                  <>
+                    Let’s build <span className="v2-accent">what’s next.</span>
+                  </>
+                }
                 description="Have an idea, a challenge, or a vision for what comes next? Let’s turn it into something real — together."
               />
 

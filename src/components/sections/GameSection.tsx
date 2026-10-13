@@ -65,7 +65,11 @@ export function GameSection() {
           <SectionHeading
             headingId="game-heading"
             eyebrow="06 — AI Playground"
-            title={playgroundHeroCopy.title}
+            title={
+              <>
+                {playgroundHeroCopy.title} <span className="v2-accent">{playgroundHeroCopy.titleHighlight}</span>
+              </>
+            }
             description={isEntry ? playgroundHeroCopy.description : undefined}
             align="center"
             scrim

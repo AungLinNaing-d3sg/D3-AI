@@ -3,10 +3,11 @@ import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/motion/Reveal";
 import { technologyNetworkNodes } from "@/data/journey";
+import { ProcessPanel } from "./ProcessPanel";
 
 /**
- * Chapter 04 — AI Neural Network / technology ecosystem. The live,
- * camera-traversed network lives in the shared 3D canvas
+ * Chapter 04 — How We Build: the technology ecosystem, then the delivery
+ * process. The live, camera-traversed network lives in the shared 3D canvas
  * (three/scenes/NeuralScene.tsx) — the real technology stack
  * (src/data/technology.ts) arranged around a central hub. This layer
  * supplies the chapter heading and a fully accessible, always-visible list
@@ -15,6 +16,10 @@ import { technologyNetworkNodes } from "@/data/journey";
  * THINK/LEARN/UNDERSTAND/PREDICT/CREATE thought pipeline now lives
  * exclusively in the hero (see IntroSection/IntroScene) — this chapter no
  * longer duplicates it.
+ *
+ * Below the stack, the delivery process (Assess → Plan → Build → Run, from
+ * development_v2 — see ProcessPanel) sits in a translucent glass panel, so
+ * the network keeps moving behind it.
  */
 export function NeuralSection() {
   return (
@@ -31,23 +36,35 @@ export function NeuralSection() {
           <SectionHeading
             headingId="neural-heading"
             eyebrow="04 — How we build"
-            title="A network built on real capability"
+            title={
+              <>
+                A network built on <span className="v2-accent">real capability</span>
+              </>
+            }
             description="The real technology stack behind every engagement — visualised behind this section as a live, camera-traversed network around a central hub."
+            className="build-heading"
             scrim
           />
 
-          <Reveal as="div" variant="depth" delay={0.2} className="flex flex-wrap gap-2.5">
-            {technologyNetworkNodes.map((node) => (
-              <span
-                key={node.id}
-                className="rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-xs text-ink-300"
-              >
-                {node.label}
-              </span>
-            ))}
-          </Reveal>
+          <div className="build-stack">
+            <p className="build-label">
+              <span aria-hidden="true" className="build-label-dot" />
+              The stack behind every step
+            </p>
+            <Reveal as="div" variant="depth" delay={0.2} className="build-chips">
+              {technologyNetworkNodes.map((node) => (
+                <span key={node.id} className="build-chip">
+                  {node.label}
+                </span>
+              ))}
+            </Reveal>
+          </div>
         </Container>
       </div>
+
+      <Container className="pb-16 md:pb-24 lg:pb-28">
+        <ProcessPanel />
+      </Container>
     </Section>
   );
 }

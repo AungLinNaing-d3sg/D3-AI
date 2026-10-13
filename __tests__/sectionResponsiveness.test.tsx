@@ -6,6 +6,7 @@ import { NeuralSection } from "@/components/sections/NeuralSection";
 import { UniverseSection } from "@/components/sections/UniverseSection";
 import { GameSection } from "@/components/sections/GameSection";
 import { FutureSection } from "@/components/sections/FutureSection";
+import { FaqSection } from "@/components/sections/FaqSection";
 import type { StageId } from "@/types";
 
 /**
@@ -27,6 +28,7 @@ const chapters: { id: StageId; Section: () => React.JSX.Element }[] = [
   { id: "universe", Section: UniverseSection },
   { id: "game", Section: GameSection },
   { id: "future", Section: FutureSection },
+  { id: "faq", Section: FaqSection },
 ];
 
 function extractMinHeightVh(className: string): number[] {

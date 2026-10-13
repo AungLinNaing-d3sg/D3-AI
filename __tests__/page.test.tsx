@@ -5,7 +5,7 @@ import { SECTION_ANCHORS, STAGE_IDS } from "@/types";
 
 // The 3D canvas and scroll choreographer are exercised by their own unit
 // tests / the (mocked) @react-three/fiber + @react-three/drei modules; here
-// we only assert the page composes all 8 real-content chapters correctly.
+// we only assert the page composes every real-content chapter correctly.
 jest.mock("@/components/three/SceneCanvas", () => ({
   SceneCanvas: () => <div data-testid="mock-scene-canvas" />,
 }));
@@ -14,7 +14,7 @@ jest.mock("@/components/motion/ScrollChoreographer", () => ({
 }));
 
 describe("Home page", () => {
-  it("renders the decorative scene canvas alongside all 8 journey chapters", () => {
+  it("renders the decorative scene canvas alongside every journey chapter", () => {
     render(<Home />);
 
     expect(screen.getByTestId("mock-scene-canvas")).toBeInTheDocument();

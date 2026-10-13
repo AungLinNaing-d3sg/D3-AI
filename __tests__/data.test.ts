@@ -56,7 +56,7 @@ describe("content data integrity", () => {
     });
   });
 
-  it("defines exactly the 8 scrollytelling chapters in journey order", () => {
+  it("defines exactly the 9 scrollytelling chapters in journey order", () => {
     expect(STAGE_IDS).toEqual([
       "intro",
       "about",
@@ -65,6 +65,7 @@ describe("content data integrity", () => {
       "universe",
       "game",
       "future",
+      "faq",
       "cta",
     ]);
   });
@@ -194,5 +195,20 @@ describe("section anchors", () => {
     window.history.replaceState(null, "", "#typography");
     redirectLegacyHash();
     expect(window.location.hash).toBe("#approach");
+  });
+
+  it("redirects the old How We Think anchor to How We Build", async () => {
+    const { redirectLegacyHash } = await import("@/lib/motion/scrollNav");
+    window.history.replaceState(null, "", "#how-we-think");
+    redirectLegacyHash();
+    expect(window.location.hash).toBe("#how-we-build");
+  });
+
+  it("leaves Contact out of the main menu (the Contact Us button covers it) and lists the FAQ", async () => {
+    const { primaryNav } = await import("@/data/nav");
+    const hrefs = primaryNav.map((item) => item.href);
+    expect(hrefs).not.toContain("#contact");
+    expect(hrefs).toContain("#faq");
+    expect(primaryNav.find((item) => item.href === "#how-we-build")?.label).toBe("How We Build");
   });
 });

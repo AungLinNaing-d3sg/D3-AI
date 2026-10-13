@@ -18,11 +18,12 @@ const SHORT_LABELS: Record<StageId, string> = {
   universe: "By The Numbers",
   game: "AI Playground",
   future: "Vision",
+  faq: "FAQ",
   cta: "Let's Talk",
 };
 
 /**
- * The site's real 8 chapters, in real document order — single source of
+ * The site's real chapters, in real document order — single source of
  * truth for the global scroll-progress rail
  * (`components/layout/ScrollProgressRail.tsx`). Deliberately separate from
  * the AI Playground's own internal chapter list

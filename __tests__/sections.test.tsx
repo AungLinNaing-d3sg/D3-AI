@@ -7,6 +7,9 @@ import { UniverseSection } from "@/components/sections/UniverseSection";
 import { GameSection } from "@/components/sections/GameSection";
 import { FutureSection } from "@/components/sections/FutureSection";
 import { CtaSection } from "@/components/sections/CtaSection";
+import { FaqSection } from "@/components/sections/FaqSection";
+import { faqItems } from "@/data/faq";
+import { processSteps } from "@/data/process";
 import { siteConfig } from "@/data/site";
 import {
   heroPipelineNodes,
@@ -105,10 +108,30 @@ describe("homepage chapters", () => {
 
   it("renders the neural network chapter with every technology node label", () => {
     render(<NeuralSection />);
-    expect(document.getElementById("how-we-think")).toHaveAttribute("data-stage", "neural");
+    expect(document.getElementById("how-we-build")).toHaveAttribute("data-stage", "neural");
     technologyNetworkNodes.forEach((node) => {
       expect(screen.getByText(node.label)).toBeInTheDocument();
     });
+  });
+
+  it("renders the delivery process steps in order inside the How We Build chapter", () => {
+    render(<NeuralSection />);
+    const titles = screen.getAllByRole("heading", { level: 4 }).map((h) => h.textContent);
+    expect(titles).toEqual(processSteps.map((step) => step.title));
+    processSteps.forEach((step) => expect(screen.getByText(step.text)).toBeInTheDocument());
+  });
+
+  it("renders every FAQ as a native disclosure that opens on click", () => {
+    render(<FaqSection />);
+    expect(document.getElementById("faq")).toHaveAttribute("data-stage", "faq");
+    expect(screen.getByRole("heading", { level: 2, name: /questions, answered/i })).toBeInTheDocument();
+    const details = document.querySelectorAll("details");
+    expect(details).toHaveLength(faqItems.length);
+    const first = details[0]!;
+    expect(first.open).toBe(false);
+    fireEvent.click(within(first).getByText(faqItems[0].q));
+    expect(first.open).toBe(true);
+    expect(screen.getByRole("link", { name: /ask the team/i })).toHaveAttribute("href", "#contact");
   });
 
   it("renders the data universe chapter's real, sourced statistics", () => {
@@ -175,7 +198,7 @@ describe("homepage chapters", () => {
 
   it("closes the journey with the standard section header system", () => {
     render(<CtaSection />);
-    expect(screen.getByText("08 — Let’s talk")).toHaveClass("type-eyebrow");
+    expect(screen.getByText("09 — Let’s talk")).toHaveClass("type-eyebrow");
     const heading = screen.getByRole("heading", { level: 2, name: "Let’s build what’s next." });
     expect(heading).toHaveClass("type-display-section");
     expect(screen.getByText(/have an idea, a challenge, or a vision/i)).toBeInTheDocument();

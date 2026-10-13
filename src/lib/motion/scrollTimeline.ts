@@ -5,11 +5,12 @@ import { ensureGsapRegistered, ScrollTrigger } from "@/lib/motion/gsap";
 
 /**
  * The single continuous camera flight path through the whole experience —
- * one keyframe *between* every stage (9 waypoints for 8 stages), authored to
- * read as one cinematic move rather than 8 independent shots: push in from a
- * wide establishing shot, settle for the About Us identity emblem, weave past
- * the disciplines and network, pull back to reveal the data universe, settle
- * for the mini-game, pull back for the cinematic future vista, then rest
+ * one keyframe *between* every stage (one more waypoint than stages),
+ * authored to read as one cinematic move rather than independent shots: push
+ * in from a wide establishing shot, settle for the About Us identity emblem,
+ * weave past the disciplines and network, pull back to reveal the data
+ * universe, settle for the mini-game, pull back for the cinematic future
+ * vista, hold steady for the FAQ (its object carries the motion), then rest
  * centred for the final CTA.
  */
 const cameraKeyframes: CameraKeyframe[] = [
@@ -20,8 +21,9 @@ const cameraKeyframes: CameraKeyframe[] = [
   { x: -1.1, y: 0.35, z: 2.6, lookX: 0.25, lookY: 0, lookZ: -1.2, fov: 56 }, // 4 — neural end / universe start
   { x: 0, y: 0, z: 5.4, lookX: 0, lookY: 0, lookZ: 0, fov: 46 }, // 5 — universe end / game start
   { x: 0, y: 0.4, z: 6.8, lookX: 0, lookY: 0, lookZ: -1, fov: 40 }, // 6 — game end / future start
-  { x: 0, y: 0.15, z: 5.6, lookX: 0, lookY: 0, lookZ: 0, fov: 38 }, // 7 — future end / cta start
-  // 8 — cta end: from keyframe 7's slightly wider view, a slow push in with
+  { x: 0, y: 0.15, z: 5.6, lookX: 0, lookY: 0, lookZ: 0, fov: 38 }, // 7 — future end / faq start
+  { x: 0, y: 0.15, z: 5.6, lookX: 0, lookY: 0, lookZ: 0, fov: 38 }, // 8 — faq end / cta start
+  // 9 — cta end: from keyframe 8's slightly wider view, a slow push in with
   // a small orbit to the left, so the intelligence core's depth and layered
   // glass read as the section scrolls (see three/scenes/CtaScene.tsx) —
   // felt as perspective, never as an obvious camera move.
@@ -37,6 +39,7 @@ const lightKeyframes: LightKeyframe[] = [
   { ambient: 0.55, key: 1.3, rim: 0.5, colorHex: "#e5e9f2" },
   { ambient: 0.35, key: 1.1, rim: 0.75, colorHex: "#7c8cff" },
   { ambient: 0.4, key: 1.35, rim: 0.6, colorHex: "#f14a30" },
+  { ambient: 0.4, key: 1.35, rim: 0.6, colorHex: "#f14a30" }, // faq end — held, so Vision and the CTA light exactly as before
   // cta — kept low: the intelligence core carries its own warm key, cool
   // fill, rim and internal orange emission (see three/scenes/CtaScene.tsx),
   // so the shared rig only adds a faint, warm-neutral base that never

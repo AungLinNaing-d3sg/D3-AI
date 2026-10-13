@@ -61,7 +61,11 @@ export function UniverseSection() {
           <SectionHeading
             headingId="universe-heading"
             eyebrow="05 — By the numbers"
-            title="A data universe built from real numbers"
+            title={
+              <>
+                A data universe built from <span className="v2-accent">real numbers</span>
+              </>
+            }
             description="A live coding terminal, typing behind this section — because these numbers are the product of real, ongoing work, not marketing copy."
             scrim
           />

@@ -45,17 +45,24 @@ export function handleInPageNavClick(
   scrollToSection(href);
 }
 
+/** Readable anchors that have since been renamed. */
+const RENAMED_ANCHORS: Record<string, string> = {
+  "how-we-think": SECTION_ANCHORS.neural,
+};
+
 /**
  * Older links used the internal stage ids as anchors (`#typography`,
- * `#cta`). Rewrites such a hash in the address bar to its readable anchor
- * (`#approach`, `#contact`) and scrolls there. Call once on page load.
+ * `#cta`), or a since-renamed anchor (`#how-we-think`). Rewrites such a
+ * hash in the address bar to its current readable anchor (`#approach`,
+ * `#contact`, `#how-we-build`) and scrolls there. Call once on page load.
  */
 export function redirectLegacyHash(): void {
   if (typeof window === "undefined") return;
-  const legacy = window.location.hash.slice(1) as StageId;
-  if (!(STAGE_IDS as readonly string[]).includes(legacy)) return;
-  const anchor = SECTION_ANCHORS[legacy];
-  if (anchor === legacy) return;
+  const legacy = window.location.hash.slice(1);
+  const anchor = (STAGE_IDS as readonly string[]).includes(legacy)
+    ? SECTION_ANCHORS[legacy as StageId]
+    : RENAMED_ANCHORS[legacy];
+  if (!anchor || anchor === legacy) return;
   window.history.replaceState(null, "", `#${anchor}`);
   document.getElementById(anchor)?.scrollIntoView({ block: "start" });
 }

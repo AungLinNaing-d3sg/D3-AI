@@ -10,7 +10,7 @@ import { useDeviceCapability } from "@/hooks/useDeviceCapability";
  * `ElementType`) so TypeScript can still correctly type `ref`/`children`
  * for each — a fully polymorphic `as` prop collapses JSX prop typing to
  * `never`. */
-type RevealTag = "div" | "p" | "span" | "h1" | "h2" | "h3" | "li" | "article";
+type RevealTag = "div" | "p" | "span" | "h1" | "h2" | "h3" | "h4" | "li" | "article";
 
 /**
  * - `"fade"` (default) — the original lightweight vertical fade/slide, used

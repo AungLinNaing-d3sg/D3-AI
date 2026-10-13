@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, type CSSProperties } from "react";
+import { useCallback, useEffect, useRef, type CSSProperties } from "react";
 import Image from "next/image";
 import { Section } from "@/components/ui/Section";
 import { Container } from "@/components/ui/Container";
@@ -36,6 +36,20 @@ export function AboutSection() {
 
   useJourneyFrame(onFrame);
 
+  // The value row crossing the middle of the screen is marked active (the
+  // same lit state as hover), so touch screens get it too.
+  const valuesRef = useRef<HTMLUListElement>(null);
+  useEffect(() => {
+    const rows = Array.from(valuesRef.current?.children ?? []) as HTMLElement[];
+    if (!rows.length || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach((entry) => (entry.target as HTMLElement).setAttribute("data-active", String(entry.isIntersecting))),
+      { rootMargin: "-46% 0px -46% 0px" }
+    );
+    rows.forEach((row) => observer.observe(row));
+    return () => observer.disconnect();
+  }, []);
+
   const { title, titleHighlight, statement, values } = aboutContent;
 
   return (
@@ -49,9 +63,11 @@ export function AboutSection() {
             {statement}
           </Reveal>
         </div>
-        <ul className="about-v2-values lg:mt-2">
+        <ul ref={valuesRef} className="about-v2-values lg:mt-2">
           {values.map((value, index) => (
             <Reveal as="li" variant="wipe" delay={index * 0.08} className="about-v2-value v2-glass" key={value.title}>
+              <span className="v2-edge" aria-hidden="true" />
+              <span className="about-v2-rail" aria-hidden="true" />
               <h3>{value.title}</h3>
               <p>{value.text}</p>
             </Reveal>
@@ -74,6 +90,7 @@ export function AboutSection() {
                 </span>
                 {aboutTeamRanges.map(({ member }, i) => (
                   <button type="button" className={`dossier-index-item${i === 0 ? " is-active" : ""}`} data-leader-jump={i} key={member.name}>
+                    <span className="v2-edge" aria-hidden="true" />
                     <span className="dossier-index-num">{String(i + 1).padStart(2, "0")}</span>
                     <span>
                       <b>{member.name}</b>

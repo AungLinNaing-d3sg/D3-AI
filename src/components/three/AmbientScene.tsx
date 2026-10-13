@@ -25,8 +25,8 @@ import type { SceneQuality } from "@/lib/three/deviceTiers";
  *
  * - a deep nebula sky around the camera, whose palette glides from chapter
  *   to chapter with the scroll crossfade (deep blue/ember for the Hero, warm
- *   amber for About, orange for Our Approach, cyan for How We Think, indigo
- *   for By the Numbers, violet for the Playground, ember again for the CTA);
+ *   amber for About, orange for Our Approach, cyan for How We Build, indigo
+ *   for By the Numbers, violet for the Playground, ember again for the FAQ and CTA);
  * - three layers of stars that twinkle and stream gently towards the viewer
  *   as the page is scrolled, for a sense of travel;
  * - soft, out-of-focus bokeh motes drifting through, tinted by the chapter;
@@ -53,6 +53,7 @@ const PALETTE: Record<StageId, [string, string, string]> = {
   universe: ["#080a22", "#1e1f55", "#a6b4ff"],
   game: ["#0a0a1a", "#26194a", "#c3b2ff"],
   future: ["#08090f", "#2a1812", "#f0c8a8"],
+  faq: ["#090a14", "#2e1a14", "#ffb38f"],
   cta: ["#0c0710", "#3c1510", "#ff9a78"],
 };
 

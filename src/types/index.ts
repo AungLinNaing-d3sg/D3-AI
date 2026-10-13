@@ -64,7 +64,7 @@ export interface BrandPillar {
 }
 
 /**
- * The 9 chapters of the scroll-driven journey (see src/app/page.tsx and
+ * The chapters of the scroll-driven journey (see src/app/page.tsx and
  * lib/motion/journeyState.ts). Order matters — it is both document order and
  * camera/timeline order. "about" (chapter 02 — Who we are) sits right after
  * the cinematic intro and before the more technical Data/Dynamics/Digital
@@ -79,6 +79,7 @@ export const STAGE_IDS = [
   "universe",
   "game",
   "future",
+  "faq",
   "cta",
 ] as const;
 
@@ -94,10 +95,11 @@ export const SECTION_ANCHORS: Record<StageId, string> = {
   intro: "home",
   about: "about",
   typography: "approach",
-  neural: "how-we-think",
+  neural: "how-we-build",
   universe: "numbers",
   game: "playground",
   future: "vision",
+  faq: "faq",
   cta: "contact",
 };
 

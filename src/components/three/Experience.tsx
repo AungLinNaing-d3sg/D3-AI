@@ -11,6 +11,7 @@ import { NeuralScene } from "@/components/three/scenes/NeuralScene";
 import { UniverseScene } from "@/components/three/scenes/UniverseScene";
 import { GameAmbienceScene } from "@/components/three/scenes/GameAmbienceScene";
 import { FutureScene } from "@/components/three/scenes/FutureScene";
+import { FaqScene } from "@/components/three/scenes/FaqScene";
 import { CtaScene } from "@/components/three/scenes/CtaScene";
 import { SCENE_TIER_CONFIG, type SceneQuality } from "@/lib/three/deviceTiers";
 
@@ -20,18 +21,18 @@ interface ExperienceProps {
 }
 
 /**
- * The full R3F scene tree — one continuous `<Canvas>` shared by all 8
- * chapters. Deliberately contains no interactive UI/forms (the "3D scene"
+ * The full R3F scene tree — one continuous `<Canvas>` shared by every
+ * chapter. Deliberately contains no interactive UI/forms (the "3D scene"
  * half of "combine traditional HTML/UI with interactive 3D scenes"); all
  * real content, navigation, and controls live in `components/sections`.
  *
  * Each chapter below is its own scene component with its own visual
  * language (identity emblem, discipline sphere, neural graph, particle
- * universe, cinematic monoliths, minimal CTA glow) — deliberately *not* one
- * object re-skinned 8 times. All 8 always mount so their crossfade
- * (`journeyState.weight`) can overlap smoothly at chapter boundaries; each
- * scene is responsible for going idle (skipping expensive per-frame work)
- * once its own weight reaches zero.
+ * universe, cinematic monoliths, FAQ query core, minimal CTA glow) —
+ * deliberately *not* one object re-skinned per chapter. All always mount so
+ * their crossfade (`journeyState.weight`) can overlap smoothly at chapter
+ * boundaries; each scene is responsible for going idle (skipping expensive
+ * per-frame work) once its own weight reaches zero.
  */
 export function Experience({ quality, enableParallax }: ExperienceProps) {
   const dpr = SCENE_TIER_CONFIG[quality].dpr;
@@ -62,6 +63,7 @@ export function Experience({ quality, enableParallax }: ExperienceProps) {
       <UniverseScene quality={quality} />
       <GameAmbienceScene quality={quality} />
       <FutureScene quality={quality} />
+      <FaqScene quality={quality} />
       <CtaScene quality={quality} />
 
       <CameraRig enableParallax={enableParallax} />

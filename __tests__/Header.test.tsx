@@ -8,7 +8,9 @@ describe("Header", () => {
     const nav = screen.getByRole("navigation", { name: /primary/i });
     expect(nav).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /our approach/i }).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole("link", { name: /how we think/i }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("link", { name: /how we build/i }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("link", { name: /^faq$/i }).length).toBeGreaterThan(0);
+    expect(screen.queryByRole("link", { name: /^contact$/i })).not.toBeInTheDocument();
   });
 
   it("links the About Us nav item to the about-us chapter anchor", () => {

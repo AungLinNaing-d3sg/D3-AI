@@ -292,7 +292,9 @@ export const WORKFLOW_STAGES: WorkflowStageDefinition[] = [
  * cinematic entry chapter so both describe the same experience identically.
  */
 export const playgroundHeroCopy = {
-  title: "AI Engineering Playground",
+  title: "AI Engineering",
+  /** Set in the brand accent after `title`. */
+  titleHighlight: "Playground",
   description: "Explore how intelligent systems are built, tested, reviewed, and connected.",
   cta: "Play experience",
 } as const;
