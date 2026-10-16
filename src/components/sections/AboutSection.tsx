@@ -36,6 +36,21 @@ export function AboutSection() {
 
   useJourneyFrame(onFrame);
 
+  // Glass cards (.glass-card) light their edge and spotlight where the
+  // mouse is: one delegated listener writes --mx/--my on the hovered card.
+  useEffect(() => {
+    const onMove = (event: PointerEvent) => {
+      if (event.pointerType !== "mouse") return;
+      const card = (event.target as Element | null)?.closest<HTMLElement>(".about-v2-value.glass-card, .dossier-inner.glass-card");
+      if (!card) return;
+      const rect = card.getBoundingClientRect();
+      card.style.setProperty("--mx", `${event.clientX - rect.left}px`);
+      card.style.setProperty("--my", `${event.clientY - rect.top}px`);
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+    return () => window.removeEventListener("pointermove", onMove);
+  }, []);
+
   // The value row crossing the middle of the screen is marked active (the
   // same lit state as hover), so touch screens get it too.
   const valuesRef = useRef<HTMLUListElement>(null);
@@ -65,8 +80,9 @@ export function AboutSection() {
         </div>
         <ul ref={valuesRef} className="about-v2-values lg:mt-2">
           {values.map((value, index) => (
-            <Reveal as="li" variant="wipe" delay={index * 0.08} className="about-v2-value v2-glass" key={value.title}>
-              <span className="v2-edge" aria-hidden="true" />
+            <Reveal as="li" variant="wipe" delay={index * 0.08} className="about-v2-value v2-glass glass-card" key={value.title}>
+              <span className="card-spot" aria-hidden="true" />
+              <span className="card-edge" aria-hidden="true" />
               <span className="about-v2-rail" aria-hidden="true" />
               <h3>{value.title}</h3>
               <p>{value.text}</p>
@@ -115,7 +131,8 @@ export function AboutSection() {
                     aria-labelledby={`leader-${i}`}
                     key={member.name}
                   >
-                    <div className="dossier-inner v2-glass" data-tilt3d>
+                    <div className="dossier-inner v2-glass glass-card" data-tilt3d>
+                      <span className="card-edge" aria-hidden="true" />
                       <span className="dossier-sheen" aria-hidden="true" />
                       <span className="v2-hud tl" aria-hidden="true" />
                       <span className="v2-hud br" aria-hidden="true" />

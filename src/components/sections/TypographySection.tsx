@@ -133,7 +133,7 @@ export function TypographySection() {
                     data-active="false"
                     aria-labelledby={`discipline-${index}`}
                     style={{ "--accent": accent } as CSSProperties}
-                    className="approach-v2-panel v2-glass"
+                    className="approach-v2-panel v2-glass glass-card"
                     data-panel-tilt
                   >
                     {/* One full-size hit target: click / Enter anywhere on the
@@ -145,11 +145,15 @@ export function TypographySection() {
                       aria-label={`Focus ${service.title} in the connected system`}
                     />
                     <span className="approach-v2-spot" aria-hidden="true" />
+                    <span className="card-edge" aria-hidden="true" />
+                    <span className="v2-hud br" aria-hidden="true" />
                     <span className="v2-numeral" aria-hidden="true">
                       {String(index + 1).padStart(2, "0")}
                     </span>
                     <div className="approach-v2-copy">
-                      <ServiceIcon name={service.icon} className="approach-v2-icon" style={{ color: accent }} />
+                      <span className="approach-v2-badge" aria-hidden="true">
+                        <ServiceIcon name={service.icon} className="approach-v2-icon" style={{ color: accent }} />
+                      </span>
                       <h3 id={`discipline-${index}`} data-track-title className="approach-v2-title">
                         {service.title}
                       </h3>
