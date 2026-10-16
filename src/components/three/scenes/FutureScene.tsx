@@ -29,19 +29,21 @@ interface FutureSceneProps {
 }
 
 /**
- * Chapter 07 — Our vision, embodied: the D3-SG Vision Unit, a full
- * humanoid robot (vision/VisionRobot.tsx) standing in a projected scan
- * field in a dark studio, in the open right-hand column beside the
- * chapter's module console.
+ * Chapter 07 — Our vision, embodied: the D3-SG Vision Unit VU-07
+ * "Sentinel" (vision/VisionRobot.tsx), a compact robot hovering over a
+ * projected scan field in a dark studio, in the open right-hand column
+ * beside the chapter's module console.
  *
- * The robot is built from sculpted ceramic armour over graphite joints and
- * titanium actuators, with a glass visor, a glowing aperture core in its
+ * It is built from glazed white ceramic and orange-painted armour over
+ * graphite joints and titanium actuators, with a black glass faceplate and
+ * expressive ember eyes, a floating halo, a glowing aperture core in its
  * chest and a hologram of the three disciplines floating above its raised
  * palm. Its physical materials take reflections from a studio environment
  * map applied only to them (never `scene.environment`, so no other chapter
  * changes), lit by this chapter's warm key, cool rim, red kicker and a soft
- * fill. It breathes and shifts its weight; its head follows the cursor
- * gently, and scans slowly when left alone.
+ * fill. It hovers, breathes and banks; its head, eyes and body follow the
+ * cursor, it waves when the cursor comes close, and it looks around and
+ * blinks when left alone.
  *
  * Behind it, the studio backdrop (vision/visionShaders.ts) carries a warm
  * light, a faint dot lattice and sonar rings pulsing out from the robot's
@@ -61,13 +63,13 @@ const TIER = {
   low: { seg: 28, dust: 160, sonar: 0.6 },
 } as const;
 
-/** Robot placement: feet position, scale (metres → scene units) and yaw. */
+/** Robot placement: floor position, scale (metres → scene units) and yaw. */
 const PLACEMENT = {
-  landscape: { position: new Vector3(2.6, -2.25, -2.6), scale: 2.35, yaw: -0.34 },
-  portrait: { position: new Vector3(0.95, -3.1, -3.8), scale: 2.1, yaw: -0.28 },
+  landscape: { position: new Vector3(2.55, -1.62, -2.6), scale: 2.4, yaw: -0.3 },
+  portrait: { position: new Vector3(0.9, -2.45, -3.8), scale: 2.3, yaw: -0.24 },
 } as const;
-/** Chest height on the robot (metres). */
-const CHEST_Y = 1.36;
+/** Chest (aperture core) height on the robot (metres). */
+const CHEST_Y = 0.92;
 
 const BACKDROP_SIZE = new Vector2(40, 24);
 const BACKDROP_Z = -9;
@@ -112,7 +114,9 @@ export function FutureScene({ quality }: FutureSceneProps) {
   const materials = useMemo(() => {
     const physical = (params: ConstructorParameters<typeof MeshPhysicalMaterial>[0]) => new MeshPhysicalMaterial({ envMap, ...params });
     return {
-      ceramic: physical({ color: "#eeede8", roughness: 0.28, metalness: 0, clearcoat: 0.9, clearcoatRoughness: 0.08, envMapIntensity: 0.95 }),
+      ceramic: physical({ color: "#f1f0eb", roughness: 0.24, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.06, envMapIntensity: 1 }),
+      // D3-SG orange, as glossy painted armour.
+      paint: physical({ color: "#ef4f2f", roughness: 0.3, metalness: 0.15, clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 0.9 }),
       graphite: physical({ color: "#23262d", roughness: 0.32, metalness: 1, envMapIntensity: 1.1 }),
       titanium: physical({ color: "#c3c6cc", roughness: 0.2, metalness: 1, envMapIntensity: 1.2 }),
       rubber: physical({ color: "#0c0d10", roughness: 0.85, metalness: 0, envMapIntensity: 0.2 }),
@@ -147,7 +151,7 @@ export function FutureScene({ quality }: FutureSceneProps) {
   /** Each solid material's full-strength look, to fade from. */
   const solids = useMemo(
     () =>
-      [materials.ceramic, materials.graphite, materials.titanium, materials.rubber, materials.visor, materials.accent].map((m) => ({
+      [materials.ceramic, materials.paint, materials.graphite, materials.titanium, materials.rubber, materials.visor, materials.accent].map((m) => ({
         m,
         color: m.color.clone(),
         env: m.envMapIntensity,

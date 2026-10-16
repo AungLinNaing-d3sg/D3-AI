@@ -37,7 +37,7 @@ const DISCIPLINES = ["Data", "Dynamics", "Digital"];
 
 /**
  * Chapter 07 — Our vision, as a mission console beside the Vision Unit, a
- * humanoid robot whose whole body follows the cursor
+ * hovering robot whose head, eyes and body follow the cursor
  * (three/scenes/FutureScene.tsx). The copy takes the left column; the
  * right is left open for the robot, framed by a thin HUD (corner brackets,
  * unit ID, tracking readout — decorative, `aria-hidden`).

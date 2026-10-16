@@ -134,6 +134,18 @@ describe("homepage chapters", () => {
     expect(screen.getByRole("link", { name: /ask the team/i })).toHaveAttribute("href", "#contact");
   });
 
+  it("keeps one FAQ answer open at a time", () => {
+    render(<FaqSection />);
+    const [first, second] = Array.from(document.querySelectorAll("details"));
+    fireEvent.click(within(first!).getByText(faqItems[0].q));
+    expect(first!.open).toBe(true);
+    fireEvent.click(within(second!).getByText(faqItems[1].q));
+    expect(second!.open).toBe(true);
+    expect(first!.open).toBe(false);
+    fireEvent.click(within(second!).getByText(faqItems[1].q));
+    expect(second!.open).toBe(false);
+  });
+
   it("renders the data universe chapter's real, sourced statistics", () => {
     render(<UniverseSection />);
     expect(document.getElementById("numbers")).toHaveAttribute("data-stage", "universe");

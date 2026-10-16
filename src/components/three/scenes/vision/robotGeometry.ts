@@ -1,4 +1,4 @@
-import { ExtrudeGeometry, LatheGeometry, Shape, Vector2, type BufferGeometry } from "three";
+import { ExtrudeGeometry, LatheGeometry, Shape, SphereGeometry, Vector2, type BufferGeometry } from "three";
 
 /**
  * Geometry builders for the Vision Unit (vision/VisionRobot.tsx): sculpted,
@@ -58,6 +58,40 @@ export function limbShell(top: number, bottom: number, length: number, swell: nu
   points.push(new Vector2(0.0005, -length - bottom * 0.35));
   const g = new LatheGeometry(points, segments);
   g.scale(1, 1, 0.88);
+  g.computeVertexNormals();
+  return g;
+}
+
+/**
+ * A swept-back blade (the Vision Unit's ear fins): rooted at the origin,
+ * rising and sweeping towards -z, with softly bevelled edges.
+ */
+export function finBlade(length: number, height: number, thickness: number): BufferGeometry {
+  const shape = new Shape();
+  shape.moveTo(0.012, -0.006);
+  shape.quadraticCurveTo(0.018, height * 0.45, -length * 0.35, height * 0.85);
+  shape.quadraticCurveTo(-length * 0.7, height * 1.08, -length, height);
+  shape.quadraticCurveTo(-length * 0.62, height * 0.6, -length * 0.22, height * 0.12);
+  shape.quadraticCurveTo(-length * 0.08, -0.004, 0.012, -0.006);
+  const bevel = thickness * 0.35;
+  const g = new ExtrudeGeometry(shape, {
+    depth: thickness - bevel * 2,
+    bevelEnabled: true,
+    bevelThickness: bevel,
+    bevelSize: bevel * 0.8,
+    bevelSegments: 3,
+    curveSegments: 20,
+  });
+  g.translate(0, 0, -thickness / 2 + bevel);
+  // Shape x → body -z (the blade sweeps backwards).
+  g.rotateY(-Math.PI / 2);
+  g.computeVertexNormals();
+  return g;
+}
+
+/** A domed armour cap (shoulder plates): the top of a sphere down to `angle`. */
+export function armourCap(radius: number, angle: number, segments: number): BufferGeometry {
+  const g = new SphereGeometry(radius, segments, Math.round(segments * 0.5), 0, Math.PI * 2, 0, angle);
   g.computeVertexNormals();
   return g;
 }
