@@ -54,7 +54,7 @@ interface FutureSceneProps {
  * at zero weight. Portrait
  * screens place the robot lower and dimmer so the copy stays readable.
  * Quality tiers scale geometry detail and dust; reduced motion / no WebGL
- * never mount the shared canvas (FutureSection shows a still fallback).
+ * never mount the shared canvas (VisionSection shows a still fallback).
  */
 
 const TIER = {

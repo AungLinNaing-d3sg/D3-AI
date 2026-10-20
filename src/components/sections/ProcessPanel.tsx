@@ -2,6 +2,7 @@
 
 import type { CSSProperties, ReactNode } from "react";
 import { Reveal } from "@/components/motion/Reveal";
+import { SectionKicker } from "@/components/ui/SectionHeading";
 import { processContent, processSteps } from "@/data/process";
 import { useProcessSteps } from "./useProcessSteps";
 
@@ -103,7 +104,7 @@ export function ProcessPanel() {
       <span aria-hidden="true" className="v2-hud br" />
       <div className="process-grid">
         <div className="process-side">
-          <p className="type-eyebrow text-brand-300">How we deliver</p>
+          <SectionKicker label="How we deliver" />
           <Reveal as="h3" variant="maskLines" className="v2-heading process-title">
             {processContent.title} <span className="v2-accent">{processContent.titleHighlight}</span>
           </Reveal>

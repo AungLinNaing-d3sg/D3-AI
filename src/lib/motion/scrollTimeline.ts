@@ -238,7 +238,7 @@ export function initJourneyTimeline(
   });
 
   // Any post-mount content-height change — the AI Playground swapping its
-  // menu for an active game's own canvas/instructions (see GameSection),
+  // menu for an active game's own canvas/instructions (see PlaygroundSection),
   // late-loading imagery, an orientation change, etc. — silently desyncs
   // this timeline's cached
   // `bounds`/`total` (and, since ScrollTrigger only auto-refreshes on

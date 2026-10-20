@@ -35,3 +35,26 @@ export const siteSections: SiteSectionSummary[] = STAGE_IDS.map((id, index) => (
   index: index + 1,
   shortLabel: SHORT_LABELS[id],
 }));
+
+/** The label each chapter's section header shows next to its number (see
+ * components/ui/SectionHeading.tsx), matching the main menu's wording. */
+const HEADER_LABELS: Record<StageId, string> = {
+  intro: "Home",
+  about: "About Us",
+  typography: "Our Approach",
+  neural: "How We Build",
+  universe: "By the Numbers",
+  game: "AI Playground",
+  future: "Our Vision",
+  faq: "FAQ",
+  cta: "Let’s Talk",
+};
+
+/** A chapter's section-header number ("04") and label ("How We Build"),
+ * numbered from the real chapter order so it can never drift. */
+export function sectionHeader(id: StageId): { number: string; label: string } {
+  return {
+    number: String(STAGE_IDS.indexOf(id) + 1).padStart(2, "0"),
+    label: HEADER_LABELS[id],
+  };
+}

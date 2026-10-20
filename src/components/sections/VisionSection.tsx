@@ -52,7 +52,7 @@ const DISCIPLINES = ["Data", "Dynamics", "Digital"];
  * brightens that discipline's ring (`visionFocus`). Scroll-driven state is
  * written straight to the DOM — no React render per frame.
  */
-export function FutureSection() {
+export function VisionSection() {
   const moduleRefs = useRef<Array<HTMLLIElement | null>>([]);
   const readoutRefs = useRef<Array<HTMLSpanElement | null>>([]);
   const lastActive = useRef(-1);
@@ -111,16 +111,9 @@ export function FutureSection() {
       <div className="relative flex h-auto flex-col justify-center py-10 md:min-h-[100svh] md:py-14 lg:py-16">
         <Container className="vision-layout">
           <div className="vision-copy">
-            <p aria-hidden="true" className="vision-status">
-              <span className="vision-status-dot" />
-              <span>Vision unit · VU-07</span>
-              <span className="vision-status-sep" />
-              <span className="vision-status-live">Online</span>
-            </p>
-
             <SectionHeading
               headingId="future-heading"
-              eyebrow="07 — Our vision"
+              stage="future"
               title={
                 visionLead === siteConfig.tagline ? (
                   siteConfig.tagline
@@ -145,9 +138,11 @@ export function FutureSection() {
                   data-depth-tilt
                   aria-labelledby={`vision-${capability.slug}`}
                   style={{ "--discipline": DISCIPLINE_COLORS[index] } as CSSProperties}
-                  className="vision-module depth-tilt"
+                  className="vision-module depth-tilt glass-card"
                 >
                   <span aria-hidden="true" className="depth-glare" />
+                  <span aria-hidden="true" className="card-spot" />
+                  <span aria-hidden="true" className="card-edge" />
                   <Reveal as="div" variant="depth" delay={index * 0.08} className="vision-module-inner">
                     <div className="vision-module-head">
                       <span className="vision-module-id">M-0{index + 1}</span>

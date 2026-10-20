@@ -37,7 +37,7 @@ function GameStaticStudio() {
   return <div aria-hidden="true" className="game-static-studio pointer-events-none absolute inset-0 -z-10" />;
 }
 
-export function GameSection() {
+export function PlaygroundSection() {
   const [isEntry, setIsEntry] = useState(true);
   const handleEntryChange = useCallback((entry: boolean) => setIsEntry(entry), []);
 
@@ -64,7 +64,7 @@ export function GameSection() {
         <Container data-game-content className="flex flex-col items-center gap-4">
           <SectionHeading
             headingId="game-heading"
-            eyebrow="06 — AI Playground"
+            stage="game"
             title={
               <>
                 {playgroundHeroCopy.title} <span className="v2-accent">{playgroundHeroCopy.titleHighlight}</span>

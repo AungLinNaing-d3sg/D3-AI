@@ -3,7 +3,7 @@
 import { useCallback, useRef, type CSSProperties, type ReactNode } from "react";
 import { Section } from "@/components/ui/Section";
 import { Container } from "@/components/ui/Container";
-import { Reveal } from "@/components/motion/Reveal";
+import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ServiceIcon } from "@/components/ui/ServiceIcon";
 import { useJourneyFrame } from "@/hooks/useJourneyFrame";
 import type { JourneyState } from "@/lib/motion/journeyState";
@@ -44,7 +44,7 @@ const DISCIPLINE_ACCENTS = ["#00d2ff", "#ff4d2d", "#00e676"] as const;
  * never fall out of sync. The cards are deliberately calm: hovering one
  * changes nothing, visually or in the sphere.
  */
-export function TypographySection() {
+export function ApproachSection() {
   const cardRefs = useRef<Array<HTMLElement | null>>([]);
   /** Smoothed per-card focus (0..1) — see `onFrame`. */
   const focusRef = useRef<number[]>(services.map(() => 0));
@@ -106,13 +106,17 @@ export function TypographySection() {
     >
       <Container data-depth-exit className="approach-v2 pt-16 md:pt-24">
         <div className="approach-v2-head">
-          <Reveal as="h2" id="typography-heading" variant="maskLines" className="v2-heading">
-            Three disciplines. <span className="v2-accent">One intelligent system.</span>
-          </Reveal>
-          <Reveal as="p" delay={0.15} className="v2-lead">
-            Data, Dynamics and Digital work as one connected system, the sphere behind this section. Select a
-            discipline, or keep scrolling, to see where it fits.
-          </Reveal>
+          <SectionHeading
+            stage="typography"
+            headingId="typography-heading"
+            titleVariant="maskLines"
+            title={
+              <>
+                Three disciplines. <span className="v2-accent">One intelligent system.</span>
+              </>
+            }
+            description="Data, Dynamics and Digital work as one connected system, the sphere behind this section. Select a discipline, or keep scrolling, to see where it fits."
+          />
         </div>
       </Container>
 
@@ -135,6 +139,7 @@ export function TypographySection() {
                     style={{ "--accent": accent } as CSSProperties}
                     className="approach-v2-panel v2-glass glass-card"
                     data-panel-tilt
+                    data-track-label={service.title.split(" — ")[0]}
                   >
                     {/* One full-size hit target: click / Enter anywhere on the
                         panel brings its cluster forward in the sphere. */}
@@ -176,6 +181,33 @@ export function TypographySection() {
                 </div>
               );
             })}
+          </div>
+
+          {/* Track controls (wide screens, while tracking): where you are,
+              how far along, and previous / next. Driven by useHorizontalTrack. */}
+          <div className="track-controls" data-track-controls role="group" aria-label="Disciplines">
+            <button type="button" className="track-arrow" data-track-prev aria-label="Previous discipline" disabled>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M15 5l-7 7 7 7" />
+              </svg>
+            </button>
+            <div className="track-meter" aria-hidden="true">
+              <span className="track-count">
+                <b data-track-count>01</b>
+                <span> / {String(services.length).padStart(2, "0")}</span>
+              </span>
+              <span className="track-name" data-track-name>
+                {services[0]?.title.split(" — ")[0]}
+              </span>
+              <span className="track-bar">
+                <i />
+              </span>
+            </div>
+            <button type="button" className="track-arrow" data-track-next aria-label="Next discipline">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>

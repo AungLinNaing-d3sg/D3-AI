@@ -294,34 +294,61 @@ body {
 
 /*
  * ---------------------------------------------------------------------
- * Section heading accent
+ * Section header (components/ui/SectionHeading.tsx) — one treatment for
+ * every chapter: a numbered glass "kicker" pill, then the title (white
+ * with an orange accent phrase, soft glow) and lead copy.
  * ---------------------------------------------------------------------
- * A thin, continuously (very slowly) shimmering "data" indicator beneath a
- * major section's eyebrow, plus a soft static glow on its `<h2>` — one
- * consistent, elegant treatment (see components/ui/SectionHeading.tsx)
- * rather than a bespoke animated effect per section. Deliberately not a
- * one-shot sweep tied to scroll-reveal timing (see `.hero-title-sweep`
- * above, mount-timed for the one hero heading that appears immediately on
- * load): a continuous loop reads correctly no matter when a visitor
- * actually scrolls a given section into view.
+ * The kicker: an orange number badge, a short orange rule with a slow
+ * shimmer looping along it (continuous, so it reads right whenever the
+ * section is scrolled into view) and the label in spaced white capitals.
+ * Without a number (a sub-section kicker) a small orange dot leads instead.
  */
-.section-heading-accent {
-  position: relative;
-  display: block;
-  width: 2.75rem;
-  height: 2px;
-  overflow: hidden;
-  border-radius: 9999px;
-  background: linear-gradient(90deg, var(--color-brand-400), transparent 75%);
-}
+.section-header { gap: 0; }
+.section-header .section-kicker { margin-bottom: 1.35rem; }
+.section-header-lead { margin-top: 1rem; }
 
-.section-heading-accent::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  width: 45%;
-  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.85), transparent);
+.section-kicker {
+  display: inline-flex; align-items: center; gap: 0.7rem; align-self: flex-start; width: max-content; max-width: 100%;
+  padding: 0.3rem 1rem 0.3rem 0.3rem; border-radius: 9999px;
+  border: 1px solid rgb(255 255 255 / 0.09);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.05), rgb(255 255 255 / 0)), rgb(10 13 22 / 0.55);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 12px 30px -20px rgb(0 0 0 / 0.9);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2); backdrop-filter: blur(10px) saturate(1.2);
+  font-family: var(--font-mono-technical), ui-monospace, monospace; line-height: 1;
+}
+.section-header.items-center .section-kicker { align-self: center; }
+.section-kicker-num {
+  display: grid; place-items: center; min-width: 2.15rem; height: 1.7rem; padding: 0 0.5rem; border-radius: 9999px;
+  background: linear-gradient(135deg, var(--color-brand-500), var(--color-brand-400));
+  color: #fff; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25), 0 0 0 3px rgb(241 74 48 / 0.14), 0 6px 18px -6px rgb(241 74 48 / 0.8);
+}
+.section-kicker-dot {
+  width: 0.5rem; height: 0.5rem; margin-left: 0.55rem; border-radius: 50%; background: var(--color-brand-500);
+  box-shadow: 0 0 0 3px rgb(241 74 48 / 0.18), 0 0 10px rgb(241 74 48 / 0.7);
+}
+.section-kicker-rule {
+  position: relative; flex: none; width: 1.6rem; height: 1px; overflow: hidden;
+  background: linear-gradient(90deg, rgb(253 106 80 / 0.9), rgb(255 255 255 / 0.15));
+}
+.section-kicker-rule::after {
+  content: ""; position: absolute; inset: 0; width: 45%;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.9), transparent);
   animation: section-heading-shimmer 4.2s ease-in-out infinite;
+}
+.section-kicker-label {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase; color: var(--color-ink-50);
+}
+@media (max-width: 640px) {
+  .section-header .section-kicker { margin-bottom: 1.05rem; }
+  .section-kicker { gap: 0.55rem; padding-right: 0.85rem; }
+  .section-kicker-num { min-width: 1.95rem; height: 1.55rem; font-size: 0.64rem; }
+  .section-kicker-rule { width: 1.1rem; }
+  .section-kicker-label { font-size: 0.64rem; letter-spacing: 0.2em; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .section-kicker-rule::after { animation: none; opacity: 0; }
 }
 
 @keyframes section-heading-shimmer {
@@ -994,7 +1021,7 @@ html:not([data-motion-ready]) .motion-reveal {
 
 /*
  * Only consumer: the Data Universe "By the numbers" stat token badge
- * (components/sections/UniverseSection.tsx). That grid goes 1 → 2 → 4
+ * (components/sections/NumbersSection.tsx). That grid goes 1 → 2 → 4
  * columns at `sm`/`lg`, so each card gets *narrower* as the viewport grows —
  * a plain `vw`-driven size (the previous `clamp(1.9rem, 1.5rem + 1.6vw,
  * 2.75rem)`) grows with viewport width regardless of column count, so it
@@ -1026,10 +1053,10 @@ html:not([data-motion-ready]) .motion-reveal {
 }
 
 /*
- * Dedicated to the hero tagline (components/sections/IntroSection.tsx) —
+ * Dedicated to the hero tagline (components/sections/HeroSection.tsx) —
  * deliberately its own class rather than reusing `.type-display-hero`
  * (still used as-is by the final CTA heading, src/components/sections/
- * CtaSection.tsx), since this specific 8-word sentence needs a more
+ * ContactSection.tsx), since this specific 8-word sentence needs a more
  * conservative ceiling: `.type-display-hero`'s 6.5rem max, in the hero's
  * `max-w-3xl` column, would force this longer sentence onto many short,
  * oversized lines instead of a clean 2-3 line hero statement.
@@ -1074,7 +1101,7 @@ html:not([data-motion-ready]) .motion-reveal {
  * Our Approach — discipline cards
  * ---------------------------------------------------------------------
  * Each card sets its own `--accent` custom property (see
- * components/sections/TypographySection.tsx) — one per-discipline colour
+ * components/sections/ApproachSection.tsx) — one per-discipline colour
  * consistently driving the active border, glow and badge, rather than three
  * separate Tailwind arbitrary-colour class variants. The cards are
  * deliberately stable: there is no hover state at all — only the active
@@ -1095,7 +1122,7 @@ html:not([data-motion-ready]) .motion-reveal {
     inset 0 1px 0 rgb(255 255 255 / 0.1),
     0 20px 50px -25px rgb(0 0 0 / 0.7);
   /* Lift toward the viewer and prominence follow the sphere's own activity
-   * curve, already smoothed per frame (TypographySection.tsx `--focus` /
+   * curve, already smoothed per frame (ApproachSection.tsx `--focus` /
    * `--prominence`) — so no CSS transition on them. */
   translate: 0 calc(var(--focus, 0) * -6px) calc(var(--focus, 0) * 30px);
   transition:
@@ -1742,7 +1769,7 @@ html:not([data-motion-ready]) .motion-reveal {
 }
 
 /*
- * Chapter 01 — the Hero copy (components/sections/IntroSection.tsx), beside
+ * Chapter 01 — the Hero copy (components/sections/HeroSection.tsx), beside
  * the living D3-SG mark (three/scenes/IntroScene.tsx).
  */
 .hero-live-dot {
@@ -1776,7 +1803,7 @@ html:not([data-motion-ready]) .motion-reveal {
   }
 }
 
-/* Entrance timeline (IntroSection.tsx): steps start transparent until GSAP
+/* Entrance timeline (HeroSection.tsx): steps start transparent until GSAP
  * takes over, so nothing flashes before the first frame. Opacity only —
  * never `visibility` — so the copy stays in the accessibility tree. */
 .hero-copy[data-timeline="pending"] [data-hero-step],
@@ -1946,7 +1973,7 @@ html:not([data-motion-ready]) .motion-reveal {
 
 /*
  * Chapter 07 content — the mission console (components/sections/
- * FutureSection.tsx), in the Vision robot's material language: graphite
+ * VisionSection.tsx), in the Vision robot's material language: graphite
  * glass, titanium hairlines, mono readouts and each discipline's colour.
  * The copy takes the left column; the right is left open for the robot
  * inside a thin HUD frame. `data-state` and `--module-fill` come from each
@@ -1967,24 +1994,7 @@ html:not([data-motion-ready]) .motion-reveal {
   font-size: clamp(2rem, 1.35rem + 2.3vw, 3.15rem);
 }
 
-/* "Vision unit · VU-07 — Online" status line. */
-.vision-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  align-self: flex-start;
-  padding: 0.35rem 0.8rem;
-  border: 1px solid rgb(255 255 255 / 0.08);
-  border-radius: 9999px;
-  background: rgb(8 10 16 / 0.7);
-  font-family: var(--font-mono-technical), ui-monospace, monospace;
-  font-size: 0.62rem;
-  font-weight: 600;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--color-ink-300);
-}
-
+/* Pulsing status dot (the robot stage's "Tracking" tag). */
 .vision-status-dot {
   position: relative;
   width: 6px;
@@ -2002,16 +2012,6 @@ html:not([data-motion-ready]) .motion-reveal {
   border-radius: inherit;
   border: 1px solid var(--color-brand-400);
   animation: hero-live-ping 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
-}
-
-.vision-status-sep {
-  width: 1rem;
-  height: 1px;
-  background: rgb(255 255 255 / 0.18);
-}
-
-.vision-status-live {
-  color: var(--color-brand-300);
 }
 
 /* The module stack. */
@@ -2324,7 +2324,7 @@ html:not([data-motion-ready]) .motion-reveal {
 }
 
 /* Chapter 07's still fallback (reduced motion / no WebGL — see
- * FutureSection.tsx): the robot's dark studio, reduced to its light — the
+ * VisionSection.tsx): the robot's dark studio, reduced to its light — the
  * warm studio glow, the chest core's ember ring and the scan ring
  * underfoot. Right of the heading on wide screens, to the side on portrait
  * ones. */
@@ -2351,7 +2351,7 @@ html:not([data-motion-ready]) .motion-reveal {
 
 /*
  * ---------------------------------------------------------------------
- * Chapter 08 — final connection (components/sections/CtaSection.tsx)
+ * Chapter 08 — final connection (components/sections/ContactSection.tsx)
  * ---------------------------------------------------------------------
  */
 /*
@@ -4654,56 +4654,60 @@ html.has-custom-cursor :is(input:not([type="checkbox"], [type="radio"], [type="r
    leader card and the Our Approach panels:
    - `.card-edge`: a hairline gradient border (warm top-left → cool
      bottom-right) that glows in the card's accent colour where the mouse
-     is (--mx/--my, written by AboutSection / useHorizontalTrack);
+     is (--mx/--my, written by components/motion/GlassPointer.tsx);
    - `.card-spot`: a soft spotlight following the mouse;
    - a fine highlight line along the top edge (::after on the card's own
      edge layer, so no layout or existing pseudo-elements change).
    `--card-accent-color` defaults to D3-SG orange; Our Approach uses each
-   discipline's colour. `--glow` (registered so it can animate) goes 0 → 1
-   on hover / when the card is active.
+   discipline's colour; the glow shows on hover and on the active card.
    -------------------------------------------------------------------------- */
-@property --glow { syntax: "<number>"; inherits: true; initial-value: 0; }
-.glass-card {
-  --glow: 0;
-  transition: --glow 0.5s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.45s, box-shadow 0.5s, background-color 0.45s, translate 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.approach-v2-panel.glass-card {
-  --mx: var(--sx, 30%);
-  --my: var(--sy, 0%);
-  transition: --glow 0.5s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.4s, box-shadow 0.4s, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-}
 .card-edge {
   position: absolute; inset: 0; z-index: 2; pointer-events: none; border-radius: inherit; padding: 1px;
-  background:
-    radial-gradient(18rem circle at var(--mx, 30%) var(--my, 0%), color-mix(in srgb, var(--card-accent-color, rgb(253 106 80)) calc(var(--glow) * 95%), transparent), transparent 70%),
-    linear-gradient(135deg, rgb(255 255 255 / 0.18), rgb(255 255 255 / 0.04) 38%, rgb(255 255 255 / 0.02) 62%, rgb(143 180 255 / 0.16));
+  background: linear-gradient(135deg, rgb(255 255 255 / 0.18), rgb(255 255 255 / 0.04) 38%, rgb(255 255 255 / 0.02) 62%, rgb(143 180 255 / 0.16));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+/* The accent glow, drawn inside the edge's mask so it only lights the
+   border, strongest where the mouse is. */
+.card-edge::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(18rem circle at var(--mx, 30%) var(--my, 0%), var(--card-accent-color, rgb(253 106 80)), transparent 70%);
+  opacity: 0; transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 /* Top highlight line. */
 .card-edge::after {
   content: ""; position: absolute; left: 12%; right: 12%; top: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.35), transparent);
-  opacity: calc(0.5 + var(--glow) * 0.5);
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.4), transparent);
+  opacity: 0.6;
 }
 .card-spot {
   position: absolute; inset: 0; z-index: 0; pointer-events: none; border-radius: inherit;
   background: radial-gradient(22rem circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--card-accent-color, rgb(253 106 80)) 12%, transparent), transparent 62%);
-  opacity: var(--glow);
+  opacity: 0; transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.glass-card { border-color: rgb(255 255 255 / 0.05); }
 @media (hover: hover) {
-  .glass-card:hover { --glow: 1; }
+  .glass-card:hover > .card-edge::before,
+  .glass-card:hover > .card-spot { opacity: 1; }
 }
-.about-v2-value.glass-card[data-active="true"],
-.dossier[data-active="true"] .dossier-inner.glass-card,
-.approach-v2-panel.glass-card[data-active="true"] { --glow: 1; }
+.about-v2-value.glass-card[data-active="true"] > .card-edge::before,
+.about-v2-value.glass-card[data-active="true"] > .card-spot,
+.dossier[data-active="true"] .dossier-inner.glass-card > .card-edge::before,
+.approach-v2-panel.glass-card[data-active="true"] > .card-edge::before,
+.depth-stat.glass-card[data-active="true"] > .card-edge::before,
+.vision-module.glass-card[data-state="active"] > .card-edge::before { opacity: 1; }
 .about-v2-value.glass-card > :not(.card-edge):not(.card-spot):not(.about-v2-rail) { position: relative; z-index: 1; }
+
+/* Per-card accent colours. */
+.vision-module.glass-card { --card-accent-color: var(--discipline); }
+.build-chip.glass-card { --card-accent-color: rgb(127 232 245); }
+.build-chip.glass-card > .card-edge::after { display: none; }
 
 /* Our Approach: each panel lights in its discipline colour; the icon sits in
    a tinted badge, and a corner HUD mark echoes the leader cards. */
 .approach-v2-panel.glass-card { --card-accent-color: var(--accent); }
-.approach-v2-panel .v2-hud { z-index: 3; border-color: color-mix(in srgb, var(--accent) 55%, transparent); opacity: calc(0.45 + var(--glow) * 0.55); transition: opacity 0.4s; }
+.approach-v2-panel .v2-hud { z-index: 3; border-color: color-mix(in srgb, var(--accent) 55%, transparent); opacity: 0.45; transition: opacity 0.4s; }
+.approach-v2-panel.glass-card:hover .v2-hud,
+.approach-v2-panel.glass-card[data-active="true"] .v2-hud { opacity: 1; }
 .approach-v2-badge {
   display: inline-grid; place-items: center; align-self: flex-start; width: 3.1rem; height: 3.1rem; border-radius: 1rem;
   border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
@@ -4722,5 +4726,98 @@ html.has-custom-cursor :is(input:not([type="checkbox"], [type="radio"], [type="r
   .approach-v2-panel.glass-card .v2-bullets li:hover { color: var(--color-ink-100); translate: 3px 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .glass-card { transition: none; }
+  .card-edge::before, .card-spot { transition: none; }
 }
+
+/* ==========================================================================
+   By the Numbers — cinematic stat cards (NumbersSection): index tag, a
+   decoding token (JS), a blinking caret and a sync bar on the live card,
+   and a staggered entrance. `[data-motion]` on the list opts into the
+   entrance's hidden start, so no-JS / reduced motion show cards settled.
+   ========================================================================== */
+.stat-index {
+  position: absolute; top: 0.85rem; right: 1rem; z-index: 1;
+  font: 500 0.6rem var(--font-mono); letter-spacing: 0.14em; color: var(--color-ink-500);
+  transition: color 0.5s;
+}
+.depth-stat[data-active="true"] .stat-index { color: var(--color-brand-300); }
+.stat-token-text { font-variant-numeric: tabular-nums; }
+.stat-caret {
+  display: inline-block; width: 0.45em; height: 0.95em; margin-left: 0.35em; vertical-align: -0.12em;
+  background: var(--color-brand-400); opacity: 0;
+}
+.depth-stat[data-active="true"] .stat-caret { opacity: 1; animation: v2-blink 1s steps(1) infinite; }
+.stat-sync {
+  position: absolute; left: 1.5rem; right: 1.5rem; bottom: 0.9rem; height: 2px; overflow: hidden; border-radius: 2px;
+  background: rgb(255 255 255 / 0.07);
+}
+.stat-sync i {
+  position: absolute; inset: 0; transform-origin: left; transform: scaleX(var(--stat-progress, 0));
+  background: linear-gradient(90deg, var(--color-brand-500), var(--color-brand-300));
+  box-shadow: 0 0 10px rgb(241 74 48 / 0.6);
+  opacity: 0.35; transition: opacity 0.5s;
+}
+.depth-stat[data-active="true"] .stat-sync i { opacity: 1; }
+.depth-stat { padding-bottom: 2rem; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .depth-stat-list[data-motion] > .depth-stat { opacity: 0; scale: 0.94; transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), scale 0.9s cubic-bezier(0.22, 1, 0.36, 1), translate 0.9s cubic-bezier(0.22, 1, 0.36, 1); }
+  .depth-stat-list[data-motion].is-in > .depth-stat { opacity: 1; scale: 1; transition-delay: calc(var(--i) * 120ms), calc(var(--i) * 120ms), 0s; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .depth-stat[data-active="true"] .stat-caret { animation: none; }
+}
+
+/* ==========================================================================
+   Our Approach — track controls and depth (useHorizontalTrack). Wide
+   screens only, while the track is active; phones keep the stacked layout.
+   ========================================================================== */
+.track-controls { display: none; }
+@media (min-width: 1024px) {
+  .track-stage.is-tracking .track-controls {
+    position: absolute; left: 50%; bottom: max(1.25rem, 3.5vh); z-index: 5; translate: -50% 0;
+    display: flex; align-items: center; gap: 0.85rem; padding: 0.4rem;
+    border: 1px solid rgb(255 255 255 / 0.1); border-radius: 99px;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.05), rgb(255 255 255 / 0)), rgb(8 10 16 / 0.66);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 18px 40px -24px rgb(0 0 0 / 0.9);
+    -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2);
+  }
+  /* Panels turn in from depth as they travel (0 when centred). */
+  .track-stage.is-tracking .approach-v2-panel {
+    transform:
+      perspective(1400px)
+      translateZ(calc(var(--enter-abs, 0) * -120px))
+      rotateY(calc(var(--tilt-y) + var(--enter, 0) * -14deg))
+      rotateX(var(--tilt-x))
+      scale(calc(0.985 + var(--focus) * 0.015));
+    transition: border-color 0.4s, box-shadow 0.4s, transform 0.25s ease-out;
+  }
+}
+.track-arrow {
+  display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 50%;
+  border: 1px solid rgb(255 255 255 / 0.12); background: rgb(255 255 255 / 0.03); color: var(--color-ink-100); cursor: pointer;
+  transition: border-color 0.3s, background-color 0.3s, color 0.3s, box-shadow 0.4s, opacity 0.3s, scale 0.2s;
+}
+.track-arrow svg { width: 1.05rem; height: 1.05rem; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.track-arrow:hover:not(:disabled) { border-color: rgb(253 106 80 / 0.6); background: rgb(241 74 48 / 0.14); color: var(--color-ink-50); box-shadow: 0 0 22px -6px rgb(241 74 48 / 0.7); }
+.track-arrow:active:not(:disabled) { scale: 0.92; }
+.track-arrow:focus-visible { outline: 2px solid var(--color-brand-400); outline-offset: 2px; }
+.track-arrow:disabled { opacity: 0.35; cursor: default; }
+.track-meter { display: grid; grid-template-columns: auto auto; align-items: baseline; column-gap: 0.75rem; row-gap: 0.4rem; min-width: 11rem; padding: 0 0.3rem; }
+.track-count { font: 500 0.72rem var(--font-mono); letter-spacing: 0.12em; color: var(--color-ink-400); }
+.track-count b { font-weight: 600; color: var(--color-ink-50); }
+.track-name { justify-self: end; font: 500 0.66rem var(--font-mono); letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-brand-300); }
+.track-bar { grid-column: 1 / -1; position: relative; height: 2px; overflow: hidden; border-radius: 2px; background: rgb(255 255 255 / 0.1); }
+.track-bar i {
+  position: absolute; inset: 0; transform-origin: left; transform: scaleX(var(--track-progress, 0));
+  background: linear-gradient(90deg, var(--color-brand-500), var(--color-brand-300)); box-shadow: 0 0 10px rgb(241 74 48 / 0.6);
+}
+/* The terminal's own code text sits right behind these cards, so they keep
+   a denser tint than other glass for clean, readable copy. */
+.depth-stat.glass-panel {
+  background: linear-gradient(165deg, rgb(255 255 255 / 0.06), rgb(255 255 255 / 0.02)), rgb(6 8 14 / 0.93);
+}
+/* The floating value badge sits over the card's top edge, so it must stay
+   above the card's edge-glow layer (otherwise the edge line strikes
+   through the value). */
+.depth-stat .depth-stat-token { z-index: 3; }

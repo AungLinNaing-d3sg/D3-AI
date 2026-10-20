@@ -3,7 +3,7 @@ import { clamp, smoothstep } from "@/lib/motion/mathUtils";
 /**
  * Tiny, section-scoped mutable singleton — which discipline (0=Data,
  * 1=Dynamics, 2=Digital) the user last clicked in the "Built from Real
- * Disciplines" chapter (components/sections/TypographySection.tsx), read
+ * Disciplines" chapter (components/sections/ApproachSection.tsx), read
  * every frame by its 3D scene (three/scenes/TypographyScene.tsx). Kept as
  * its own tiny file rather than added to the shared `journeyState` singleton
  * (lib/motion/journeyState.ts) since only this one chapter needs it — a
@@ -30,7 +30,7 @@ export function resetDisciplineFocus(): void {
  * progress, with a click pin forcing it to 1 — a soft rise/fall per third
  * rather than a hard cut at each boundary. The single shared curve read by
  * both the sphere (three/scenes/TypographyScene.tsx: cluster highlight,
- * turn and dolly) and the HTML cards (TypographySection.tsx: lift toward
+ * turn and dolly) and the HTML cards (ApproachSection.tsx: lift toward
  * the viewer, prominence), so card and sphere always move together.
  */
 export function disciplineActivity(local: number, index: number, count: number, pinned: number | null): number {

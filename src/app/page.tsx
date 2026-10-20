@@ -1,26 +1,26 @@
 import { SceneCanvas } from "@/components/three/SceneCanvas";
 import { ScrollChoreographer } from "@/components/motion/ScrollChoreographer";
 import { SiteAudioController } from "@/components/motion/SiteAudioController";
+import { GlassPointer } from "@/components/motion/GlassPointer";
 import { ScrollProgressRail } from "@/components/layout/ScrollProgressRail";
-import { IntroSection } from "@/components/sections/IntroSection";
+import { HeroSection } from "@/components/sections/HeroSection";
 import { AboutSection } from "@/components/sections/AboutSection";
-import { TypographySection } from "@/components/sections/TypographySection";
-import { NeuralSection } from "@/components/sections/NeuralSection";
-import { UniverseSection } from "@/components/sections/UniverseSection";
-import { GameSection } from "@/components/sections/GameSection";
-import { FutureSection } from "@/components/sections/FutureSection";
+import { ApproachSection } from "@/components/sections/ApproachSection";
+import { HowWeBuildSection } from "@/components/sections/HowWeBuildSection";
+import { NumbersSection } from "@/components/sections/NumbersSection";
+import { PlaygroundSection } from "@/components/sections/PlaygroundSection";
+import { VisionSection } from "@/components/sections/VisionSection";
 import { FaqSection } from "@/components/sections/FaqSection";
-import { CtaSection } from "@/components/sections/CtaSection";
+import { ContactSection } from "@/components/sections/ContactSection";
 
 /**
  * Homepage — one continuous, cinematic scrollytelling journey through a
- * single AI universe (cinematic intro → about us → the three real
- * disciplines → how we build → data universe → "train your AI" mini-game
- * → cinematic AI future → FAQ → final CTA). The "AI Product Experience" chapter
- * that used to sit between the data universe and the mini-game was removed
- * — it duplicated the same three real disciplines (Data/Dynamics/Digital)
- * the "Our Approach" chapter already covers; that chapter is now the single
- * source for them (see components/sections/TypographySection.tsx).
+ * single AI universe, in this order: Hero → About Us → Our Approach (the
+ * three real disciplines) → How We Build → By the Numbers → AI Playground
+ * → Vision → FAQ → Contact. Each section component is named after what it
+ * shows; its internal stage id (`data-stage`, used by the 3D journey and
+ * scroll timeline — see `STAGE_IDS` in src/types/index.ts) keeps its
+ * original key, e.g. `<ApproachSection>` is stage `typography`.
  *
  * `<SceneCanvas>` (the shared 3D half) and `<ScrollChoreographer>` (the
  * invisible GSAP/ScrollTrigger controller) are siblings of the real HTML
@@ -35,17 +35,18 @@ export default function Home() {
       <SceneCanvas />
       <ScrollChoreographer />
       <SiteAudioController />
+      <GlassPointer />
       <ScrollProgressRail />
       <div id="experience-wrapper">
-        <IntroSection />
+        <HeroSection />
         <AboutSection />
-        <TypographySection />
-        <NeuralSection />
-        <UniverseSection />
-        <GameSection />
-        <FutureSection />
+        <ApproachSection />
+        <HowWeBuildSection />
+        <NumbersSection />
+        <PlaygroundSection />
+        <VisionSection />
         <FaqSection />
-        <CtaSection />
+        <ContactSection />
       </div>
     </>
   );

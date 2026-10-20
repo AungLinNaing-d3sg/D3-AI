@@ -69,7 +69,7 @@ export function LinkButton({
     const isHash = href.startsWith("#");
     // Only ever attach a *real* handler function when there's actually
     // something to do (an in-page scroll, or a caller-supplied callback) —
-    // a plain `mailto:`/`tel:` link with neither (e.g. CtaSection's contact
+    // a plain `mailto:`/`tel:` link with neither (e.g. ContactSection's contact
     // links) must get `onClick={undefined}`, exactly like before this
     // component supported an optional `onClick` prop at all. This one stays
     // a fully static anchor renderable from a Server Component; attaching an

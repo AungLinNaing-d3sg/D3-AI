@@ -1,12 +1,12 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { IntroSection } from "@/components/sections/IntroSection";
+import { HeroSection } from "@/components/sections/HeroSection";
 import { AboutSection } from "@/components/sections/AboutSection";
-import { TypographySection } from "@/components/sections/TypographySection";
-import { NeuralSection } from "@/components/sections/NeuralSection";
-import { UniverseSection } from "@/components/sections/UniverseSection";
-import { GameSection } from "@/components/sections/GameSection";
-import { FutureSection } from "@/components/sections/FutureSection";
-import { CtaSection } from "@/components/sections/CtaSection";
+import { ApproachSection } from "@/components/sections/ApproachSection";
+import { HowWeBuildSection } from "@/components/sections/HowWeBuildSection";
+import { NumbersSection } from "@/components/sections/NumbersSection";
+import { PlaygroundSection } from "@/components/sections/PlaygroundSection";
+import { VisionSection } from "@/components/sections/VisionSection";
+import { ContactSection } from "@/components/sections/ContactSection";
 import { FaqSection } from "@/components/sections/FaqSection";
 import { faqItems } from "@/data/faq";
 import { processSteps } from "@/data/process";
@@ -25,19 +25,19 @@ import { disciplineFocus, resetDisciplineFocus } from "@/lib/motion/disciplineFo
 
 describe("homepage chapters", () => {
   it("renders the intro hero headline and tagline as the page's h1", () => {
-    render(<IntroSection />);
+    render(<HeroSection />);
     expect(screen.getByRole("heading", { level: 1, name: siteConfig.tagline })).toBeInTheDocument();
     expect(document.getElementById("home")).toHaveAttribute("data-stage", "intro");
   });
 
   it("renders the hero's next steps", () => {
-    render(<IntroSection />);
+    render(<HeroSection />);
     expect(screen.getByRole("link", { name: /start a project/i })).toHaveAttribute("href", "#contact");
     expect(screen.getByRole("link", { name: /explore the journey/i })).toHaveAttribute("href", "#about");
   });
 
   it("never renders the hero pipeline stages in the neural network chapter", () => {
-    render(<NeuralSection />);
+    render(<HowWeBuildSection />);
     heroPipelineNodes.forEach((node) => {
       expect(screen.queryAllByText(node.label)).toHaveLength(0);
     });
@@ -71,7 +71,7 @@ describe("homepage chapters", () => {
   });
 
   it("renders the typography chapter's discipline cards accessibly, independent of the 3D sphere", () => {
-    render(<TypographySection />);
+    render(<ApproachSection />);
     expect(document.getElementById("approach")).toHaveAttribute("data-stage", "typography");
     expect(
       screen.getByRole("heading", { level: 2, name: "Three disciplines. One intelligent system." })
@@ -84,7 +84,7 @@ describe("homepage chapters", () => {
   });
 
   it("never changes the active discipline on hover — only a click selects one", () => {
-    render(<TypographySection />);
+    render(<ApproachSection />);
     const [first, second] = services.map((service) =>
       screen.getByRole("button", { name: new RegExp(`focus ${service.title}`, "i") })
     );
@@ -98,7 +98,7 @@ describe("homepage chapters", () => {
   });
 
   it("starts every discipline card inactive", () => {
-    render(<TypographySection />);
+    render(<ApproachSection />);
     services.forEach((service) => {
       const panel = screen.getByRole("article", { name: service.title });
       expect(panel).toHaveAttribute("data-active", "false");
@@ -107,7 +107,7 @@ describe("homepage chapters", () => {
   });
 
   it("renders the neural network chapter with every technology node label", () => {
-    render(<NeuralSection />);
+    render(<HowWeBuildSection />);
     expect(document.getElementById("how-we-build")).toHaveAttribute("data-stage", "neural");
     technologyNetworkNodes.forEach((node) => {
       expect(screen.getByText(node.label)).toBeInTheDocument();
@@ -115,7 +115,7 @@ describe("homepage chapters", () => {
   });
 
   it("renders the delivery process steps in order inside the How We Build chapter", () => {
-    render(<NeuralSection />);
+    render(<HowWeBuildSection />);
     const titles = screen.getAllByRole("heading", { level: 4 }).map((h) => h.textContent);
     expect(titles).toEqual(processSteps.map((step) => step.title));
     processSteps.forEach((step) => expect(screen.getByText(step.text)).toBeInTheDocument());
@@ -147,7 +147,7 @@ describe("homepage chapters", () => {
   });
 
   it("renders the data universe chapter's real, sourced statistics", () => {
-    render(<UniverseSection />);
+    render(<NumbersSection />);
     expect(document.getElementById("numbers")).toHaveAttribute("data-stage", "universe");
     universeStats.forEach((stat) => {
       expect(screen.getByText(stat.token)).toBeInTheDocument();
@@ -155,7 +155,7 @@ describe("homepage chapters", () => {
   });
 
   it("gives every data universe stat card an accessible caption of the shared decorative 3D scene", () => {
-    render(<UniverseSection />);
+    render(<NumbersSection />);
     const cards = screen.getAllByRole("listitem");
     expect(cards).toHaveLength(universeStations.length);
 
@@ -180,10 +180,10 @@ describe("homepage chapters", () => {
   });
 
   it("renders the AI Engineering Playground chapter as live system modules, one per real experience", () => {
-    render(<GameSection />);
+    render(<PlaygroundSection />);
     expect(document.getElementById("playground")).toHaveAttribute("data-stage", "game");
     expect(screen.getByRole("heading", { level: 2, name: /ai engineering playground/i })).toBeInTheDocument();
-    expect(screen.getByText("06 — AI Playground")).toBeInTheDocument();
+    expect(screen.getByText("AI Playground", { selector: ".section-kicker-label" }).closest(".section-kicker")).toHaveTextContent("06");
     expect(screen.getByRole("button", { name: /play experience — choose your ai agent/i })).toBeInTheDocument();
     playgroundExperiences.forEach((experience) => {
       expect(screen.getByRole("heading", { level: 3, name: experience.title })).toBeInTheDocument();
@@ -191,13 +191,13 @@ describe("homepage chapters", () => {
   });
 
   it("renders the cinematic future chapter's vision statement", () => {
-    render(<FutureSection />);
+    render(<VisionSection />);
     expect(document.getElementById("vision")).toHaveAttribute("data-stage", "future");
     expect(screen.getByRole("heading", { level: 2, name: siteConfig.tagline })).toBeInTheDocument();
   });
 
   it("renders the final CTA with direct email and phone actions", () => {
-    render(<CtaSection />);
+    render(<ContactSection />);
     expect(document.getElementById("contact")).toHaveAttribute("data-stage", "cta");
     expect(screen.getByRole("link", { name: /email us/i })).toHaveAttribute(
       "href",
@@ -209,15 +209,18 @@ describe("homepage chapters", () => {
   });
 
   it("closes the journey with the standard section header system", () => {
-    render(<CtaSection />);
-    expect(screen.getByText("09 — Let’s talk")).toHaveClass("type-eyebrow");
+    render(<ContactSection />);
+    // Numbered section header: "09" badge + "Let’s Talk" label in one kicker.
+    const label = screen.getByText("Let’s Talk");
+    expect(label).toHaveClass("section-kicker-label");
+    expect(label.closest(".section-kicker")).toHaveTextContent("09");
     const heading = screen.getByRole("heading", { level: 2, name: "Let’s build what’s next." });
     expect(heading).toHaveClass("type-display-section");
     expect(screen.getByText(/have an idea, a challenge, or a vision/i)).toBeInTheDocument();
   });
 
   it("shows the compact message form open by default — no click needed", () => {
-    render(<CtaSection />);
+    render(<ContactSection />);
     expect(screen.queryByRole("button", { name: /start a conversation/i })).not.toBeInTheDocument();
     const form = screen.getByRole("form", { name: /send us a message/i });
     expect(form).toBeVisible();

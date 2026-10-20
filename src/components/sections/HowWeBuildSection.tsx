@@ -14,14 +14,14 @@ import { ProcessPanel } from "./ProcessPanel";
  * of every node label the graph renders, satisfying "accessible
  * alternatives for information displayed through 3D/WebGL". The
  * THINK/LEARN/UNDERSTAND/PREDICT/CREATE thought pipeline now lives
- * exclusively in the hero (see IntroSection/IntroScene) — this chapter no
+ * exclusively in the hero (see HeroSection/IntroScene) — this chapter no
  * longer duplicates it.
  *
  * Below the stack, the delivery process (Assess → Plan → Build → Run, from
  * development_v2 — see ProcessPanel) sits in a translucent glass panel, so
  * the network keeps moving behind it.
  */
-export function NeuralSection() {
+export function HowWeBuildSection() {
   return (
     <Section
       stageId="neural"
@@ -35,7 +35,7 @@ export function NeuralSection() {
         <Container data-depth-exit className="flex flex-col gap-10">
           <SectionHeading
             headingId="neural-heading"
-            eyebrow="04 — How we build"
+            stage="neural"
             title={
               <>
                 A network built on <span className="v2-accent">real capability</span>
@@ -53,7 +53,8 @@ export function NeuralSection() {
             </p>
             <Reveal as="div" variant="depth" delay={0.2} className="build-chips">
               {technologyNetworkNodes.map((node) => (
-                <span key={node.id} className="build-chip">
+                <span key={node.id} className="build-chip glass-card">
+                  <span className="card-edge" aria-hidden="true" />
                   {node.label}
                 </span>
               ))}

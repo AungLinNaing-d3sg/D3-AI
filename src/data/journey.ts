@@ -288,7 +288,7 @@ export const WORKFLOW_STAGES: WorkflowStageDefinition[] = [
 
 /**
  * Chapter 06 — "AI ENGINEERING PLAYGROUND" hero/entry copy, shared verbatim
- * between `GameSection`'s always-visible heading and `PlaygroundEntry`'s
+ * between `PlaygroundSection`'s always-visible heading and `PlaygroundEntry`'s
  * cinematic entry chapter so both describe the same experience identically.
  */
 export const playgroundHeroCopy = {

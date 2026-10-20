@@ -58,7 +58,7 @@ interface GameAmbienceSceneProps {
 }
 
 /** The playground UI (heading, menu/experience) the background stays soft
- * behind — see `data-game-content` in components/sections/GameSection.tsx. */
+ * behind — see `data-game-content` in components/sections/PlaygroundSection.tsx. */
 const CONTENT_SELECTOR = "[data-game-content]";
 /** Distance from the camera at which the environment's screen-local root
  * sits; its children spread in depth around it. */
@@ -218,7 +218,7 @@ function response(at: number, now: number, duration: number): number {
  * failure. It fades with the chapter's crossfade weight, and behind the UI
  * everything is dimmed, desaturated, thinned and defocused in the shaders.
  * Reduced motion / no WebGL: the shared canvas isn't mounted; the section
- * shows a static studio instead (components/sections/GameSection.tsx).
+ * shows a static studio instead (components/sections/PlaygroundSection.tsx).
  */
 export function GameAmbienceScene({ quality }: GameAmbienceSceneProps) {
   const tier = AMBIENCE_TIERS[quality];

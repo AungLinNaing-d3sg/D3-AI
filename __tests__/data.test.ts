@@ -179,6 +179,20 @@ describe("content data integrity", () => {
 
 });
 
+describe("section headers", () => {
+  it("numbers every chapter's header from the real chapter order, with a label", async () => {
+    const { sectionHeader } = await import("@/data/sections");
+    const { STAGE_IDS: ids } = await import("@/types");
+    ids.forEach((id, index) => {
+      const { number, label } = sectionHeader(id);
+      expect(number).toBe(String(index + 1).padStart(2, "0"));
+      expect(label.length).toBeGreaterThan(0);
+    });
+    expect(sectionHeader("about")).toEqual({ number: "02", label: "About Us" });
+    expect(sectionHeader("cta")).toEqual({ number: "09", label: "Let’s Talk" });
+  });
+});
+
 describe("section anchors", () => {
   it("gives every chapter a unique, readable anchor and every nav link a target", async () => {
     const { SECTION_ANCHORS, STAGE_IDS: ids } = await import("@/types");

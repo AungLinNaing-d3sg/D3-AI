@@ -6,7 +6,7 @@ import { initJourneyTimeline } from "@/lib/motion/scrollTimeline";
  * `initJourneyTimeline` (see lib/motion/scrollTimeline.ts): a `ResizeObserver`
  * on the wrapper element re-measures stage bounds and calls
  * `ScrollTrigger.refresh()` whenever the wrapper's rendered height changes
- * after mount (e.g. GameSection swapping its menu for an active game's own
+ * after mount (e.g. PlaygroundSection swapping its menu for an active game's own
  * canvas), on top of the existing font-swap refresh path already covered by
  * __tests__/ScrollChoreographer.fontRefresh.test.ts.
  *

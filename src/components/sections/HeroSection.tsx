@@ -79,9 +79,9 @@ function HeroStaticMark() {
  *
  * Under reduced motion nothing cycles and everything is shown at rest. On
  * scroll the copy fades and drifts in lockstep with the scene's own
- * crossfade weight (see IntroSection.textSync.test.tsx).
+ * crossfade weight (see HeroSection.textSync.test.tsx).
  */
-export function IntroSection() {
+export function HeroSection() {
   const contentRef = useRef<HTMLDivElement>(null);
   const cueRef = useRef<HTMLDivElement>(null);
   const reducedMotion = usePrefersReducedMotion();

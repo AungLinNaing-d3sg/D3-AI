@@ -1,5 +1,5 @@
 import { act, render } from "@testing-library/react";
-import { IntroSection } from "@/components/sections/IntroSection";
+import { HeroSection } from "@/components/sections/HeroSection";
 import { journeyState, resetJourneyState } from "@/lib/motion/journeyState";
 
 function nextFrame(): Promise<void> {
@@ -8,7 +8,7 @@ function nextFrame(): Promise<void> {
 
 /**
  * Regression test for the intro chapter's hero-copy fade (see
- * components/sections/IntroSection.tsx). It previously faded to
+ * components/sections/HeroSection.tsx). It previously faded to
  * `opacity: 0` using an unrelated multiplier (`1 - progress * 1.7`) that
  * reached zero around 59% of the chapter's scroll — long before the
  * starfield/nebula 3D scene's own crossfade (`journeyState.weight.intro`,
@@ -18,13 +18,13 @@ function nextFrame(): Promise<void> {
  * copy must now fade on the exact same weight the 3D scene uses so both
  * dissolve together.
  */
-describe("IntroSection hero-copy / 3D-scene fade sync", () => {
+describe("HeroSection hero-copy / 3D-scene fade sync", () => {
   afterEach(() => {
     resetJourneyState();
   });
 
   it("keeps the hero copy fully opaque while the intro scene's own crossfade weight is still 1", async () => {
-    const { container } = render(<IntroSection />);
+    const { container } = render(<HeroSection />);
 
     journeyState.progress.intro = 0.6;
     journeyState.weight.intro = 1; // scene hasn't started dissolving yet
@@ -33,7 +33,7 @@ describe("IntroSection hero-copy / 3D-scene fade sync", () => {
     });
 
     // The `<h1>` sits inside its own wrapper div, itself a direct child of
-    // IntroSection's `contentRef` — the element the fade/drift style is
+    // HeroSection's `contentRef` — the element the fade/drift style is
     // actually applied to — so two levels up, not one.
     const heading = container.querySelector("h1");
     const heroContent = heading?.parentElement?.parentElement;
@@ -42,7 +42,7 @@ describe("IntroSection hero-copy / 3D-scene fade sync", () => {
   });
 
   it("fades the hero copy in lockstep with the intro scene's crossfade weight, not a disconnected progress formula", async () => {
-    const { container } = render(<IntroSection />);
+    const { container } = render(<HeroSection />);
 
     // Under the old `1 - progress * 1.7` formula this would already be 0.
     journeyState.progress.intro = 0.85;

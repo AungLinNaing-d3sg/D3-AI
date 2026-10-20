@@ -8,6 +8,7 @@ import { ParticleSystem, type ParticleSystemHandle } from "@/components/three/pr
 import { journeyState } from "@/lib/motion/journeyState";
 import { clamp, damp } from "@/lib/motion/mathUtils";
 import { universeStatRanges, universeStations } from "@/data/journey";
+import { universeFocus } from "@/lib/motion/universeFocus";
 import { SCENE_TIER_CONFIG, tieredParticleCount, type SceneQuality } from "@/lib/three/deviceTiers";
 
 interface UniverseSceneProps {
@@ -133,7 +134,7 @@ function drawTerminal(
  * global camera (lib/motion/scrollTimeline.ts) still dollies past the whole
  * composition exactly as it does for every other chapter — this scene's
  * content does not move independently of that. The always-visible,
- * accessible statistic cards in components/sections/UniverseSection.tsx
+ * accessible statistic cards in components/sections/NumbersSection.tsx
  * remain the primary, dominant information layer; everything here sits
  * behind them on the shared fixed background canvas and is purely
  * decorative/`aria-hidden`.
@@ -209,12 +210,16 @@ export function UniverseScene({ quality }: UniverseSceneProps) {
       group.rotation.y = tilt.current.y;
     }
 
-    // Jump the typewriter to the statistic currently centred in the scroll
-    // range the instant it becomes active — the one explicit "scroll
+    // Jump the typewriter to the live statistic (the stat card the section
+    // has lit — see `universeFocus`; falls back to the scroll range when the
+    // cards haven't reported yet) the instant it becomes active — the one explicit "scroll
     // position drives the coding animation" moment, layered on top of the
     // otherwise-autonomous looping script so the terminal never looks idle
     // between jumps either.
-    const activeIndex = universeStatRanges.findIndex((range) => progress >= range.start && progress < range.end);
+    const activeIndex =
+      universeFocus.index >= 0
+        ? universeFocus.index
+        : universeStatRanges.findIndex((range) => progress >= range.start && progress < range.end);
     if (activeIndex !== -1 && activeIndex !== lastActiveStat.current) {
       lastActiveStat.current = activeIndex;
       const targetLine = statLineIndex[activeIndex];

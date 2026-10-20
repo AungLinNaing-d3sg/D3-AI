@@ -1,11 +1,11 @@
 import { render } from "@testing-library/react";
-import { IntroSection } from "@/components/sections/IntroSection";
+import { HeroSection } from "@/components/sections/HeroSection";
 import { AboutSection } from "@/components/sections/AboutSection";
-import { TypographySection } from "@/components/sections/TypographySection";
-import { NeuralSection } from "@/components/sections/NeuralSection";
-import { UniverseSection } from "@/components/sections/UniverseSection";
-import { GameSection } from "@/components/sections/GameSection";
-import { FutureSection } from "@/components/sections/FutureSection";
+import { ApproachSection } from "@/components/sections/ApproachSection";
+import { HowWeBuildSection } from "@/components/sections/HowWeBuildSection";
+import { NumbersSection } from "@/components/sections/NumbersSection";
+import { PlaygroundSection } from "@/components/sections/PlaygroundSection";
+import { VisionSection } from "@/components/sections/VisionSection";
 import { FaqSection } from "@/components/sections/FaqSection";
 import type { StageId } from "@/types";
 
@@ -21,13 +21,13 @@ import type { StageId } from "@/types";
  * ~100-140vh) rather than multiple stacked viewport heights.
  */
 const chapters: { id: StageId; Section: () => React.JSX.Element }[] = [
-  { id: "intro", Section: IntroSection },
+  { id: "intro", Section: HeroSection },
   { id: "about", Section: AboutSection },
-  { id: "typography", Section: TypographySection },
-  { id: "neural", Section: NeuralSection },
-  { id: "universe", Section: UniverseSection },
-  { id: "game", Section: GameSection },
-  { id: "future", Section: FutureSection },
+  { id: "typography", Section: ApproachSection },
+  { id: "neural", Section: HowWeBuildSection },
+  { id: "universe", Section: NumbersSection },
+  { id: "game", Section: PlaygroundSection },
+  { id: "future", Section: VisionSection },
   { id: "faq", Section: FaqSection },
 ];
 

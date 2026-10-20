@@ -21,7 +21,7 @@ export function FaqSection() {
           <div className="faq-side">
             <SectionHeading
               headingId="faq-heading"
-              eyebrow="08 — FAQ"
+              stage="faq"
               title={
                 <>
                   Questions, <span className="v2-accent">answered.</span>

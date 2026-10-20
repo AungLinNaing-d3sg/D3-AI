@@ -145,7 +145,7 @@ export interface UniverseStat {
 /**
  * The distinct 3D visual treatment ("station") each real statistic gets in
  * the Data Universe stage (chapter 04, "05" in the section's own UI numbering
- * — see `UniverseSection`'s eyebrow copy) — see
+ * — see `NumbersSection`'s eyebrow copy) — see
  * three/scenes/UniverseScene.tsx. Every variant communicates a different
  * concept rather than reusing one generic particle field four times:
  * - `location` — Singapore: particles gather into a small geographic/data

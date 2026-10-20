@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { ensureGsapRegistered, gsap, ScrollTrigger, SplitText } from "@/lib/motion/gsap";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+import { lenisInstance } from "@/lib/motion/lenisInstance";
 
 /**
  * Right-to-left scroll travel, ported from the light redesign's Services
@@ -14,6 +15,12 @@ import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
  * Smaller screens keep the normal stacked layout with vertical reveals.
  * Fine pointers also get v2's panel interaction: a gentle tilt towards the
  * cursor with a spotlight that follows it (`[data-panel-tilt]`).
+ *
+ * While tracking, the panels also turn in from depth as they travel (a
+ * coverflow-like `--enter` / `--enter-abs`, 0 when centred), and the track
+ * controls (`[data-track-controls]`) follow along: the current panel's
+ * number and name, a progress bar (`--track-progress` on the stage) and
+ * previous / next buttons that scroll the page to that panel.
  */
 export function useHorizontalTrack() {
   const stageRef = useRef<HTMLDivElement>(null);
@@ -49,10 +56,56 @@ export function useHorizontalTrack() {
       stage.classList.add("is-tracking");
       ScrollTrigger.addEventListener("refreshInit", size);
 
+      // Track controls + depth, kept in step with the travel.
+      const count = stage.querySelector<HTMLElement>("[data-track-count]");
+      const name = stage.querySelector<HTMLElement>("[data-track-name]");
+      const prev = stage.querySelector<HTMLButtonElement>("[data-track-prev]");
+      const next = stage.querySelector<HTMLButtonElement>("[data-track-next]");
+      const last = Math.max(panels.length - 1, 1);
+      let current = -1;
+      const update = (progress: number) => {
+        stage.style.setProperty("--track-progress", progress.toFixed(4));
+        const index = Math.round(progress * last);
+        if (index !== current) {
+          current = index;
+          if (count) count.textContent = String(index + 1).padStart(2, "0");
+          if (name) name.textContent = panels[index]?.dataset.trackLabel ?? "";
+          if (prev) prev.disabled = index <= 0;
+          if (next) next.disabled = index >= panels.length - 1;
+        }
+        const centre = window.innerWidth / 2;
+        panels.forEach((panel) => {
+          const r = panel.getBoundingClientRect();
+          const enter = Math.max(-1, Math.min(1, (r.left + r.width / 2 - centre) / window.innerWidth));
+          panel.style.setProperty("--enter", enter.toFixed(3));
+          panel.style.setProperty("--enter-abs", Math.abs(enter).toFixed(3));
+        });
+      };
+      const goTo = (index: number) => {
+        const clamped = Math.max(0, Math.min(panels.length - 1, index));
+        const top = stage.getBoundingClientRect().top + window.scrollY;
+        const target = top + (clamped / last) * (stage.offsetHeight - window.innerHeight) + 1;
+        const lenis = lenisInstance.current;
+        if (lenis) lenis.scrollTo(target, { duration: 1.1 });
+        else window.scrollTo({ top: target, behavior: "smooth" });
+      };
+      const onPrev = () => goTo(current - 1);
+      const onNext = () => goTo(current + 1);
+      prev?.addEventListener("click", onPrev);
+      next?.addEventListener("click", onNext);
+
       const travel = gsap.to(track, {
         x: () => -distance(),
         ease: "none",
-        scrollTrigger: { trigger: stage, start: "top top", end: "bottom bottom", scrub: true, invalidateOnRefresh: true },
+        scrollTrigger: {
+          trigger: stage,
+          start: "top top",
+          end: "bottom bottom",
+          scrub: true,
+          invalidateOnRefresh: true,
+          onUpdate: (self) => update(self.progress),
+          onRefresh: (self) => update(self.progress),
+        },
       });
       splits.forEach((split, i) => {
         // The first panel is on screen before the travel starts.
@@ -64,8 +117,15 @@ export function useHorizontalTrack() {
       });
       return () => {
         ScrollTrigger.removeEventListener("refreshInit", size);
+        prev?.removeEventListener("click", onPrev);
+        next?.removeEventListener("click", onNext);
         stage.classList.remove("is-tracking");
         stage.style.height = "";
+        stage.style.removeProperty("--track-progress");
+        panels.forEach((panel) => {
+          panel.style.removeProperty("--enter");
+          panel.style.removeProperty("--enter-abs");
+        });
       };
     });
     mm.add("(max-width: 1023px)", () => {

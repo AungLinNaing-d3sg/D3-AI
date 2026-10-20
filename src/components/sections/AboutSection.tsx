@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Section } from "@/components/ui/Section";
 import { Container } from "@/components/ui/Container";
 import { Reveal } from "@/components/motion/Reveal";
+import { SectionHeading } from "@/components/ui/SectionHeading";
 import { useJourneyFrame } from "@/hooks/useJourneyFrame";
 import type { JourneyState } from "@/lib/motion/journeyState";
 import { aboutContent, leaderHighlights } from "@/data/about";
@@ -36,21 +37,6 @@ export function AboutSection() {
 
   useJourneyFrame(onFrame);
 
-  // Glass cards (.glass-card) light their edge and spotlight where the
-  // mouse is: one delegated listener writes --mx/--my on the hovered card.
-  useEffect(() => {
-    const onMove = (event: PointerEvent) => {
-      if (event.pointerType !== "mouse") return;
-      const card = (event.target as Element | null)?.closest<HTMLElement>(".about-v2-value.glass-card, .dossier-inner.glass-card");
-      if (!card) return;
-      const rect = card.getBoundingClientRect();
-      card.style.setProperty("--mx", `${event.clientX - rect.left}px`);
-      card.style.setProperty("--my", `${event.clientY - rect.top}px`);
-    };
-    window.addEventListener("pointermove", onMove, { passive: true });
-    return () => window.removeEventListener("pointermove", onMove);
-  }, []);
-
   // The value row crossing the middle of the screen is marked active (the
   // same lit state as hover), so touch screens get it too.
   const valuesRef = useRef<HTMLUListElement>(null);
@@ -71,9 +57,16 @@ export function AboutSection() {
     <Section stageId="about" ariaLabelledBy="about-heading" className="min-h-[75vh] md:min-h-[95vh] lg:min-h-[105vh]">
       <Container data-depth-exit className="about-v2 grid gap-10 pt-16 md:pt-24 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
         <div>
-          <Reveal as="h2" id="about-heading" variant="maskLines" className="v2-heading">
-            {title} <span className="v2-accent">{titleHighlight}</span>
-          </Reveal>
+          <SectionHeading
+            stage="about"
+            headingId="about-heading"
+            titleVariant="maskLines"
+            title={
+              <>
+                {title} <span className="v2-accent">{titleHighlight}</span>
+              </>
+            }
+          />
           <Reveal as="p" variant="scrubWords" className="about-v2-statement">
             {statement}
           </Reveal>

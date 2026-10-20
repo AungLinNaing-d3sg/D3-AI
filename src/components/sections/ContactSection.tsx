@@ -34,7 +34,7 @@ const STORY_STEPS = ["Data", "Connection", "Intelligence", "Creation"] as const;
  * thinned and defocused in its shaders, so the copy always stays the
  * primary layer — no giant panel over the scene.
  */
-export function CtaSection() {
+export function ContactSection() {
   return (
     <Section
       stageId="cta"
@@ -52,7 +52,7 @@ export function CtaSection() {
             <div className="flex flex-col gap-7 md:max-w-[23rem] lg:min-h-[100svh] lg:max-w-none lg:justify-center lg:pb-16 lg:pt-28">
               <SectionHeading
                 headingId="cta-heading"
-                eyebrow="09 — Let’s talk"
+                stage="cta"
                 title={
                   <>
                     Let’s build <span className="v2-accent">what’s next.</span>
@@ -107,7 +107,8 @@ export function CtaSection() {
               duration={0.6}
               className="mt-12 w-full md:mt-14 lg:mt-0"
             >
-              <div id="contact-form" className="cta-console scroll-mt-28">
+              <div id="contact-form" className="cta-console glass-card scroll-mt-28">
+                <span aria-hidden="true" className="card-edge" />
                 <div className="cta-console-head">
                   <h3 id="contact-form-heading" className="cta-console-title">
                     Send us a message

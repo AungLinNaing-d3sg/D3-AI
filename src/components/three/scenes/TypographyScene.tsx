@@ -24,7 +24,7 @@ interface TypographySceneProps {
 }
 
 /** Same accent triad used by the accessible discipline cards in
- * `TypographySection.tsx` — Data / Dynamics / Digital. */
+ * `ApproachSection.tsx` — Data / Dynamics / Digital. */
 const DISCIPLINE_ACCENTS = ["#00d2ff", "#ff4d2d", "#00e676"] as const;
 const DISCIPLINE_LABELS = ["DATA", "DYNAMICS", "DIGITAL"] as const;
 const DISCIPLINE_COUNT = 3;
@@ -253,7 +253,7 @@ function createLabelTexture(text: string, color: string): Texture {
  * sphere as one of its own nodes rather than sitting as a flat overlay.
  * Brightens/lifts together with the rest of its cluster as `activityRef`
  * rises — a visual echo of the real, always-accessible card in
- * `TypographySection.tsx`, never the only place this name appears. */
+ * `ApproachSection.tsx`, never the only place this name appears. */
 function DisciplineLabel({
   region,
   position,
@@ -325,7 +325,7 @@ function NeutralLattice({ positions }: { positions: Float32Array }) {
  * intelligent system.
  *
  * Scroll (three even thirds of `journeyState.progress.typography`) or a
- * click in the accessible card row (`TypographySection.tsx`, via
+ * click in the accessible card row (`ApproachSection.tsx`, via
  * `disciplineFocus.pinned`) — never a mere hover — brings one cluster's nodes,
  * edges, and 3D label to full brightness while the other two dim, tints
  * the ambient glow shell toward that discipline's own accent, and smoothly
