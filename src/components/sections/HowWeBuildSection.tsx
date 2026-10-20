@@ -2,7 +2,7 @@ import { Section } from "@/components/ui/Section";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/motion/Reveal";
-import { technologyNetworkNodes } from "@/data/journey";
+import { TechChips } from "./TechChips";
 import { ProcessPanel } from "./ProcessPanel";
 
 /**
@@ -52,12 +52,7 @@ export function HowWeBuildSection() {
               The stack behind every step
             </p>
             <Reveal as="div" variant="depth" delay={0.2} className="build-chips">
-              {technologyNetworkNodes.map((node) => (
-                <span key={node.id} className="build-chip glass-card">
-                  <span className="card-edge" aria-hidden="true" />
-                  {node.label}
-                </span>
-              ))}
+              <TechChips />
             </Reveal>
           </div>
         </Container>
